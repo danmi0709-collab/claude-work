@@ -38,7 +38,14 @@
       "Bash(PYTHONIOENCODING=utf-8 python 수집.py)",
       "Bash(PYTHONIOENCODING=utf-8 python 창원성산구_전고전저.py)",
       "Bash(python3 -c ' *)",
-      "mcp__Claude_in_Chrome__list_connected_browsers"
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__select_browser",
+      "mcp__Claude_in_Chrome__navigate",
+      "Bash(python)",
+      "Bash(python -c \"import os; size=os.path.getsize\\('송파구/송파구_아파트_임장지도.html'\\); print\\(f'{size/1024:.1f} KB'\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
