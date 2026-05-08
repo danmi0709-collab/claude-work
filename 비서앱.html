@@ -2947,18 +2947,18 @@ async function pushToSyncSheet() {
   const st = document.getElementById('syncStatus');
   st.textContent = '☁️ 올리는 중...';
   const payload = {};
-  SYNC_KEYS.forEach(k => { payload[k] = load(k, null); });
+  SYNC_KEYS.forEach(k => { const v = load(k, null); if (v !== null) payload[k] = v; });
   try {
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
-      headers: {'Content-Type':'text/plain'},
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'set', data: payload })
     });
     st.textContent = `✅ 업로드 완료 (${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`;
     showToast('☁️ 데이터를 올렸어요!');
   } catch(e) {
-    st.textContent = '❌ POST 실패: ' + e.message;
+    st.textContent = '❌ 실패: ' + e.message;
   }
 }
 
