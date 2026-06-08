@@ -1603,7 +1603,10 @@
       <div id="seriesTabBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
       <!-- ORT 진도 (ORT 탭 활성 시) -->
       <div id="ortProgressWrap">
-        <div id="ortTotalBadge" style="font-size:12px;color:#667eea;font-weight:700;margin-bottom:6px"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div id="ortTotalBadge" style="font-size:12px;color:#667eea;font-weight:700"></div>
+          <button onclick="deleteOrtCoversFrom3_25()" style="font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid #f06292;color:#f06292;background:white;cursor:pointer">3-25부터 사진 초기화</button>
+        </div>
         <div id="ortLevelFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
         <div style="background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden">
           <div id="ortTotalBar" style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:0%;transition:width 0.4s"></div>
@@ -6320,6 +6323,25 @@ function updateOrtStats() {
 
 // ── ORT 표지 사진 (카메라 촬영, base64 저장) ──
 function getOrtCovers() { return load('ortCovers', {}); }
+
+function deleteOrtCoversFrom3_25() {
+  if (!confirm('ORT 3-25부터 모든 사진을 삭제할까요?\n(3-24 이전 사진은 유지됩니다)')) return;
+  const covers = getOrtCovers();
+  // Stage 3: catIdx 4 이상 (25번~48번)
+  for (let ci = 4; ci <= 7; ci++) {
+    for (let bi = 0; bi <= 5; bi++) {
+      delete covers[`ort_3_${ci}_${bi}`];
+    }
+  }
+  // Stage 4 이상 전체
+  ['4','5','6','7','8','9','10p','11p','12p'].forEach(lvId => {
+    Object.keys(covers).forEach(k => { if (k.startsWith(`ort_${lvId}_`)) delete covers[k]; });
+  });
+  save('ortCovers', covers);
+  renderOrtList();
+  showToast('ORT 3-25부터 사진이 삭제됐어요 🗑️');
+}
+
 function saveOrtCoverPhoto(bookId, dataUrl) {
   const d = getOrtCovers(); d[bookId] = dataUrl; return save('ortCovers', d);
 }
