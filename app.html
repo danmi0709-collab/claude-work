@@ -1606,6 +1606,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <div id="ortTotalBadge" style="font-size:12px;color:#667eea;font-weight:700"></div>
           <button onclick="deleteOrtCoversFrom3_25()" style="font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid #f06292;color:#f06292;background:white;cursor:pointer">3-25부터 사진 초기화</button>
+          <button onclick="deleteOrtStage5to12()" style="font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid #e53935;color:#e53935;background:white;cursor:pointer">5-12 사진+제목 초기화</button>
         </div>
         <div id="ortLevelFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
         <div style="background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden">
@@ -6323,6 +6324,20 @@ function updateOrtStats() {
 
 // ── ORT 표지 사진 (카메라 촬영, base64 저장) ──
 function getOrtCovers() { return load('ortCovers', {}); }
+
+function deleteOrtStage5to12() {
+  if (!confirm('Stage 5~12의 모든 사진과 제목을 삭제할까요?')) return;
+  const covers = getOrtCovers();
+  const titles = getOrtTitles();
+  ['5','6','7','8','9','10p','11p','12p'].forEach(lvId => {
+    Object.keys(covers).forEach(k => { if (k.startsWith(`ort_${lvId}_`)) delete covers[k]; });
+    Object.keys(titles).forEach(k => { if (k.startsWith(`ort_${lvId}_`)) delete titles[k]; });
+  });
+  save('ortCovers', covers);
+  save('ortTitles', titles);
+  renderOrtList();
+  showToast('Stage 5~12 사진·제목 삭제됐어요 🗑️');
+}
 
 function deleteOrtCoversFrom3_25() {
   if (!confirm('ORT 3-25부터 모든 사진을 삭제할까요?\n(3-24 이전 사진은 유지됩니다)')) return;
