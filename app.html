@@ -1266,6 +1266,7 @@
         <div id="calMonthGrid"></div>
       </div>
       <div id="calMonthGcalArea"></div>
+      <div id="calMonthEventList" style="margin-top:8px"></div>
     </div>
     <div id="calListView">
     <div id="calendarEvents"></div>
@@ -11217,6 +11218,106 @@ function renderCalendarMonth() {
       <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:3px"></span>반성</span>
     </div>
   `;
+  renderCalMonthEventList();
+}
+
+async function renderCalMonthEventList() {
+  const listEl = document.getElementById('calMonthEventList');
+  if (!listEl) return;
+
+  const yr = calMonthYear, mo = calMonthMonth;
+  const firstDay = new Date(yr, mo, 1);
+  const lastDay  = new Date(yr, mo + 1, 0);
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  // 할일 수집
+  const todos = getTodos ? getTodos() : [];
+  const todosByDate = {};
+  todos.forEach(t => {
+    if (!t.date) return;
+    const d = new Date(t.date + 'T00:00:00');
+    if (d >= firstDay && d <= lastDay) {
+      if (!todosByDate[t.date]) todosByDate[t.date] = [];
+      todosByDate[t.date].push(t);
+    }
+  });
+
+  // 구글 캘린더 이벤트 수집
+  let gcalByDate = {};
+  if (gcalToken) {
+    listEl.innerHTML = `<div class="card"><div style="text-align:center;padding:12px;color:#aaa;font-size:13px">📅 이번달 일정 불러오는 중...</div></div>`;
+    try {
+      const tStart = new Date(yr, mo, 1).toISOString();
+      const tEnd   = new Date(yr, mo + 1, 0, 23, 59, 59).toISOString();
+      const params = new URLSearchParams({ timeMin:tStart, timeMax:tEnd, singleEvents:'true', orderBy:'startTime', maxResults:'100' });
+      const calListRes = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+        headers: { Authorization: 'Bearer ' + gcalToken }
+      });
+      const calList = await calListRes.json();
+      const cals = (calList.items || []).filter(c => c.selected !== false);
+      const results = await Promise.all(cals.map(cal =>
+        fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?${params}`, {
+          headers: { Authorization: 'Bearer ' + gcalToken }
+        }).then(r => r.json())
+          .then(data => (data.items || []).map(e => ({...e, _calColor: cal.backgroundColor || '#4285f4'})))
+          .catch(() => [])
+      ));
+      results.flat().forEach(e => {
+        const dt = e.start.dateTime || e.start.date;
+        const key = dt.substring(0, 10);
+        if (!gcalByDate[key]) gcalByDate[key] = [];
+        gcalByDate[key].push(e);
+      });
+    } catch(e) {}
+  }
+
+  // 날짜 합치기
+  const allDates = [...new Set([...Object.keys(todosByDate), ...Object.keys(gcalByDate)])].sort();
+
+  if (!allDates.length) {
+    listEl.innerHTML = `<div class="card"><div style="text-align:center;padding:16px;color:#bbb;font-size:13px">이번달 일정이 없어요</div></div>`;
+    return;
+  }
+
+  const dowKr = ['일','월','화','수','목','금','토'];
+  const html = allDates.map(ds => {
+    const d = new Date(ds + 'T00:00:00');
+    const dow = d.getDay();
+    const dayColor = dow===0?'#ff3b30':dow===6?'#007aff':'#333';
+    const isToday = ds === today();
+
+    const gcalRows = (gcalByDate[ds] || []).map(e => {
+      const startDT = e.start.dateTime;
+      const timeStr = startDT
+        ? new Date(startDT).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+        : '종일';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0">
+        <div style="width:6px;height:6px;border-radius:50%;background:${e._calColor};flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:700;color:#4285f4;min-width:38px">${timeStr}</span>
+        <span style="font-size:13px;color:#333">${e.summary || '(제목 없음)'}</span>
+      </div>`;
+    }).join('');
+
+    const todoRows = (todosByDate[ds] || []).map(t =>
+      `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0">
+        <div style="width:6px;height:6px;border-radius:50%;background:#667eea;flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:700;color:#667eea;min-width:38px">할일</span>
+        <span style="font-size:13px;color:#333${t.done?';text-decoration:line-through;color:#bbb':''}">${t.text || ''}</span>
+      </div>`
+    ).join('');
+
+    return `<div style="margin-bottom:10px;border-radius:12px;overflow:hidden;border:1.5px solid ${isToday?'#667eea':'#e8e8e8'};background:white">
+      <div style="padding:8px 12px;background:${isToday?'#f0f4ff':'#fafafa'};border-bottom:1px solid #e8e8e8;display:flex;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:800;color:${dayColor}">${d.getMonth()+1}/${d.getDate()}</span>
+        <span style="font-size:12px;color:${dayColor};font-weight:600">${dowKr[dow]}요일</span>
+        ${isToday?'<span style="font-size:10px;background:#667eea;color:white;padding:1px 6px;border-radius:8px;font-weight:700">오늘</span>':''}
+      </div>
+      <div style="padding:4px 12px">${gcalRows}${todoRows}</div>
+    </div>`;
+  }).join('');
+
+  listEl.innerHTML = `<div class="card"><div class="card-title">📋 ${yr}년 ${mo+1}월 일정 목록</div>${html}</div>`;
 }
 
 // ============================================================
