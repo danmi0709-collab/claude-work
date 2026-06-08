@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가계부 앱 단톡 공지 카드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #d8d3c8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    gap: 16px;
+  }
+
+  .hint {
+    font-size: 13px;
+    color: #7a7468;
+    background: rgba(255,255,255,0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* ── 카드 ── */
+  .card {
+    width: 560px;
+    background: #faf8f3;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  }
+
+  /* 헤더 */
+  .card-header {
+    background: linear-gradient(145deg, #7a4e28 0%, #c07a3a 45%, #e2b45a 100%);
+    padding: 40px 36px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+  .app-icon-wrap {
+    width: 64px; height: 64px;
+    background: rgba(255,255,255,0.22);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .header-titles { flex: 1; }
+  .app-name {
+    font-size: 26px; font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .app-tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.82);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .free-badge {
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    position: relative; z-index: 1;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+  .header-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.7;
+    position: relative; z-index: 1;
+    font-weight: 500;
+  }
+
+  /* 기능 그리드 */
+  .features {
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .feat {
+    background: #fff;
+    border: 1.5px solid #ede9e0;
+    border-radius: 14px;
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .feat-icon { font-size: 22px; flex-shrink: 0; }
+  .feat-text { font-size: 13px; font-weight: 700; color: #2d2a24; }
+  .feat-sub  { font-size: 11px; color: #9e9585; margin-top: 1px; }
+
+  /* QR 섹션 */
+  .qr-section {
+    background: #fff;
+    margin: 0 24px 24px;
+    border-radius: 24px;
+    padding: 24px;
+    border: 2px solid #ede9e0;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .qr-wrap {
+    flex-shrink: 0;
+    background: #fff;
+    padding: 12px;
+    border-radius: 16px;
+    border: 2px solid #ede9e0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  #qrCanvas { display: block; border-radius: 6px; }
+  .qr-info { flex: 1; }
+  .qr-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #b5ae9f;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .qr-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: #2d2a24;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .qr-url {
+    font-size: 11px;
+    color: #c07a3a;
+    font-weight: 700;
+    word-break: break-all;
+    background: #fff8ee;
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-bottom: 12px;
+  }
+  .qr-steps { display: flex; flex-direction: column; gap: 6px; }
+  .qr-step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #5a4a38; font-weight: 500;
+  }
+  .qr-step-dot {
+    width: 6px; height: 6px;
+    background: #c07a3a;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* 보장 배지 */
+  .guarantees {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 24px 20px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    background: #f4f1eb;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #7a6a58;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* 푸터 */
+  .card-footer {
+    background: linear-gradient(135deg, #c07a3a, #e2b45a);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-left { color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 700; }
+  .footer-right {
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .footer-right:hover { background: rgba(255,255,255,0.35); }
+</style>
+</head>
+<body>
+
+<p class="hint">📸 스크린샷 찍어서 카톡에 공유하세요</p>
+
+<div class="card">
+
+  <!-- 헤더 -->
+  <div class="card-header">
+    <div class="header-top">
+      <div class="app-icon-wrap">💰</div>
+      <div class="header-titles">
+        <div class="app-name">나만의 가계부</div>
+        <div class="app-tagline">스마트폰 브라우저에서 바로 쓰는 가계부</div>
+      </div>
+      <div class="free-badge">FREE</div>
+    </div>
+    <div class="header-desc">
+      설치 없이 링크 하나로 시작해요 📎<br>
+      내 데이터는 내 기기에만 저장돼요 🔒
+    </div>
+  </div>
+
+  <!-- 기능 그리드 -->
+  <div class="features">
+    <div class="feat">
+      <span class="feat-icon">📋</span>
+      <div>
+        <div class="feat-text">수입·지출 기록</div>
+        <div class="feat-sub">카테고리 자동 분류</div>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">📊</span>
+      <div>
+        <div class="feat-text">월별 지출 분석</div>
+        <div class="feat-sub">도넛 차트 시각화</div>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🏦</span>
+      <div>
+        <div class="feat-text">자산·부채 관리</div>
+        <div class="feat-sub">순자산 목표 설정</div>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">📅</span>
+      <div>
+        <div class="feat-text">연간 예산 계획</div>
+        <div class="feat-sub">월별 예산 초과 알림</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR 코드 -->
+  <div class="qr-section">
+    <div class="qr-wrap">
+      <img id="qrImg"
+        src="https://api.qrserver.com/v1/create-qr-code/?size=148x148&data=https%3A%2F%2Fdanmi0709-collab.github.io%2Fgagyebu%2Fshare&color=2d2a24&bgcolor=ffffff&margin=6&format=png"
+        width="148" height="148"
+        style="display:block;border-radius:6px"
+        alt="QR코드">
+    </div>
+    <div class="qr-info">
+      <div class="qr-label">QR 스캔하거나 링크 접속</div>
+      <div class="qr-title">카메라로 찍으면<br>바로 열려요!</div>
+      <div class="qr-url">danmi0709-collab.github.io<br>/gagyebu/share</div>
+      <div class="qr-steps">
+        <div class="qr-step"><span class="qr-step-dot"></span>안드로이드 → 크롬으로 접속</div>
+        <div class="qr-step"><span class="qr-step-dot"></span>아이폰 → 사파리로 접속</div>
+        <div class="qr-step"><span class="qr-step-dot"></span>홈화면에 추가 → 앱처럼 사용!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 보장 배지 -->
+  <div class="guarantees">
+    <div class="badge">✅ 완전 무료</div>
+    <div class="badge">🚫 광고 없음</div>
+    <div class="badge">🔒 개인정보 수집 없음</div>
+    <div class="badge">📲 설치 불필요</div>
+  </div>
+
+  <!-- 푸터 -->
+  <div class="card-footer">
+    <div class="footer-left">💰 나만의 가계부 — 오늘부터 시작해요</div>
+    <button class="footer-right" onclick="copyUrl()">링크 복사</button>
+  </div>
+
+</div>
+
+<script>
+const APP_URL = 'https://danmi0709-collab.github.io/gagyebu/share';
+
+function copyUrl() {
+  navigator.clipboard.writeText(APP_URL).then(() => {
+    const btn = document.querySelector('.footer-right');
+    btn.textContent = '복사 완료 ✓';
+    setTimeout(() => btn.textContent = '링크 복사', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

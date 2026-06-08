@@ -1,0 +1,10 @@
+.git
+.claude
+docs
+*.gs
+*.py
+*.pptx
+*.pdf
+gagyebu
+node_modules
+비서앱_동기화_스크립트.gs

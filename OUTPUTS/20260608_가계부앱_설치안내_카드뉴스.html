@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가계부 앱 설치 안내 카드뉴스</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #e8e3d8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    padding: 24px;
+  }
+
+  .card {
+    width: 600px;
+    background: #faf8f3;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  /* 상단 헤더 */
+  .header {
+    background: linear-gradient(135deg, #c07a3a 0%, #e2b45a 100%);
+    padding: 36px 40px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0; height: 24px;
+    background: #faf8f3;
+    border-radius: 24px 24px 0 0;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .header-icon {
+    font-size: 52px;
+    margin-bottom: 10px;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  }
+  .header h1 {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* 본문 */
+  .body {
+    padding: 32px 40px;
+  }
+
+  /* 링크 박스 */
+  .link-box {
+    background: #fff;
+    border: 2px solid #e8e3d8;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .link-box .link-icon { font-size: 24px; flex-shrink: 0; }
+  .link-box .link-text {
+    flex: 1;
+  }
+  .link-box .link-label {
+    font-size: 11px;
+    color: #9e9585;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .link-box .link-url {
+    font-size: 13px;
+    color: #c07a3a;
+    font-weight: 700;
+    word-break: break-all;
+  }
+  .link-box .copy-btn {
+    background: #c07a3a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .copy-btn:hover { background: #a86630; }
+
+  /* 섹션 타이틀 */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #9e9585;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+
+  /* OS 섹션 */
+  .os-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .os-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 22px 18px;
+    border: 2px solid #e8e3d8;
+    position: relative;
+    overflow: hidden;
+  }
+  .os-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .os-card.android::before { background: linear-gradient(90deg, #3ddc84, #2ea96c); }
+  .os-card.ios::before     { background: linear-gradient(90deg, #007aff, #5ac8fa); }
+
+  .os-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .os-name {
+    font-size: 14px;
+    font-weight: 900;
+    color: #2d2a24;
+    margin-bottom: 4px;
+  }
+  .os-sub {
+    font-size: 11px;
+    color: #9e9585;
+    margin-bottom: 14px;
+  }
+
+  /* 스텝 */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .step-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .android .step-num { background: #e8f8f0; color: #2ea96c; }
+  .ios .step-num     { background: #e8f2ff; color: #007aff; }
+
+  .step-text {
+    font-size: 12px;
+    color: #2d2a24;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  .step-text b {
+    display: inline-block;
+    background: #faf8f3;
+    border-radius: 4px;
+    padding: 0 4px;
+    font-weight: 700;
+  }
+  .android .step-text b { color: #2ea96c; }
+  .ios .step-text b      { color: #007aff; }
+
+  /* 꿀팁 */
+  .tip-box {
+    background: linear-gradient(135deg, #fff8ee, #faf8f3);
+    border: 1.5px solid #e8d8c0;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .tip-text {
+    font-size: 13px;
+    color: #5a4a38;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+  .tip-text b { color: #c07a3a; }
+
+  /* 푸터 */
+  .footer {
+    border-top: 1.5px solid #e8e3d8;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-brand {
+    font-size: 13px;
+    font-weight: 700;
+    color: #c07a3a;
+  }
+  .footer-desc {
+    font-size: 11px;
+    color: #b5ae9f;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- 헤더 -->
+  <div class="header">
+    <div class="header-badge">HOW TO INSTALL</div>
+    <span class="header-icon">💰</span>
+    <h1>가계부 앱 설치하기</h1>
+    <p>스마트폰 바탕화면에 앱처럼 저장해요</p>
+  </div>
+
+  <!-- 본문 -->
+  <div class="body">
+
+    <!-- 링크 박스 -->
+    <div class="link-box">
+      <span class="link-icon">🔗</span>
+      <div class="link-text">
+        <div class="link-label">접속 링크</div>
+        <div class="link-url">danmi0709-collab.github.io/gagyebu/share</div>
+      </div>
+      <button class="copy-btn" onclick="copyLink(this)">복사</button>
+    </div>
+
+    <div class="section-title">📲 OS별 설치 방법</div>
+
+    <!-- OS 카드 그리드 -->
+    <div class="os-grid">
+
+      <!-- 안드로이드 -->
+      <div class="os-card android">
+        <span class="os-icon">🤖</span>
+        <div class="os-name">안드로이드</div>
+        <div class="os-sub">크롬 브라우저 사용</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">위 링크를<br><b>크롬</b>으로 접속</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">오른쪽 위<br><b>점 3개 ⋮</b> 탭</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><b>"홈 화면에 추가"</b><br>선택 → 설치</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 아이폰 -->
+      <div class="os-card ios">
+        <span class="os-icon">🍎</span>
+        <div class="os-name">아이폰</div>
+        <div class="os-sub">사파리 브라우저 사용</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">위 링크를<br><b>사파리</b>로 접속</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">하단 중앙<br><b>공유 버튼 □↑</b> 탭</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><b>"홈 화면에 추가"</b><br>선택 → 추가</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 꿀팁 -->
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <div class="tip-text">
+        설치 후엔 앱처럼 실행돼요! 아이콘 이름은 <b>가계부</b>, 주소창 없이 전체 화면으로 열려요.<br>
+        아이폰은 <b>반드시 사파리</b>로 접속해야 설치 가능해요.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <div class="footer">
+    <div class="footer-brand">💰 나만의 가계부</div>
+    <div class="footer-desc">무료 · 광고 없음 · 내 데이터는 내 기기에만</div>
+  </div>
+</div>
+
+<script>
+function copyLink(btn) {
+  navigator.clipboard.writeText('https://danmi0709-collab.github.io/gagyebu/share').then(() => {
+    btn.textContent = '완료✓';
+    btn.style.background = '#2ea96c';
+    setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#c07a3a'; }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>

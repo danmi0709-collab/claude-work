@@ -1,0 +1,14 @@
+{
+  "defaultMode": "bypassPermissions",
+  "permissions": {
+    "allow": [
+      "mcp__computer-use__screenshot",
+      "mcp__computer-use__zoom",
+      "mcp__computer-use__request_access",
+      "mcp__ccd_session__mark_chapter",
+      "mcp__computer-use__wait",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__list_connected_browsers"
+    ]
+  }
+}

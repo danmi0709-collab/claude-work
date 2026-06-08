@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아이보리 테마 미리보기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== 공통 ===== */
+  body { font-family: 'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif; padding: 20px; }
+  h2 { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+  .col { flex: 1; min-width: 300px; }
+  .label { font-size: 11px; font-weight: 700; text-align: center; margin-bottom: 8px; padding: 4px 8px; border-radius: 4px; }
+
+  /* ===== 다크 테마 (현재) ===== */
+  .dark { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; }
+  .dark .header { background: #161b22; border-bottom: 1px solid #30363d; padding: 14px 16px; text-align: center; border-radius: 8px 8px 0 0; margin: -16px -16px 16px; }
+  .dark .header-title { font-size: 16px; font-weight: 700; color: #e6edf3; }
+  .dark .tabs { display: flex; gap: 4px; background: #161b22; border-radius: 8px; padding: 4px; margin-bottom: 12px; }
+  .dark .tab { flex: 1; text-align: center; padding: 6px 2px; border-radius: 6px; font-size: 10px; color: #8b949e; cursor: pointer; }
+  .dark .tab.active { background: #58a6ff; color: #0d1117; font-weight: 700; }
+  .dark .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .dark .card-title { font-size: 12px; color: #8b949e; margin-bottom: 4px; }
+  .dark .amount { font-size: 26px; font-weight: 700; color: #58a6ff; }
+  .dark .chip { display: inline-block; background: #21262d; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #3fb950; margin: 2px; }
+  .dark .chip.red { color: #f85149; }
+  .dark .chip.blue { color: #79c0ff; }
+  .dark .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 12px; }
+  .dark .tx-cat { color: #8b949e; font-size: 11px; }
+  .dark .tx-amount.plus { color: #3fb950; font-weight: 600; }
+  .dark .tx-amount.minus { color: #f85149; font-weight: 600; }
+  .dark .tx-amount.save { color: #79c0ff; font-weight: 600; }
+  .dark .btn { background: #21262d; border: 1px solid #30363d; border-radius: 8px; color: #e6edf3; font-size: 12px; padding: 8px 14px; cursor: pointer; margin-right: 6px; }
+  .dark .btn.primary { background: #58a6ff; border-color: #58a6ff; color: #0d1117; font-weight: 700; }
+  .dark .progress-bar { background: #21262d; border-radius: 6px; height: 8px; overflow: hidden; margin: 6px 0; }
+  .dark .progress-fill { height: 100%; background: #3fb950; border-radius: 6px; width: 67%; }
+  .dark .label-tag { background: #21262d; color: #8b949e; }
+
+  /* ===== 아이보리 테마 (새) ===== */
+  .ivory { background: #faf8f3; color: #2d2a24; padding: 16px; border-radius: 12px; border: 1px solid #e8e3d8; }
+  .ivory .header { background: #fff8ee; border-bottom: 1px solid #e8e3d8; padding: 14px 16px; text-align: center; border-radius: 8px 8px 0 0; margin: -16px -16px 16px; }
+  .ivory .header-title { font-size: 16px; font-weight: 700; color: #3b3526; }
+  .ivory .tabs { display: flex; gap: 4px; background: #f0ece3; border-radius: 8px; padding: 4px; margin-bottom: 12px; }
+  .ivory .tab { flex: 1; text-align: center; padding: 6px 2px; border-radius: 6px; font-size: 10px; color: #9e9585; cursor: pointer; }
+  .ivory .tab.active { background: #c07a3a; color: #fff; font-weight: 700; }
+  .ivory .card { background: #fff; border: 1px solid #e8e3d8; border-radius: 10px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .ivory .card-title { font-size: 12px; color: #9e9585; margin-bottom: 4px; }
+  .ivory .amount { font-size: 26px; font-weight: 700; color: #c07a3a; }
+  .ivory .chip { display: inline-block; background: #f4f1eb; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #2e7d4f; margin: 2px; }
+  .ivory .chip.red { color: #c0392b; }
+  .ivory .chip.blue { color: #2471a3; }
+  .ivory .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0ece3; font-size: 12px; }
+  .ivory .tx-cat { color: #9e9585; font-size: 11px; }
+  .ivory .tx-amount.plus { color: #2e7d4f; font-weight: 600; }
+  .ivory .tx-amount.minus { color: #c0392b; font-weight: 600; }
+  .ivory .tx-amount.save { color: #2471a3; font-weight: 600; }
+  .ivory .btn { background: #f4f1eb; border: 1px solid #e0dbd0; border-radius: 8px; color: #3b3526; font-size: 12px; padding: 8px 14px; cursor: pointer; margin-right: 6px; }
+  .ivory .btn.primary { background: #c07a3a; border-color: #c07a3a; color: #fff; font-weight: 700; }
+  .ivory .progress-bar { background: #f0ece3; border-radius: 6px; height: 8px; overflow: hidden; margin: 6px 0; }
+  .ivory .progress-fill { height: 100%; background: #2e7d4f; border-radius: 6px; width: 67%; }
+  .ivory .label-tag { background: #f4f1eb; color: #9e9585; }
+</style>
+</head>
+<body style="background:#e8e4dc">
+
+<div style="text-align:center;margin-bottom:24px">
+  <div style="font-size:20px;font-weight:700;color:#3b3526;margin-bottom:4px">🎨 테마 비교 미리보기</div>
+  <div style="font-size:12px;color:#7a7468">왼쪽: 현재 (다크) &nbsp;|&nbsp; 오른쪽: 아이보리 (새)</div>
+</div>
+
+<div class="row">
+
+  <!-- ===== 다크 ===== -->
+  <div class="col">
+    <div class="label label-tag" style="background:#21262d;color:#8b949e">현재 (다크 테마)</div>
+    <div class="dark">
+      <div class="header"><div class="header-title">한나의 가계부</div></div>
+      <div class="tabs">
+        <div class="tab active">내역</div>
+        <div class="tab">분석</div>
+        <div class="tab">카테고리</div>
+        <div class="tab">연예산</div>
+        <div class="tab">자산</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title">📊 6월 잔액</div>
+        <div class="amount">+1,240,000원</div>
+        <div style="margin-top:8px">
+          <span class="chip">↑ 수입 3,500,000</span>
+          <span class="chip red">↓ 지출 1,860,000</span>
+          <span class="chip blue">↓ 저축 400,000</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tx-row">
+          <div><div style="font-size:12px">점심 식사</div><div class="tx-cat">식비 · 6/8</div></div>
+          <div class="tx-amount minus">−12,000</div>
+        </div>
+        <div class="tx-row">
+          <div><div style="font-size:12px">급여</div><div class="tx-cat">수입 · 6/5</div></div>
+          <div class="tx-amount plus">+3,500,000</div>
+        </div>
+        <div class="tx-row">
+          <div><div style="font-size:12px">적금</div><div class="tx-cat">저축 · 6/5</div></div>
+          <div class="tx-amount save">−400,000</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:12px;margin-bottom:6px">🎯 순자산 목표 67% 달성</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div style="font-size:11px;color:#8b949e">현재 6.7억 / 목표 10억</div>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn primary">+ 내역 등록</button>
+        <button class="btn">이번 달 기록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 아이보리 ===== -->
+  <div class="col">
+    <div class="label label-tag" style="background:#f4f1eb;color:#9e9585">아이보리 테마 (새)</div>
+    <div class="ivory">
+      <div class="header"><div class="header-title">한나의 가계부</div></div>
+      <div class="tabs">
+        <div class="tab active">내역</div>
+        <div class="tab">분석</div>
+        <div class="tab">카테고리</div>
+        <div class="tab">연예산</div>
+        <div class="tab">자산</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title">📊 6월 잔액</div>
+        <div class="amount">+1,240,000원</div>
+        <div style="margin-top:8px">
+          <span class="chip">↑ 수입 3,500,000</span>
+          <span class="chip red">↓ 지출 1,860,000</span>
+          <span class="chip blue">↓ 저축 400,000</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tx-row">
+          <div><div style="font-size:12px">점심 식사</div><div class="tx-cat">식비 · 6/8</div></div>
+          <div class="tx-amount minus">−12,000</div>
+        </div>
+        <div class="tx-row">
+          <div><div style="font-size:12px">급여</div><div class="tx-cat">수입 · 6/5</div></div>
+          <div class="tx-amount plus">+3,500,000</div>
+        </div>
+        <div class="tx-row">
+          <div><div style="font-size:12px">적금</div><div class="tx-cat">저축 · 6/5</div></div>
+          <div class="tx-amount save">−400,000</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:12px;margin-bottom:6px">🎯 순자산 목표 67% 달성</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div style="font-size:11px;color:#9e9585">현재 6.7억 / 목표 10억</div>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn primary">+ 내역 등록</button>
+        <button class="btn">이번 달 기록</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="background:#fff;border:1px solid #e0dbd0;border-radius:10px;padding:16px;max-width:640px;margin:0 auto">
+  <div style="font-size:13px;font-weight:700;color:#3b3526;margin-bottom:10px">아이보리 테마 색상 정리</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px">
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#faf8f3;border:1px solid #ccc"></div> 배경 #faf8f3</div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#fff8ee;border:1px solid #ccc"></div> 헤더 #fff8ee</div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#ffffff;border:1px solid #ccc"></div> 카드 #ffffff</div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#c07a3a"></div> 포인트 #c07a3a (따뜻한 갈색)</div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#2e7d4f"></div> 수입 #2e7d4f (진초록)</div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#c0392b"></div> 지출 #c0392b (진빨강)</div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:4px;background:#2471a3"></div> 저축 #2471a3 (진파랑)</div>
+  </div>
+</div>
+
+</body>
+</html>

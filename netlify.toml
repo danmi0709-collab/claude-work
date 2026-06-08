@@ -1,0 +1,5 @@
+[build]
+  publish = "."
+
+[build.environment]
+  GIT_SUBMODULE_STRATEGY = "none"

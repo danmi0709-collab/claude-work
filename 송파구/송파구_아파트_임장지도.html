@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>송파구 아파트 임장지도</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#222; overflow:hidden; }
+#wrap { position:relative; display:inline-block; cursor:grab; }
+#wrap:active { cursor:grabbing; }
+#map-img { display:block; }
+.apt-label {
+  position:absolute;
+  font-family:'Malgun Gothic','나눔고딕',sans-serif;
+  font-size:13px;
+  font-weight:bold;
+  line-height:1.5;
+  padding:3px 7px;
+  border-radius:5px;
+  border-width:2px;
+  border-style:solid;
+  white-space:nowrap;
+  box-shadow:1px 2px 5px rgba(0,0,0,0.3);
+  cursor:pointer;
+  transform:translate(-50%,-50%);
+  pointer-events:auto;
+}
+#tooltip {
+  position:fixed;
+  background:rgba(0,0,0,0.82);
+  color:#fff;
+  padding:7px 12px;
+  border-radius:7px;
+  font-family:'Malgun Gothic',sans-serif;
+  font-size:13px;
+  line-height:1.6;
+  pointer-events:none;
+  display:none;
+  z-index:999;
+}
+#legend {
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  background:rgba(255,255,255,0.93);
+  padding:10px 14px;
+  border-radius:8px;
+  border:2px solid #aaa;
+  font-family:'Malgun Gothic',sans-serif;
+  font-size:13px;
+  line-height:1.8;
+  box-shadow:2px 2px 6px rgba(0,0,0,0.2);
+  z-index:998;
+}
+#controls {
+  position:fixed;
+  top:16px;
+  right:16px;
+  z-index:998;
+  display:flex;
+  gap:8px;
+}
+.ctrl-btn {
+  background:white;
+  border:2px solid #888;
+  border-radius:6px;
+  font-size:20px;
+  width:38px; height:38px;
+  cursor:pointer;
+  font-weight:bold;
+  box-shadow:1px 1px 4px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+<body>
+<div id="controls">
+  <button class="ctrl-btn" onclick="zoom(1.2)">+</button>
+  <button class="ctrl-btn" onclick="zoom(0.83)">−</button>
+  <button class="ctrl-btn" onclick="resetView()" title="초기화">⌂</button>
+</div>
+
+<div id="legend">
+  <b>준공 연식</b><br>
+  <span style="color:#c0392b">■</span> ~1989 구축<br>
+  <span style="color:#d35400">■</span> 1990~1999<br>
+  <span style="color:#1e8449">■</span> 2000~2009<br>
+  <span style="color:#1a5276">■</span> 2010~2019<br>
+  <span style="color:#6c3483">■</span> 2020년~
+</div>
+
+<div id="tooltip"></div>
+<div id="wrap">
+  <img id="map-img" src="송파구이미지2.png" draggable="false">
+</div>
+
+<script>
+const RAW_W = 4845, RAW_H = 5111;
+const markers = [
+{x:2025.4,y:2953.0,label:"가락한신<br>93' 256^",popup:"가락한신<br>1993.04 · 256세대",color:"#d35400",bg:"#fef0e0"},
+{x:1787.1,y:2998.5,label:"가락우성1차<br>86' 838^",popup:"가락우성1차<br>1986.12 · 838세대",color:"#c0392b",bg:"#fde8e8"},
+{x:2740.2,y:3265.4,label:"거여1단지<br>97' 1,004^",popup:"거여1단지<br>1997.11 · 1,004세대",color:"#d35400",bg:"#fef0e0"},
+{x:2819.6,y:3208.6,label:"거여2단지효성,동아<br>97' 478^",popup:"거여2단지효성,동아<br>1997.12 · 478세대",color:"#d35400",bg:"#fef0e0"},
+{x:1866.5,y:3577.7,label:"현대1차<br>92' 497^",popup:"현대1차<br>1992.03 · 497세대",color:"#d35400",bg:"#fef0e0"},
+{x:2720.3,y:3350.5,label:"현대3차<br>93' 303^",popup:"현대3차<br>1993.07 · 303세대",color:"#d35400",bg:"#fef0e0"},
+{x:1938.0,y:3464.1,label:"문정푸르지오1차<br>99' 233^",popup:"문정푸르지오1차<br>1999.1 · 233세대",color:"#d35400",bg:"#fef0e0"},
+{x:1866.5,y:3577.7,label:"현대1차<br>84' 514^",popup:"현대1차<br>1984.11 · 514세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1509.1,y:2385.1,label:"한양1차<br>83' 576^",popup:"한양1차<br>1983.12 · 576세대",color:"#c0392b",bg:"#fde8e8"},
+{x:945.2,y:1601.4,label:"장미1차<br>79' 2,100^",popup:"장미1차<br>1979.01 · 2,100세대",color:"#c0392b",bg:"#fde8e8"},
+{x:973.0,y:1590.1,label:"한신잠실코아<br>88' 493^",popup:"한신잠실코아<br>1988.12 · 493세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1540.9,y:738.3,label:"씨티극동<br>98' 442^",popup:"씨티극동<br>1998.05 · 442세대",color:"#d35400",bg:"#fef0e0"},
+{x:1489.2,y:692.8,label:"현대리버빌1지구<br>99' 557^",popup:"현대리버빌1지구<br>1999.11 · 557세대",color:"#d35400",bg:"#fef0e0"},
+{x:1965.8,y:3078.0,label:"극동<br>84' 555^",popup:"극동<br>1984.12 · 555세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1914.2,y:3038.2,label:"가락금호<br>97' 915^",popup:"가락금호<br>1997.08 · 915세대",color:"#d35400",bg:"#fef0e0"},
+{x:1858.6,y:3112.0,label:"가락대림<br>88' 443^",popup:"가락대림<br>1988.11 · 443세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1806.9,y:3151.8,label:"미륭<br>86' 435^",popup:"미륭<br>1986.11 · 435세대",color:"#c0392b",bg:"#fde8e8"},
+{x:2017.4,y:3066.6,label:"삼환가락<br>84' 648^",popup:"삼환가락<br>1984.11 · 648세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1846.7,y:2987.1,label:"가락쌍용1차<br>97' 2,064^",popup:"가락쌍용1차<br>1997.03 · 2,064세대",color:"#d35400",bg:"#fef0e0"},
+{x:2045.2,y:3021.2,label:"프라자<br>85' 672^",popup:"프라자<br>1985.07 · 672세대",color:"#c0392b",bg:"#fde8e8"},
+{x:2680.6,y:3293.8,label:"현대2차<br>92' 280^",popup:"현대2차<br>1992.04 · 280세대",color:"#d35400",bg:"#fef0e0"},
+{x:1949.9,y:3662.9,label:"건영<br>96' 545^",popup:"건영<br>1996.1 · 545세대",color:"#d35400",bg:"#fef0e0"},
+{x:1906.2,y:3475.5,label:"문정시영<br>89' 1,316^",popup:"문정시영<br>1989.03 · 1,316세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1886.4,y:3396.0,label:"올림픽훼밀리타운<br>88' 4,494^",popup:"올림픽훼밀리타운<br>1988.12 · 4,494세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1707.7,y:2129.6,label:"대림가락(방이대림)<br>85' 480^",popup:"대림가락(방이대림)<br>1985.02 · 480세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1755.3,y:2055.8,label:"코오롱<br>91' 758^",popup:"코오롱<br>1991.1 · 758세대",color:"#d35400",bg:"#fef0e0"},
+{x:1727.5,y:2089.8,label:"잠실(방이)한양3차<br>85' 252^",popup:"잠실(방이)한양3차<br>1985.02 · 252세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1608.4,y:863.2,label:"미성맨션<br>85' 378^",popup:"미성맨션<br>1985.01 · 378세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1469.4,y:2470.3,label:"가락삼익맨숀<br>84' 936^",popup:"가락삼익맨숀<br>1984.12 · 936세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1461.4,y:2430.6,label:"호수임광<br>95' 227^",popup:"호수임광<br>1995.1 · 227세대",color:"#d35400",bg:"#fef0e0"},
+{x:1548.8,y:2413.5,label:"한양2차<br>84' 744^",popup:"한양2차<br>1984.1 · 744세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1429.7,y:2441.9,label:"현대<br>97' 243^",popup:"현대<br>1997.05 · 243세대",color:"#d35400",bg:"#fef0e0"},
+{x:1509.1,y:726.9,label:"현대리버빌2차<br>99' 384^",popup:"현대리버빌2차<br>1999.11 · 384세대",color:"#d35400",bg:"#fef0e0"},
+{x:1965.8,y:2453.3,label:"대림<br>88' 749^",popup:"대림<br>1988.12 · 749세대",color:"#c0392b",bg:"#fde8e8"},
+{x:2025.4,y:2487.4,label:"삼성<br>89' 215^",popup:"삼성<br>1989.05 · 215세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1926.1,y:2510.1,label:"상아2차<br>88' 750^",popup:"상아2차<br>1988.11 · 750세대",color:"#c0392b",bg:"#fde8e8"},
+{x:2005.5,y:2527.1,label:"가락상아<br>84' 226^",popup:"가락상아<br>1984.12 · 226세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1945.9,y:2498.7,label:"가락우창<br>85' 264^",popup:"가락우창<br>1985.1 · 264세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1977.7,y:2544.1,label:"현대2,3,4차<br>84' 1,316^",popup:"현대2,3,4차<br>1984.12 · 1,316세대",color:"#c0392b",bg:"#fde8e8"},
+{x:2057.1,y:2430.6,label:"현대백조<br>97' 438^",popup:"현대백조<br>1997.01 · 438세대",color:"#d35400",bg:"#fef0e0"},
+{x:1775.2,y:2072.8,label:"올림픽선수기자촌<br>88' 5,540^",popup:"올림픽선수기자촌<br>1988.06 · 5,540세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1084.2,y:1976.3,label:"아시아선수촌<br>86' 1,356^",popup:"아시아선수촌<br>1986.06 · 1,356세대",color:"#c0392b",bg:"#fde8e8"},
+{x:873.7,y:1987.6,label:"우성4차<br>83' 555^",popup:"우성4차<br>1983.08 · 555세대",color:"#c0392b",bg:"#fde8e8"},
+{x:675.1,y:2101.2,label:"잠실주공5단지<br>78' 3,930^",popup:"잠실주공5단지<br>1978.04 · 3,930세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1429.7,y:2441.9,label:"현대<br>90' 336^",popup:"현대<br>1990.08 · 336세대",color:"#d35400",bg:"#fef0e0"},
+{x:1461.4,y:766.7,label:"동아한가람<br>95' 782^",popup:"동아한가람<br>1995.06 · 782세대",color:"#d35400",bg:"#fef0e0"},
+{x:1608.4,y:863.2,label:"미성맨션<br>85' 275^",popup:"미성맨션<br>1985.06 · 275세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1568.7,y:806.4,label:"쌍용<br>94' 417^",popup:"쌍용<br>1994.07 · 417세대",color:"#d35400",bg:"#fef0e0"},
+{x:1965.8,y:3078.0,label:"극동<br>87' 415^",popup:"극동<br>1987.12 · 415세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1429.7,y:823.4,label:"풍납현대<br>95' 708^",popup:"풍납현대<br>1995.11 · 708세대",color:"#d35400",bg:"#fef0e0"},
+{x:1501.2,y:795.0,label:"한강극동<br>95' 895^",popup:"한강극동<br>1995.07 · 895세대",color:"#d35400",bg:"#fef0e0"},
+{x:2879.2,y:3168.8,label:"거여4단지<br>97' 546^",popup:"거여4단지<br>1997.07 · 546세대",color:"#d35400",bg:"#fef0e0"},
+{x:2938.8,y:3134.7,label:"거여5단지<br>97' 605^",popup:"거여5단지<br>1997.07 · 605세대",color:"#d35400",bg:"#fef0e0"},
+{x:1926.1,y:2975.7,label:"가락쌍용2차<br>99' 492^",popup:"가락쌍용2차<br>1999.1 · 492세대",color:"#d35400",bg:"#fef0e0"},
+{x:2700.5,y:3322.1,label:"우방1차<br>99' 257^",popup:"우방1차<br>1999.09 · 257세대",color:"#d35400",bg:"#fef0e0"},
+{x:1826.8,y:2998.5,label:"가락동부센트레빌<br>01' 264^",popup:"가락동부센트레빌<br>2001.11 · 264세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2065.1,y:3492.5,label:"문정래미안<br>04' 1,696^",popup:"문정래미안<br>2004.09 · 1,696세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2899.1,y:3021.2,label:"우방<br>02' 247^",popup:"우방<br>2002.11 · 247세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2938.8,y:3066.6,label:"마천금호어울림1차<br>02' 215^",popup:"마천금호어울림1차<br>2002.03 · 215세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:1568.7,y:2453.3,label:"송파삼성래미안<br>01' 845^",popup:"송파삼성래미안<br>2001.12 · 845세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:1064.3,y:2527.1,label:"잠실한솔<br>00' 393^",popup:"잠실한솔<br>2000.1 · 393세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:984.9,y:1635.5,label:"장미2차<br>79' 1,302^",popup:"장미2차<br>1979.08 · 1,302세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1469.4,y:908.6,label:"신성노바빌<br>00' 236^",popup:"신성노바빌<br>2000.09 · 236세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:1818.9,y:2941.7,label:"송파동부센트레빌<br>04' 206^",popup:"송파동부센트레빌<br>2004.12 · 206세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:933.3,y:1902.4,label:"갤러리아팰리스(주상복합)<br>05' 741^",popup:"갤러리아팰리스(주상복합)<br>2005.01 · 741세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:818.1,y:1959.2,label:"우성1,2,3차<br>81' 1,842^",popup:"우성1,2,3차<br>1981.12 · 1,842세대",color:"#c0392b",bg:"#fde8e8"},
+{x:1985.7,y:3009.8,label:"송파성원상떼빌(주상복합)<br>06' 324^",popup:"송파성원상떼빌(주상복합)<br>2006.06 · 324세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:965.0,y:1629.8,label:"롯데캐슬골드(주상복합)<br>05' 400^",popup:"롯데캐슬골드(주상복합)<br>2005.11 · 400세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:1866.5,y:2964.4,label:"가락쌍용스윗닷홈3차(101~104동)<br>05' 206^",popup:"가락쌍용스윗닷홈3차(101~104동)<br>2005.02 · 206세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:865.7,y:2237.5,label:"레이크팰리스<br>06' 2,678^",popup:"레이크팰리스<br>2006.12 · 2,678세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:762.5,y:2231.8,label:"트리지움<br>07' 3,696^",popup:"트리지움<br>2007.08 · 3,696세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:603.6,y:2203.4,label:"잠실엘스<br>08' 5,678^",popup:"잠실엘스<br>2008.09 · 5,678세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:834.0,y:1817.2,label:"파크리오<br>08' 6,864^",popup:"파크리오<br>2008.08 · 6,864세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:695.0,y:2243.2,label:"리센츠<br>08' 5,563^",popup:"리센츠<br>2008.07 · 5,563세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:1906.2,y:2924.6,label:"래미안파크팰리스<br>07' 919^",popup:"래미안파크팰리스<br>2007.11 · 919세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:3117.5,y:4032.0,label:"송파파인타운10단지<br>07' 545^",popup:"송파파인타운10단지<br>2007.08 · 545세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:3157.2,y:4060.4,label:"송파파인타운11단지<br>07' 333^",popup:"송파파인타운11단지<br>2007.07 · 333세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:3010.3,y:4020.7,label:"송파파인타운7단지<br>07' 537^",popup:"송파파인타운7단지<br>2007.12 · 537세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:3077.8,y:4003.6,label:"송파파인타운9단지<br>07' 796^",popup:"송파파인타운9단지<br>2007.12 · 796세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2899.1,y:3918.4,label:"송파파인타운3단지<br>08' 625^",popup:"송파파인타운3단지<br>2008.07 · 625세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:3042.0,y:4043.4,label:"송파파인타운8단지<br>08' 700^",popup:"송파파인타운8단지<br>2008.1 · 700세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2938.8,y:3986.6,label:"송파파인타운5단지<br>08' 455^",popup:"송파파인타운5단지<br>2008.08 · 455세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2859.3,y:3946.8,label:"송파파인타운2단지<br>08' 374^",popup:"송파파인타운2단지<br>2008.09 · 374세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2970.5,y:3958.2,label:"송파파인타운6단지<br>08' 564^",popup:"송파파인타운6단지<br>2008.08 · 564세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:905.5,y:1862.7,label:"잠실더샵스타파크(주상복합)<br>08' 213^",popup:"잠실더샵스타파크(주상복합)<br>2008.09 · 213세대",color:"#1e8449",bg:"#e8f8ee"},
+{x:2819.6,y:3975.2,label:"송파파인타운1단지<br>10' 221^",popup:"송파파인타운1단지<br>2010.01 · 221세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2839.5,y:3055.2,label:"송파파크데일1단지<br>11' 812^",popup:"송파파크데일1단지<br>2011.01 · 812세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2879.2,y:3078.0,label:"송파파크데일2단지<br>11' 889^",popup:"송파파크데일2단지<br>2011.01 · 889세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:873.7,y:1828.6,label:"잠실푸르지오월드마크(주상복합)<br>13' 288^",popup:"잠실푸르지오월드마크(주상복합)<br>2013.06 · 288세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:1517.0,y:2470.3,label:"래미안송파파인탑<br>12' 794^",popup:"래미안송파파인탑<br>2012.01 · 794세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2819.6,y:3833.2,label:"송파더센트레<br>13' 1,139^",popup:"송파더센트레<br>2013.11 · 1,139세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2859.3,y:3804.9,label:"송파위례24단지꿈에그린<br>13' 1,810^",popup:"송파위례24단지꿈에그린<br>2013.11 · 1,810세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2978.5,y:3873.0,label:"위례신도시송파푸르지오<br>15' 549^",popup:"위례신도시송파푸르지오<br>2015.01 · 549세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:3018.2,y:3850.3,label:"위례아이파크<br>15' 400^",popup:"위례아이파크<br>2015.11 · 400세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:1977.7,y:3549.3,label:"송파파크하비오푸르지오<br>16' 999^",popup:"송파파크하비오푸르지오<br>2016.09 · 999세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:3050.0,y:3890.0,label:"위례아이파크2차<br>16' 495^",popup:"위례아이파크2차<br>2016.05 · 495세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:3057.9,y:3918.4,label:"송파와이즈더샵<br>16' 390^",popup:"송파와이즈더샵<br>2016.02 · 390세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:3089.7,y:3901.4,label:"힐스테이트송파위례<br>16' 490^",popup:"힐스테이트송파위례<br>2016.07 · 490세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:3117.5,y:3929.8,label:"위례중앙푸르지오<br>16' 311^",popup:"위례중앙푸르지오<br>2016.12 · 311세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:1957.9,y:2964.4,label:"헬리오시티<br>18' 9,510^",popup:"헬리오시티<br>2018.12 · 9,510세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2104.8,y:2544.1,label:"송파호반베르디움더퍼스트<br>18' 220^",popup:"송파호반베르디움더퍼스트<br>2018.02 · 220세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2124.7,y:2583.9,label:"송파두산위브<br>19' 269^",popup:"송파두산위브<br>2019.02 · 269세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:1390.0,y:795.0,label:"잠실올림픽공원아이파크<br>19' 697^",popup:"잠실올림픽공원아이파크<br>2019.11 · 697세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2065.1,y:2527.1,label:"송파레미니스1단지<br>17' 575^",popup:"송파레미니스1단지<br>2017.11 · 575세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2084.9,y:2566.9,label:"송파레미니스2단지<br>18' 818^",popup:"송파레미니스2단지<br>2018.06 · 818세대",color:"#1a5276",bg:"#e8f2fd"},
+{x:2998.3,y:3180.2,label:"e편한세상송파파크센트럴<br>21' 1,199^",popup:"e편한세상송파파크센트럴<br>2021.05 · 1,199세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:2938.8,y:3095.0,label:"송파시그니처롯데캐슬<br>21' 1,945^",popup:"송파시그니처롯데캐슬<br>2021.12 · 1,945세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:3057.9,y:3123.4,label:"송파레이크파크호반써밋2차<br>22' 700^",popup:"송파레이크파크호반써밋2차<br>2022.01 · 700세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:3026.1,y:3151.8,label:"송파레이크파크호반써밋1차<br>22' 689^",popup:"송파레이크파크호반써밋1차<br>2022.01 · 689세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:3097.6,y:3191.5,label:"송파위례리슈빌<br>21' 494^",popup:"송파위례리슈빌<br>2021.1 · 494세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:2970.5,y:3237.0,label:"포레나송파<br>21' 1,282^",popup:"포레나송파<br>2021.08 · 1,282세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:2918.9,y:3265.4,label:"송파레이크힐<br>21' 394^",popup:"송파레이크힐<br>2021.08 · 394세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:2144.5,y:2555.5,label:"송파더플래티넘<br>24' 328^",popup:"송파더플래티넘<br>2024.01 · 328세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:1997.6,y:3560.7,label:"힐스테이트e편한세상문정<br>24' 1,265^",popup:"힐스테이트e편한세상문정<br>2024.08 · 1,265세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:2057.1,y:3594.7,label:"문정역마에스트로(주상복합)<br>24' 438^",popup:"문정역마에스트로(주상복합)<br>2024.01 · 438세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:1608.4,y:2430.6,label:"잠실더샵루벤<br>25' 327^",popup:"잠실더샵루벤<br>2025.03 · 327세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:853.8,y:1749.1,label:"잠실래미안아이파크<br>25' 2,678^",popup:"잠실래미안아이파크<br>2025.12 · 2,678세대",color:"#6c3483",bg:"#f2e8fd"},
+{x:881.6,y:1771.8,label:"잠실르엘<br>26' 1,865^",popup:"잠실르엘<br>2026.01 · 1,865세대",color:"#6c3483",bg:"#f2e8fd"}
+];
+
+const wrap = document.getElementById('wrap');
+const img = document.getElementById('map-img');
+const tooltip = document.getElementById('tooltip');
+
+let scale = 1, offX = 0, offY = 0;
+let dragging = false, startX, startY, startOX, startOY;
+
+function applyTransform() {
+  wrap.style.transform = `translate(${offX}px,${offY}px) scale(${scale})`;
+  wrap.style.transformOrigin = '0 0';
+}
+
+function initScale() {
+  const ws = window.innerWidth / RAW_W;
+  const hs = window.innerHeight / RAW_H;
+  scale = Math.min(ws, hs);
+  offX = (window.innerWidth - RAW_W * scale) / 2;
+  offY = (window.innerHeight - RAW_H * scale) / 2;
+  applyTransform();
+}
+
+function zoom(factor) {
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const nx = (cx - offX) / scale, ny = (cy - offY) / scale;
+  scale *= factor;
+  offX = cx - nx * scale;
+  offY = cy - ny * scale;
+  applyTransform();
+}
+
+function resetView() { initScale(); }
+
+// drag
+wrap.addEventListener('mousedown', e => {
+  dragging = true; startX = e.clientX; startY = e.clientY;
+  startOX = offX; startOY = offY;
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  offX = startOX + e.clientX - startX;
+  offY = startOY + e.clientY - startY;
+  applyTransform();
+});
+window.addEventListener('mouseup', () => dragging = false);
+
+// 휠 줌
+window.addEventListener('wheel', e => {
+  e.preventDefault();
+  const f = e.deltaY < 0 ? 1.12 : 0.89;
+  const nx = (e.clientX - offX) / scale, ny = (e.clientY - offY) / scale;
+  scale *= f;
+  offX = e.clientX - nx * scale;
+  offY = e.clientY - ny * scale;
+  applyTransform();
+}, {passive:false});
+
+// 마커 생성
+markers.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'apt-label';
+  el.innerHTML = m.label;
+  el.style.left = m.x + 'px';
+  el.style.top = m.y + 'px';
+  el.style.color = m.color;
+  el.style.background = m.bg;
+  el.style.borderColor = m.color;
+
+  el.addEventListener('mouseenter', e => {
+    tooltip.innerHTML = m.popup;
+    tooltip.style.display = 'block';
+  });
+  el.addEventListener('mousemove', e => {
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY - 10) + 'px';
+  });
+  el.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+  wrap.appendChild(el);
+});
+
+initScale();
+</script>
+</body>
+</html>

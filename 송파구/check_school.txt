@@ -1,0 +1,50 @@
+시트 목록: ['학교별 주요 통계', '용어정의 및 학제별 제공여부', '요약정보']
+
+=== 시트: 학교별 주요 통계 ===
+행수(전체): 2121
+열수: 95
+첫 10행:
+                                                                                                 0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21              22  23  24  25  26  27  28           29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49             50       51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92              93   94
+0                                                                 ■ 2025년 하반기 유·초·중등 교육통계 학교별 주요 현황 NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+1                                                                                               NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+2                                                  1) 조사 기준일 : 2025. 10. 1. / 자료 추출일: 2026. 01. 06. NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+3                                                        2) 학교수 세는 방법 : 본분교칼럼에서 분교장 제외, 상태칼럼에서 폐교제외 NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+4                                                          3) 2021년부터 학급의 기준이 인가 학급에서 편성 학급으로 변경됨.  NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+5                                                                       4) 각 항목별 정의는 용어 정의 sheet 참조 NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+6                             * 출처 : 한국교육개발원 교육통계센터(국가교육통계센터) 교육통계 데이터베이스 (https://kess.kedi.re.kr) NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+7  * 본 통계는 교육기본통계조사 결과로, 조사기준일에 따른 통계이며 공표 후 변동 없음. 유사 자료인 정보공시 자료는 수시로 수정 가능한 공시 자료로 본 통계와 다를 수 있음 NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+8                                                                                               NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN NaN NaN NaN NaN NaN NaN          NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN            NaN      NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN             NaN  NaN
+9                                                                                          학교 기본 정보 NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN  학년별 편성 학급수 (개) NaN NaN NaN NaN NaN NaN  학년별 학생수 (명) NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN  학급당 \n학생수 (명)  교원수 (명) NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN  교원1인당\n학생수 (명)   직원
+
+=== 시트: 용어정의 및 학제별 제공여부 ===
+행수(전체): 13
+열수: 12
+첫 10행:
+         0        1   2                                                                                                                                   3                                 4    5    6    7    8    9     10    11
+0       NaN      NaN NaN                                                                                                                                 정 의  학제별 제공 여부\n(미공시 또는 미조사 항목 제공 불가)  NaN  NaN  NaN  NaN  NaN   NaN   NaN
+1       NaN      NaN NaN                                                                                                                                 NaN                                 유    초    중    고    특   각종  고등공민  고등기술
+2  학교 기본 정보      NaN NaN                                                                                                                    유치원은 2018년부터 조사됨                                 ○    ○    ○    ○    ○    ○     ○     ○
+3       학급수       전체 NaN  학급수 기준이 인가학급(2020년까지) 에서 편성학급(2021년부터)으로 변경됨.\n※ 각종학교(2011년부터) 및 특수학교는 각 학교별로 초·중·고(특수학교는 유치원과정과 전공과과정 포함)과정이 존재, 본 자료에서는 전체 값만 제공                                 ○    ○    ○    ○    ○    ○     ○     ○
+4       NaN  학년별 학급수 NaN                                                                                                           ※ 유치원은 학급수가 학년별로 나뉘어지지 않음                                 X    ○    ○    ○    X    X     ○     ○
+5       학생수       전체 NaN                                                          ※ 각종학교 및 특수학교는 각 학교별로 초·중·고(특수학교는 유치원과정과 전공과과정 포함)과정이 존재, 본 자료에서는 전체 값만 제공                                 ○    ○    ○    ○    ○    ○     ○     ○
+6       NaN  학년별 학생수 NaN                                                                                                           ※ 유치원은 학생수가 학년별로 나뉘어지지 않음                                 X    ○    ○    ○    X    X     ○     ○
+7   학급당 학생수      NaN NaN                                                                                                               학급당 학생수 = 학생수 / 편성학급수                                 ○    ○    ○    ○    ○    ○     ○     ○
+8       교원수     정규교원 NaN                                                                                    교(원)장, 교(원)감 포함 재직교원수(휴직교원  포함, 퇴직교원 및 강사 제외) 기준                                 ○    ○    ○    ○    ○    ○     ○     ○
+9       NaN    기간제교원 NaN                                                                                    교원자격증을 가진 자로서, 일정 기간을 정하여 임용된 교원(휴직자 포함, 퇴직자 제외)                                 ○    ○    ○    ○    ○    ○     ○     ○
+
+=== 시트: 요약정보 ===
+행수(전체): 16
+열수: 5
+첫 10행:
+                                                         0             1              2              3            4
+0                                * 학교수 세는 방법 : 분교장 제외/폐교제외           NaN            NaN            NaN          NaN
+1                                           * 피벗 테이블 사용 방법           NaN            NaN            NaN          NaN
+2                           아래의 표를 클릭하면 오른쪽에 피벗 설정 상자가 나타남           NaN            NaN            NaN          NaN
+3  원하는 칼럼을 선택하여 오른쪽 하단의 값부분에 끌어가면 행레이블에 선택된 구분대로 합계가 보이며,            NaN            NaN            NaN          NaN
+4                 합계가 아닌 개수가 보이는 경우에는 클릭하여 값필드설정에서 바꿀 수 있음           NaN            NaN            NaN          NaN
+5                                                      NaN           NaN            NaN            NaN          NaN
+6                                                      NaN           NaN            NaN            NaN          NaN
+7                                                    행 레이블  합계 : 편성학급수_계  합계 : 학생수_총계_계  합계 : 교원수_총계_계  합계 : 전체직원_계
+8                                                     각종학교           212           3291            457          144
+9                                                   고등기술학교             2             11              2            2
+

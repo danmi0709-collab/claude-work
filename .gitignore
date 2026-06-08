@@ -1,0 +1,12 @@
+# 대용량 PPT/Excel 파일 - OneDrive에서 관리
+*.pptx
+*.xlsx
+*.xls
+*.pdf
+
+# 임시 파일
+~$*
+*.tmp
+.claude/worktrees/
+
+.vercel
