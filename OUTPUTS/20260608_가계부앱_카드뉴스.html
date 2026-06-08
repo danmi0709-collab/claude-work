@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가계부 앱 카드뉴스</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #e8e3d8;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    padding: 40px 20px;
+  }
+  .guide {
+    text-align: center;
+    font-size: 13px;
+    color: #7a7468;
+    margin-bottom: 32px;
+    line-height: 1.8;
+  }
+  .guide strong { color: #c07a3a; }
+
+  /* 카드 공통 */
+  .card {
+    width: 1080px;
+    height: 1080px;
+    background: #faf8f3;
+    margin: 0 auto 48px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 64px 72px;
+  }
+
+  /* 상단 장식선 */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, #c07a3a, #e2b96b, #c07a3a);
+  }
+
+  /* 카드 번호 배지 */
+  .card-num {
+    position: absolute;
+    top: 32px; right: 48px;
+    font-size: 13px;
+    color: #b5ae9f;
+    letter-spacing: 1px;
+  }
+
+  /* 로고 영역 */
+  .card-logo {
+    font-size: 13px;
+    color: #c07a3a;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-logo::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8e3d8;
+  }
+
+  /* 아이콘 */
+  .card-icon {
+    font-size: 72px;
+    margin-bottom: 28px;
+    line-height: 1;
+  }
+
+  /* 제목 */
+  .card-title {
+    font-size: 52px;
+    font-weight: 800;
+    color: #2d2a24;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .card-title .accent { color: #c07a3a; }
+
+  /* 부제목 */
+  .card-subtitle {
+    font-size: 26px;
+    color: #9e9585;
+    margin-bottom: 52px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* 섹션 제목 */
+  .section-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #c07a3a;
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+  }
+
+  /* 탭 제목 */
+  .tab-title {
+    font-size: 44px;
+    font-weight: 800;
+    color: #2d2a24;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .tab-badge {
+    display: inline-block;
+    background: #c07a3a;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 36px;
+  }
+
+  /* 항목 리스트 */
+  .items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+  }
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px 28px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e8e3d8;
+  }
+  .item-icon {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .item-body {}
+  .item-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2d2a24;
+    margin-bottom: 6px;
+  }
+  .item-desc {
+    font-size: 18px;
+    color: #7a7468;
+    line-height: 1.6;
+  }
+
+  /* 타입 배지들 */
+  .type-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .type-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .type-badge .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* 수평 구분선 */
+  .divider {
+    height: 1px;
+    background: #e8e3d8;
+    margin: 28px 0;
+  }
+
+  /* 하이라이트 박스 */
+  .highlight {
+    background: #fff8ee;
+    border: 1px solid #e8d4bb;
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-size: 19px;
+    color: #6b4c26;
+    line-height: 1.7;
+  }
+  .highlight strong { color: #c07a3a; }
+
+  /* 팁 박스 */
+  .tip {
+    background: #f0f7f4;
+    border-left: 4px solid #2e7d4f;
+    border-radius: 0 12px 12px 0;
+    padding: 18px 22px;
+    font-size: 18px;
+    color: #2e7d4f;
+    line-height: 1.7;
+    margin-top: auto;
+  }
+
+  /* 표 */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 19px;
+  }
+  .tbl th {
+    background: #f4f1eb;
+    color: #9e9585;
+    font-weight: 700;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  .tbl td {
+    padding: 16px 16px;
+    border-bottom: 1px solid #f0ece3;
+    color: #2d2a24;
+    vertical-align: top;
+  }
+  .tbl tr:last-child td { border-bottom: none; }
+
+  /* 진행바 */
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    color: #7a7468;
+    margin-bottom: 8px;
+  }
+  .progress-label strong { color: #2d2a24; }
+  .progress-bar {
+    height: 14px;
+    background: #f4f1eb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 8px;
+  }
+
+  /* 순자산 목표 미리보기 */
+  .goal-box {
+    background: #fff;
+    border: 1px solid #e8e3d8;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .goal-amount {
+    font-size: 36px;
+    font-weight: 800;
+    color: #c07a3a;
+    margin-bottom: 16px;
+  }
+  .goal-sub { font-size: 18px; color: #9e9585; margin-bottom: 20px; }
+
+  /* 하단 로고 */
+  .card-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 72px;
+    right: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #b5ae9f;
+  }
+
+  /* 표지 전용 */
+  .cover-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* 숫자 강조 */
+  .big-num {
+    font-size: 140px;
+    font-weight: 900;
+    color: #f0ece3;
+    line-height: 1;
+    position: absolute;
+    right: 48px;
+    bottom: 100px;
+    font-feature-settings: "tnum";
+  }
+
+  @media (max-width: 1120px) {
+    .card {
+      width: 100%;
+      height: auto;
+      min-height: 100vw;
+      padding: 40px 32px;
+    }
+    .card-title { font-size: 36px; }
+    .tab-title { font-size: 30px; }
+    .big-num { font-size: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="guide">
+  각 카드를 <strong>스크린샷</strong>으로 찍어서 공유하세요 (카카오톡, 인스타그램 등)<br>
+  PC에서는 F12 → 화면 캡처, 모바일에서는 길게 스크롤하며 캡처
+</div>
+
+<!-- ===== 카드 1: 표지 ===== -->
+<div class="card">
+  <div class="card-num">01 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="cover-body">
+    <div class="card-icon">📒</div>
+    <div class="card-title">내 손 안의<br><span class="accent">스마트 가계부</span></div>
+    <div class="card-subtitle">
+      설치 없이 브라우저에서 바로 사용<br>
+      내 데이터는 내 기기에만 저장됩니다
+    </div>
+    <div class="highlight">
+      <strong>6가지 탭</strong>으로 구성된 완전한 개인 재무 관리<br>
+      내역 · 분석 · 카테고리 · 연예산 · 자산 · 구독
+    </div>
+  </div>
+  <div class="big-num">01</div>
+  <div class="card-footer">
+    <span>가계부 앱 사용 설명서</span>
+    <span>2026.06</span>
+  </div>
+</div>
+
+<!-- ===== 카드 2: 시작하기 ===== -->
+<div class="card">
+  <div class="card-num">02 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Getting Started</div>
+  <div class="tab-title">시작하기</div>
+  <div class="tab-badge">처음 사용자 필독</div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">📁</div>
+      <div class="item-body">
+        <div class="item-title">파일 방식</div>
+        <div class="item-desc">받은 <strong>가계부_공유용.html</strong> 파일을 저장<br>→ 크롬 브라우저로 열기</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">🔖</div>
+      <div class="item-body">
+        <div class="item-title">URL 방식</div>
+        <div class="item-desc">링크를 <strong>북마크에 저장</strong>해두고 사용</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">🌙</div>
+      <div class="item-body">
+        <div class="item-title">테마 변경</div>
+        <div class="item-desc">헤더 오른쪽 <strong>🌙 / ☀️ 버튼</strong>으로<br>아이보리 ↔ 다크 모드 전환</div>
+      </div>
+    </div>
+  </div>
+  <div class="tip">💡 크롬 브라우저 권장. 항상 같은 브라우저에서 열어야 데이터가 유지돼요.</div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 3: 내역 탭 ===== -->
+<div class="card">
+  <div class="card-num">03 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 1</div>
+  <div class="tab-title">📋 내역 탭</div>
+  <div class="tab-badge">수입 · 지출 · 저축 기록</div>
+  <div class="type-row">
+    <div class="type-badge" style="background:#f0f7f4;color:#2e7d4f">
+      <div class="dot" style="background:#2e7d4f"></div> ↑ 수입
+    </div>
+    <div class="type-badge" style="background:#fdf0ef;color:#c0392b">
+      <div class="dot" style="background:#c0392b"></div> ↓ 지출
+    </div>
+    <div class="type-badge" style="background:#edf4fb;color:#2471a3">
+      <div class="dot" style="background:#2471a3"></div> ↓ 저축
+    </div>
+  </div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">✏️</div>
+      <div class="item-body">
+        <div class="item-title">기록 방법</div>
+        <div class="item-desc">유형 선택 → 날짜 · 분류 · 금액 · 메모 입력 → 저장</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">📱</div>
+      <div class="item-body">
+        <div class="item-title">카카오페이 자동 입력</div>
+        <div class="item-desc">카카오페이 알림 문자를 붙여넣기하면<br>날짜 · 금액 · 가맹점이 자동으로 채워져요</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">◀ ▶</div>
+      <div class="item-body">
+        <div class="item-title">월 이동</div>
+        <div class="item-desc">화살표 버튼으로 지난달 · 다음달 내역 확인</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 4: 저축·부채상환 ===== -->
+<div class="card">
+  <div class="card-num">04 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 1 — 저축 상세</div>
+  <div class="tab-title">💙 저축 &amp;<br>부채상환 기록</div>
+  <div class="divider"></div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">💙</div>
+      <div class="item-body">
+        <div class="item-title">저축 유형이란?</div>
+        <div class="item-desc">지출과 똑같이 잔액에서 빠지지만,<br>분석 탭에서 <strong>저축률로 별도 집계</strong>됩니다<br><span style="color:#9e9585;font-size:16px">적금 · 펀드·ETF · 주식 · 연금 · 기타저축</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">💸</div>
+      <div class="item-body">
+        <div class="item-title">부채상환 자동 연동</div>
+        <div class="item-desc">저축 → <strong>💸 부채상환</strong> 선택<br>→ 자산 탭에 등록된 부채가 목록에 표시<br>→ 기록하면 부채 잔액이 <strong>자동으로 감소</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="highlight">
+    ⚠️ 연동하려면 내역 탭의 부채명과<br>자산 탭의 부채명이 <strong>똑같이</strong> 입력되어야 해요
+  </div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 5: 분석 탭 ===== -->
+<div class="card">
+  <div class="card-num">05 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 2</div>
+  <div class="tab-title">🔍 분석 탭</div>
+  <div class="tab-badge">이달 재무 리포트</div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">📊</div>
+      <div class="item-body">
+        <div class="item-title">이번 달 요약</div>
+        <div class="item-desc">총 수입 / 총 지출 / 총 저축 / 잔액을 한눈에</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">💰</div>
+      <div class="item-body">
+        <div class="item-title">저축률 분석</div>
+        <div class="item-desc">수입 대비 저축 비율 + 연예산 목표 저축률과 비교</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">📈</div>
+      <div class="item-body">
+        <div class="item-title">그룹별 예산 분석</div>
+        <div class="item-desc">고정 · 변동 · 교육 · 비정기 그룹별<br>예산 대비 실적 + 수입 대비 비중(%)</div>
+      </div>
+    </div>
+  </div>
+  <div class="tip">💡 ◀ ▶ 버튼으로 지난달 분석도 확인할 수 있어요</div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 6: 카테고리·연예산 ===== -->
+<div class="card">
+  <div class="card-num">06 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 3 &amp; 4</div>
+  <div class="tab-title">🍩 카테고리 &amp;<br>📅 연예산 탭</div>
+  <div class="divider"></div>
+
+  <div style="font-size:17px;font-weight:700;color:#c07a3a;margin-bottom:14px">카테고리 탭</div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
+    <div class="progress-wrap">
+      <div class="progress-label"><strong>고정지출</strong><span>72% 사용</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:72%;background:#e2b96b"></div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><strong>변동지출</strong><span>45% 사용</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:45%;background:#2e7d4f"></div></div>
+    </div>
+  </div>
+  <div style="font-size:17px;font-weight:700;color:#c07a3a;margin-bottom:14px">연예산 탭 — 수식 입력 지원</div>
+  <table class="tbl">
+    <tr><th>입력</th><th>결과</th></tr>
+    <tr><td>22만</td><td style="color:#c07a3a;font-weight:700">220,000원</td></tr>
+    <tr><td>30*12</td><td style="color:#c07a3a;font-weight:700">360,000원</td></tr>
+    <tr><td>150만*6</td><td style="color:#c07a3a;font-weight:700">9,000,000원</td></tr>
+  </table>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 7: 자산 탭 ① 목표 ===== -->
+<div class="card">
+  <div class="card-num">07 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 5</div>
+  <div class="tab-title">🏦 자산 탭 ①</div>
+  <div class="tab-badge">순자산 목표 달성률</div>
+
+  <div class="goal-box">
+    <div class="goal-sub">🎯 순자산 목표</div>
+    <div class="goal-amount">목표 10억 → 현재 67% 달성</div>
+    <div class="progress-bar" style="height:16px;margin-bottom:12px">
+      <div class="progress-fill" style="width:67%;background:#c07a3a"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:17px;color:#9e9585">
+      <span>현재 6.7억</span><span>목표까지 3.3억 남음</span>
+    </div>
+  </div>
+
+  <div class="items" style="gap:16px">
+    <div class="item">
+      <div class="item-icon">1️⃣</div>
+      <div class="item-body">
+        <div class="item-title">목표 설정</div>
+        <div class="item-desc">자산 탭 맨 위 금액 입력 → 저장 (또는 Enter)</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">🎨</div>
+      <div class="item-body">
+        <div class="item-title">달성률 색상</div>
+        <div class="item-desc">
+          <span style="color:#2471a3;font-weight:700">0~49%</span> 파란색 &nbsp;
+          <span style="color:#e2b96b;font-weight:700">50~99%</span> 노란색 &nbsp;
+          <span style="color:#2e7d4f;font-weight:700">100%</span> 초록색 🎉
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 8: 자산 탭 ② 히스토리 ===== -->
+<div class="card">
+  <div class="card-num">08 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 5</div>
+  <div class="tab-title">🏦 자산 탭 ②</div>
+  <div class="tab-badge">순자산 추이 차트 · 자산 관리</div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">📈</div>
+      <div class="item-body">
+        <div class="item-title">순자산 추이 차트</div>
+        <div class="item-desc"><strong>"이번 달 기록"</strong> 버튼 → 현재 순자산 자동 저장<br>2개월 이상 쌓이면 꺾은선 차트 자동 표시<br><span style="color:#9e9585;font-size:16px">매월 1회 기록 권장</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">💰</div>
+      <div class="item-body">
+        <div class="item-title">자산 유형 6가지</div>
+        <div class="item-desc">
+          💵 현금·예금 &nbsp; 🏦 적금<br>
+          📈 주식·ETF &nbsp; 🏠 부동산<br>
+          🏛️ 연금·퇴직금 &nbsp; 💼 기타
+        </div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">💸</div>
+      <div class="item-body">
+        <div class="item-title">부채 목록</div>
+        <div class="item-desc">대출 등록 → 내역 탭 부채상환 기록 시 잔액 자동 감소</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 9: 구독 탭 ===== -->
+<div class="card">
+  <div class="card-num">09 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Tab 6</div>
+  <div class="tab-title">🔄 구독 탭</div>
+  <div class="tab-badge">구독 자동 등록</div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">➕</div>
+      <div class="item-body">
+        <div class="item-title">구독 등록</div>
+        <div class="item-desc">서비스명 · 금액 · 결제일 · 주기 입력<br><span style="color:#9e9585;font-size:16px">월간 / 3개월 / 6개월 / 연간</span></div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">⚡</div>
+      <div class="item-body">
+        <div class="item-title">자동 등록</div>
+        <div class="item-desc">매달 1일, 이번 달 결제되는 구독이<br>내역 탭에 <strong>자동으로 등록</strong>됩니다</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">🔔</div>
+      <div class="item-body">
+        <div class="item-title">결제 임박 알림</div>
+        <div class="item-desc">결제일 <strong>7일 이내</strong> 항목은 알림 표시</div>
+      </div>
+    </div>
+  </div>
+  <div class="tip">💡 넷플릭스·유튜브프리미엄 등 구독 서비스를 한 곳에서 관리하세요</div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+<!-- ===== 카드 10: 데이터 관리 ===== -->
+<div class="card">
+  <div class="card-num">10 / 10</div>
+  <div class="card-logo">💰 가계부 앱 사용 설명서</div>
+  <div class="section-label">Data Management</div>
+  <div class="tab-title">💾 데이터 관리</div>
+  <div class="tab-badge">백업 · 복원</div>
+  <div class="items">
+    <div class="item">
+      <div class="item-icon">📥</div>
+      <div class="item-body">
+        <div class="item-title">백업 (내보내기)</div>
+        <div class="item-desc">내역 탭 하단 → <strong>📥 데이터 백업</strong><br>→ JSON 파일로 저장</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">📤</div>
+      <div class="item-body">
+        <div class="item-title">복원 (가져오기)</div>
+        <div class="item-desc">내역 탭 하단 → <strong>📤 데이터 복원</strong><br>→ 백업 파일 선택</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-icon">⚠️</div>
+      <div class="item-body">
+        <div class="item-title">주의사항</div>
+        <div class="item-desc">브라우저 데이터 삭제 시 내역이 사라져요<br><strong>한 달에 한 번 백업</strong>을 권장합니다</div>
+      </div>
+    </div>
+  </div>
+  <div class="highlight">
+    기능 추가·수정 요청은 공유해준 분께 말씀해 주세요 😊
+  </div>
+  <div class="card-footer"><span>가계부 앱 사용 설명서</span><span>2026.06</span></div>
+</div>
+
+</body>
+</html>
