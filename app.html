@@ -11946,6 +11946,22 @@ function renderMonthly() {
 // 초기화
 applyTabConfig();
 
+// ── URL hash 일회성 관리 명령 ──
+(function handleHashCommand() {
+  if (location.hash === '#cleanort5to12') {
+    history.replaceState(null, null, location.pathname);
+    const covers = getOrtCovers();
+    const titles = getOrtTitles();
+    ['5','6','7','8','9','10p','11p','12p'].forEach(lvId => {
+      Object.keys(covers).forEach(k => { if (k.startsWith('ort_'+lvId+'_')) delete covers[k]; });
+      Object.keys(titles).forEach(k => { if (k.startsWith('ort_'+lvId+'_')) delete titles[k]; });
+    });
+    save('ortCovers', covers);
+    save('ortTitles', titles);
+    setTimeout(() => showToast('Stage 5~12 사진·제목 삭제 완료 🗑️'), 500);
+  }
+})();
+
 // ── 자동 백업 (Phase 1) ──
 updateBackupStatusUI();
 checkDailyAutoBackup();
