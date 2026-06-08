@@ -6596,12 +6596,14 @@ function renderOrtList() {
           const dispTitle  = (titles[bookId] !== undefined) ? titles[bookId] : defaultTitle;
           const dispNum    = (nums[bookId]   !== undefined) ? nums[bookId]   : (lv.id + '-' + lvSeq);
 
+          const noLocalSrc = ['5','6','7','8','9','10p','11p','12p'].includes(lv.id);
           const localSrc = `ort-covers/ort/${lv.id}_${ci}_${bi}.jpg`;
           const hasCover = !!coverSrc;
           return `<div data-book-id="${bookId}" style="border-radius:8px;overflow:hidden;border:2px solid ${allDone ? lv.color : '#e8e8e8'};background:white;${allDone ? 'opacity:0.6' : ''}">
             <div style="position:relative;padding-top:100%;background:${lv.color}18;overflow:hidden;cursor:pointer" onclick="openOrtCoverPicker('${bookId}')">
               ${hasCover
                 ? `<img class="ort-photo-img" src="${coverSrc}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover">`
+                : noLocalSrc ? ''
                 : `<img class="ort-photo-img" src="${localSrc}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
               }
               <div class="ort-photo-ph" style="position:absolute;inset:0;display:${hasCover ? 'none' : 'none'};flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none">
