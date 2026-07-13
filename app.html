@@ -2295,6 +2295,11 @@
 <!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+<!-- Firebase 실시간 동기화 -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
 <script>
 // ============================================================
 // 유틸리티
@@ -2306,6 +2311,7 @@ const today = () => {
 const todayWeekday = () => ['일','월','화','수','목','금','토'][new Date().getDay()];
 
 const load = (key, def) => { try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; } };
+
 const save = (key, val) => {
   try {
     localStorage.setItem(key, JSON.stringify(val));
@@ -2313,7 +2319,7 @@ const save = (key, val) => {
       const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
       meta[key] = Date.now();
       localStorage.setItem('_syncMeta', JSON.stringify(meta));
-      scheduleUpload();
+      scheduleUpload(key);
     }
     return true;
   }
@@ -4933,7 +4939,6 @@ function setGcalConnected(token) {
   }).catch(() => {});
   fetchCalendarEvents();
   renderSchedGcal();
-  downloadAndMerge().catch(() => setSyncStatus('offline'));
 }
 
 function gcalAutoConnect(silent) {
@@ -4943,7 +4948,7 @@ function gcalAutoConnect(silent) {
   try {
     const client = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
-      scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.appdata',
+      scope: 'https://www.googleapis.com/auth/calendar.readonly',
       hint: hintEmail,
       login_hint: hintEmail,
       prompt: silent ? '' : undefined,
@@ -7700,271 +7705,173 @@ function deleteSelfSnapshot(id) {
 }
 
 // ============================================================
-// ☁️ Google Drive 자동 동기화
+// ☁️ Firebase 실시간 동기화 (폰↔PC 즉시 반영)
 // ============================================================
-let driveUploadTimer = null;
+// ⬇️ Firebase 콘솔(console.firebase.google.com)에서 받은 설정값을 여기에 붙여넣기
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDMlWN3fginc5IRLcp7lrkuajlWHKhQwz8",
+  authDomain: "bissa-sync.firebaseapp.com",
+  databaseURL: "https://bissa-sync-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "bissa-sync",
+  storageBucket: "bissa-sync.firebasestorage.app",
+  messagingSenderId: "147900638424",
+  appId: "1:147900638424:web:882d4c582c5e8a9c8da3ad"
+};
+
+let fbUser = null, fbRef = null;
+const DEVICE_ID = (() => {
+  let d = localStorage.getItem('_deviceId');
+  if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('_deviceId', d); }
+  return d;
+})();
 
 function setSyncStatus(status) {
   const el = document.getElementById('syncStatusIcon');
   if (!el) return;
   const icons   = { syncing: '🔄', synced: '☁️', offline: '⚠️' };
-  const labels  = { syncing: '동기화 중', synced: '동기화됨', offline: '오프라인' };
-  const colors  = { syncing: '#4285f4', synced: '#aaa', offline: '#f59e0b' };
+  const labels  = { syncing: '동기화 중', synced: '실시간 동기화 중', offline: '오프라인' };
+  const colors  = { syncing: '#4285f4', synced: '#4caf50', offline: '#f59e0b' };
   el.textContent = icons[status] + ' ' + labels[status];
   el.style.color = colors[status];
 }
 
-let _uploadPending = false;
-function scheduleUpload() {
-  if (!gcalToken) return;
-  _uploadPending = true;
-  if (driveUploadTimer) clearTimeout(driveUploadTimer);
-  driveUploadTimer = setTimeout(() => { _uploadPending = false; uploadToDrive(); }, 1500);
+function fbConfigured() {
+  return typeof firebase !== 'undefined' && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('붙여넣기');
 }
 
-// 화면을 끄거나 탭을 벗어날 때, 대기 중인 업로드를 즉시 실행 (백그라운드 전환 전에 시작)
-function flushUploadNow() {
-  if (!gcalToken) return;
-  if (driveUploadTimer) { clearTimeout(driveUploadTimer); driveUploadTimer = null; }
-  if (_uploadPending) { _uploadPending = false; uploadToDrive(); }
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    flushUploadNow();
-  } else if (document.visibilityState === 'visible' && gcalToken) {
-    // 사진 파일 선택 중이면 Drive 다운로드 건너뜀 (새 사진 덮어쓰기 방지)
-    if (_photoPickerActive) return;
-    // 앱으로 돌아오면 최신 데이터 자동 받기 (토큰 만료 시 자동 갱신)
-    downloadAndMerge().catch(() => setSyncStatus('offline'));
+function ensureFbLoginBtn() {
+  let btn = document.getElementById('fbLoginBtn');
+  if (!btn) {
+    const anchor = document.getElementById('syncStatusIcon');
+    if (!anchor) return null;
+    btn = document.createElement('button');
+    btn.id = 'fbLoginBtn';
+    btn.textContent = '☁️ 동기화 로그인';
+    btn.style.cssText = 'display:none;font-size:11px;padding:3px 10px;border-radius:12px;border:1px solid #4285f4;color:#4285f4;background:#fff;margin-top:3px;cursor:pointer';
+    btn.onclick = fbLogin;
+    anchor.after(btn);
   }
-});
-window.addEventListener('pagehide', flushUploadNow);
-window.addEventListener('beforeunload', flushUploadNow);
-
-// 토큰 만료(401) 시 조용히 다시 받아오고 동기화 재시도
-let _tokenRefreshing = false;
-function refreshTokenAndResync() {
-  if (_tokenRefreshing) return;
-  _tokenRefreshing = true;
-  setSyncStatus('offline');
-  try {
-    gcalAutoConnect(true);  // 성공 시 setGcalConnected→downloadAndMerge가 자동 실행됨
-  } catch(e) {}
-  setTimeout(() => { _tokenRefreshing = false; }, 10000);
+  return btn;
 }
 
-async function uploadToDrive() {
-  if (!gcalToken) return;
-  setSyncStatus('syncing');
-  try {
-    const payload = {};
-    SYNC_KEYS.forEach(k => {
-      const v = load(k, null);
-      if (v !== null) payload[k] = v;
-    });
-    payload._syncMeta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
-
-    const fileId = load('driveFileId', null);
-    const body = JSON.stringify(payload);
-
-    if (fileId) {
-      const res = await fetch(
-        `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': 'Bearer ' + gcalToken,
-            'Content-Type': 'application/json'
-          },
-          body,
-          keepalive: body.length < 60000  // 작은 데이터는 백그라운드 전환돼도 전송 유지
-        }
-      );
-      if (res.status === 401) { refreshTokenAndResync(); return; }
-      if (!res.ok) throw new Error('upload failed: ' + res.status);
+function initFirebaseSync() {
+  if (!fbConfigured()) return;
+  try { firebase.initializeApp(FIREBASE_CONFIG); } catch(e) {}
+  firebase.auth().onAuthStateChanged(user => {
+    fbUser = user;
+    const btn = ensureFbLoginBtn();
+    if (user) {
+      if (btn) btn.style.display = 'none';
+      startFbSync();
     } else {
-      const meta = JSON.stringify({ name: 'bissa-data.json', parents: ['appDataFolder'] });
-      const boundary = '-------bissa_boundary';
-      const delimiter = '\r\n--' + boundary + '\r\n';
-      const closeDelimiter = '\r\n--' + boundary + '--';
-      const multipartBody =
-        delimiter + 'Content-Type: application/json\r\n\r\n' + meta +
-        delimiter + 'Content-Type: application/json\r\n\r\n' + body +
-        closeDelimiter;
-
-      const res = await fetch(
-        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + gcalToken,
-            'Content-Type': 'multipart/related; boundary=' + boundary
-          },
-          body: multipartBody
-        }
-      );
-      if (!res.ok) throw new Error('create failed: ' + res.status);
-      const data = await res.json();
-      if (data.id) {
-        localStorage.setItem('driveFileId', JSON.stringify(data.id));
-      }
-    }
-    setSyncStatus('synced');
-  } catch(e) {
-    console.warn('Drive 업로드 실패:', e);
-    setSyncStatus('offline');
-    showToast('Drive 오류: ' + e.message.substring(0, 80));
-  }
-}
-
-const DRIVE_ARRAY_KEYS = new Set([
-  'routines','books','memos','movies','stories','drafts',
-  'gratitude','reflections','todos','routineLog','futureAdvices','selfSnapshots',
-  'cultures','youtubeUploads','hallOfFame','giveUpShelf','quotes','worries','brainDumps','letters'
-]);
-
-// 병합 시 데이터를 쓰면서 _syncMeta를 '진짜 수정 시각'으로 유지 (현재시각으로 덮어쓰지 않음 → 상대방 수정 무시 방지)
-function _writeMerged(key, val, ts) {
-  localStorage.setItem(key, JSON.stringify(val));
-  const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
-  meta[key] = ts;
-  localStorage.setItem('_syncMeta', JSON.stringify(meta));
-}
-
-// 같은 id를 가진 두 항목을 데이터 손실 없이 합침 (primary 우선, 빈 값은 secondary로 채움, 진행도는 큰 값)
-const _PROGRESS_FIELDS = ['current','currentPage','progress','page','readPage'];
-function mergeItems(primary, secondary) {
-  if (!primary) return secondary;
-  if (!secondary) return primary;
-  if (typeof primary !== 'object' || typeof secondary !== 'object') return primary;
-  const out = { ...secondary, ...primary }; // primary가 우선
-  // primary의 값이 비어있으면 secondary 값으로 채움 (예: 표지/사진이 한쪽에만 있을 때)
-  for (const k in secondary) {
-    const pv = primary[k];
-    if (pv === undefined || pv === null || pv === '') out[k] = secondary[k];
-  }
-  // 읽은 쪽수 같은 진행도는 더 큰 값 사용 (뒤로 돌아가지 않도록)
-  _PROGRESS_FIELDS.forEach(f => {
-    const hasA = primary[f] !== undefined && primary[f] !== null && primary[f] !== '';
-    const hasB = secondary[f] !== undefined && secondary[f] !== null && secondary[f] !== '';
-    if (hasA || hasB) {
-      const a = Number(primary[f]), b = Number(secondary[f]);
-      if (!isNaN(a) || !isNaN(b)) out[f] = Math.max(isNaN(a) ? -Infinity : a, isNaN(b) ? -Infinity : b);
+      setSyncStatus('offline');
+      if (btn) btn.style.display = 'inline-block';
     }
   });
-  return out;
 }
 
-async function downloadAndMerge() {
-  if (!gcalToken) return;
-  setSyncStatus('syncing');
-  try {
-    let fileId = load('driveFileId', null);
-    if (!fileId) {
-      const searchRes = await fetch(
-        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'bissa-data.json'&fields=files(id)",
-        { headers: { 'Authorization': 'Bearer ' + gcalToken } }
-      );
-      if (searchRes.status === 401) { refreshTokenAndResync(); return; }
-      if (!searchRes.ok) { const t = await searchRes.text(); throw new Error('search ' + searchRes.status + ': ' + t.substring(0,200)); }
-      const searchData = await searchRes.json();
-      if (searchData.files && searchData.files.length > 0) {
-        fileId = searchData.files[0].id;
-        localStorage.setItem('driveFileId', JSON.stringify(fileId));
-      } else {
-        setSyncStatus('synced');
-        await uploadToDrive();
-        return;
-      }
+function fbLogin() {
+  if (!fbConfigured()) { showToast('동기화 설정이 아직 없어요'); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(e => {
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+      firebase.auth().signInWithRedirect(provider);
+    } else {
+      showToast('로그인 실패: ' + (e.message || '').substring(0, 60));
     }
+  });
+}
 
-    const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-      { headers: { 'Authorization': 'Bearer ' + gcalToken } }
-    );
-    if (res.status === 401) { refreshTokenAndResync(); return; }
-    if (!res.ok) throw new Error('download failed: ' + res.status);
-    const remote = await res.json();
+// ── 업로드: 저장 후 0.3초 안에 전송 ──
+const _fbPending = new Set();
+let _fbTimer = null;
+function scheduleUpload(key) {
+  try { if (!key || !SYNC_KEYS.includes(key)) return; } catch(e) { return; }
+  _fbPending.add(key);
+  if (_fbTimer) clearTimeout(_fbTimer);
+  _fbTimer = setTimeout(flushFb, 300);
+}
 
-    const localMeta  = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
-    const remoteMeta = remote._syncMeta || {};
-    let dataChanged = false;
-    let needUpload = false;  // 로컬에만 있는 변경을 Drive로 올려야 하는지
+function flushFb() {
+  if (_fbTimer) { clearTimeout(_fbTimer); _fbTimer = null; }
+  if (!fbUser || !fbRef || _fbPending.size === 0) return;
+  setSyncStatus('syncing');
+  const updates = {};
+  _fbPending.forEach(k => {
+    updates[k] = { v: localStorage.getItem(k) ?? 'null', t: firebase.database.ServerValue.TIMESTAMP, src: DEVICE_ID };
+  });
+  _fbPending.clear();
+  fbRef.update(updates)
+    .then(() => setSyncStatus('synced'))
+    .catch(e => { console.warn('동기화 업로드 실패:', e); setSyncStatus('offline'); });
+}
+window.addEventListener('pagehide', flushFb);
 
-    SYNC_KEYS.forEach(key => {
-      const localVal  = load(key, null);
-      const remoteVal = remote[key];
-      if (remoteVal === undefined) {
-        // 원격엔 없고 로컬엔 있는 키 → 올려야 함
-        if (localVal !== null) needUpload = true;
-        return;
-      }
-
-      const localTime  = localMeta[key]  || 0;
-      const remoteTime = remoteMeta[key] || 0;
-
-      const beforeStr = JSON.stringify(localVal);
-
-      if (DRIVE_ARRAY_KEYS.has(key) && Array.isArray(remoteVal)) {
-        const base   = Array.isArray(localVal) ? localVal : [];
-        const primaryArr = remoteTime >= localTime ? remoteVal : base; // 시각상 우선
-        const secondaryArr = remoteTime >= localTime ? base : remoteVal;
-        // id 있는 항목: 양쪽에 있으면 데이터 손실 없이 필드 병합 / 한쪽만 있으면 그대로
-        const sById = {};
-        const seenValues = new Set();
-        const valueItems = [];
-        const collectValue = (item) => {
-          const v = JSON.stringify(item);
-          if (!seenValues.has(v)) { seenValues.add(v); valueItems.push(item); }
-        };
-        secondaryArr.forEach(it => { if (it && it.id != null) sById[it.id] = it; else collectValue(it); });
-        const byId = {};
-        const usedSecondary = new Set();
-        primaryArr.forEach(it => {
-          if (it && it.id != null) {
-            if (sById[it.id] !== undefined) { byId[it.id] = mergeItems(it, sById[it.id]); usedSecondary.add(String(it.id)); }
-            else byId[it.id] = it;
-          } else collectValue(it);
-        });
-        // primary에 없고 secondary에만 있는 id 항목 추가
-        Object.keys(sById).forEach(id => { if (!usedSecondary.has(String(id))) byId[id] = sById[id]; });
-        const merged = [...Object.values(byId), ...valueItems];
-        const mergedStr = JSON.stringify(merged);
-        if (mergedStr !== beforeStr) { _writeMerged(key, merged, Math.max(localTime, remoteTime)); dataChanged = true; }
-        if (mergedStr !== JSON.stringify(remoteVal)) needUpload = true;  // Drive에 없는 내용 포함 → 올려야 함
+// ── 다운로드 + 실시간 감지 ──
+function startFbSync() {
+  setSyncStatus('syncing');
+  fbRef = firebase.database().ref('users/' + fbUser.uid + '/data');
+  fbRef.once('value').then(snap => {
+    const remote = snap.val() || {};
+    const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
+    let changed = false;
+    Object.entries(remote).forEach(([k, o]) => {
+      if (!o || typeof o.v !== 'string' || !SYNC_KEYS.includes(k)) return;
+      const localTime = meta[k] || 0;
+      if ((o.t || 0) >= localTime) {
+        if (localStorage.getItem(k) !== o.v) { localStorage.setItem(k, o.v); changed = true; }
+        meta[k] = o.t || 0;
       } else {
-        // 로컬에 아예 없으면(빈 값) 타임스탬프 상관없이 원격 데이터 받기
-        const localMissing = localVal === null || localVal === undefined
-          || (Array.isArray(localVal) && localVal.length === 0)
-          || (typeof localVal === 'object' && !Array.isArray(localVal) && Object.keys(localVal).length === 0);
-        if ((remoteTime > localTime || localMissing) && JSON.stringify(remoteVal) !== beforeStr) {
-          _writeMerged(key, remoteVal, Math.max(localTime, remoteTime));
-          dataChanged = true;
-        } else if (!localMissing && JSON.stringify(remoteVal) !== beforeStr) {
-          // 로컬이 더 최신(또는 같은 시각인데 내용 다름) → Drive로 올려야 함
-          needUpload = true;
-        }
+        _fbPending.add(k); // 로컬이 더 최신 → 올림
       }
     });
-
-    // 로컬에만 있는 변경사항을 Drive로 올림 (다른 기기가 받을 수 있도록)
-    if (needUpload) { try { await uploadToDrive(); } catch(e) {} }
-
+    // 로컬에만 있는 키는 올림
+    SYNC_KEYS.forEach(k => { if (localStorage.getItem(k) !== null && remote[k] === undefined) _fbPending.add(k); });
+    localStorage.setItem('_syncMeta', JSON.stringify(meta));
+    flushFb();
     setSyncStatus('synced');
-    // 데이터가 실제로 바뀐 경우에만 화면 갱신 (한 번만 — 무한 새로고침 방지)
-    if (dataChanged && !window._syncReloaded) {
-      window._syncReloaded = true;
-      showToast('☁️ 동기화 완료! 화면 갱신 중...');
-      setTimeout(() => location.reload(), 800);
-    } else {
-      showToast('☁️ 동기화 완료!');
-    }
-  } catch(e) {
-    console.warn('Drive 다운로드 실패:', e);
-    setSyncStatus('offline');
-    showToast('Drive 오류: ' + e.message.substring(0, 80));
-  }
+    if (changed) softRefresh();
+    // 실시간 변경 감지 시작
+    fbRef.on('child_changed', onFbRemoteChange);
+    fbRef.on('child_added', onFbRemoteChange);
+  }).catch(e => { console.warn('동기화 다운로드 실패:', e); setSyncStatus('offline'); });
+  // 연결 상태 표시
+  firebase.database().ref('.info/connected').on('value', s => {
+    if (fbUser) setSyncStatus(s.val() === true ? 'synced' : 'offline');
+  });
 }
+
+function onFbRemoteChange(snap) {
+  const k = snap.key, o = snap.val();
+  if (!o || o.src === DEVICE_ID || typeof o.v !== 'string') return;
+  try { if (!SYNC_KEYS.includes(k)) return; } catch(e) { return; }
+  if (localStorage.getItem(k) === o.v) return;
+  localStorage.setItem(k, o.v);
+  const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
+  meta[k] = o.t || Date.now();
+  localStorage.setItem('_syncMeta', JSON.stringify(meta));
+  softRefresh();
+}
+
+// 다른 기기의 변경을 받으면 화면 갱신 (입력 중이면 방해하지 않고 대기)
+let _softRefreshTimer = null;
+function softRefresh() {
+  if (_softRefreshTimer) clearTimeout(_softRefreshTimer);
+  _softRefreshTimer = setTimeout(() => {
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) { softRefresh(); return; }
+    const active = document.querySelector('.tab.active');
+    if (active && active.dataset.tab) sessionStorage.setItem('_lastTab', active.dataset.tab);
+    location.reload();
+  }, 1000);
+}
+
+// 새로고침 후 보던 탭 복원 + 동기화 시작
+(function() {
+  const t = sessionStorage.getItem('_lastTab');
+  if (t) { sessionStorage.removeItem('_lastTab'); try { switchTab(t); } catch(e) {} }
+  initFirebaseSync();
+})();
 
 // ============================================================
 // 🔮 미래의 나
@@ -8227,8 +8134,7 @@ async function askFutureMe() {
 【미래의 나가 이룬 것들】
 ${profile.achievements}
 
-【현재 한나의 앱 기록 전체】
-
+【한나에 대해】
 ▸ 정체성: 소설가 지망생, 부동산 투자자, 육아맘
 ${profile.selfDesc ? '▸ 나를 한 줄로: ' + profile.selfDesc : ''}
 ${profile.child ? '▸ 아이: ' + profile.child : ''}
@@ -8236,66 +8142,18 @@ ${profile.writingGoal ? '▸ 글쓰기 목표: ' + profile.writingGoal : ''}
 ${profile.realty ? '▸ 부동산 현황: ' + profile.realty : ''}
 ${profile.etc ? '▸ 기타: ' + profile.etc : ''}
 
-▸ 글쓰기 집중 시간
-  - 이번 주: ${secsToMin(weekSecs)}분
-  - 이번 달: ${secsToMin(monthSecs)}분
-  - 읽은 단편소설: ${stories.length}편${recentStories ? ' (최근: ' + recentStories + ')' : ''}
-
-▸ 내가 쓴 습작 (${drafts.length}편)
-  ${draftSummary || '없음'}
-
-▸ 독서
-  - 완독 ${doneBooks.length}권 / 읽는 중 ${readingBooks.length}권 / 읽을 예정 ${plannedBooks.length}권
-  - 현재 읽고 있는 책:
-  ${readingDetail || '없음'}
-
-▸ 루틴
-  - 오늘 달성: ${todayDone}/${routines.length}개
-  - 이번 주 카테고리별:
-  ${routineDetail || '없음'}
-
-▸ 할일
-  - 완료 ${todoDone}개 / 미완료 ${todoPending}개
-
-▸ 영화 감상
-  - 총 ${movies.length}편${recentMovies ? ' (최근: ' + recentMovies + ')' : ''}
-
-▸ 최근 메모
-  ${recentMemoText || '없음'}
-
-▸ 최근 감사일기
-  ${recentGratitude || '없음'}
-
-▸ 최근 7일 기분
-  ${recentMoods || '기록 없음'}
-
-▸ 최근 수면 패턴
-  ${recentSleep || '기록 없음'}
-
-▸ 체중 추이 (최근 7일)
-  ${recentWeight || '기록 없음'}
-
-▸ 오늘 폰 사용시간
-  ${(load('phoneUsage', {})[today()] || '기록 없음')}
-
-▸ 최근 반성일기
-  ${recentRefl || '없음'}
-
-▸ 지금의 나 카드 (자기 탐색)
-  ${selfCardSummary}
-
 【조언 지침】
 - 말투: ${styleTone}
 - 길이: 300-500자
 - 형식: 지금의 나에게 직접 말걸기 ("한나야" 또는 "너")
-- 위 데이터에서 루틴·독서·글쓰기·수면·기분 등 여러 영역을 두루 살피고, 구체적 수치와 책 제목·루틴 항목 이름을 직접 언급할 것
-- 좋아진 것, 부족한 것, 당장 할 수 있는 한 가지를 반드시 포함할 것
+- 앱에 기록된 루틴·독서·할일 같은 일상 데이터는 언급하지 말 것. 대신 인생 전체를 보는 넓은 시야로, 미래의 내가 지나온 길을 돌아보며 조언할 것
+- 방향·마음가짐·당장 할 수 있는 한 가지를 포함할 것
 - 언어: 한국어`;
 
   const contextPart = context ? `\n\n【지금 한나의 상황 · 고민】\n${context}` : '';
   const userMessage = question
-    ? `한나가 묻고 싶은 게 있어: "${question}"${contextPart}\n\n위 데이터와 상황을 참고해서 이 질문에 맞춤 답변을 해줘.`
-    : `한나의 현재 앱 기록과 상황 전체를 보고, 지금 가장 필요한 조언을 구체적으로 해줘.${contextPart}`;
+    ? `한나가 묻고 싶은 게 있어: "${question}"${contextPart}\n\n미래의 나로서 이 질문에 답해줘.`
+    : `미래의 나로서, 지금의 한나에게 가장 필요한 조언을 해줘.${contextPart}`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
