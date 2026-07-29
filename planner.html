@@ -54,6 +54,9 @@
   .pick-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .placed-tag { font-size: 10px; color: #667eea; font-weight: 700; flex-shrink: 0; }
   .overdue-tag { font-size: 10px; color: #ef4444; font-weight: 700; flex-shrink: 0; }
+  .days-tag { font-size: 10px; color: #b6bacb; flex-shrink: 0; }
+  .date-tag { font-size: 10px; color: #999; flex-shrink: 0; }
+  .pick-item.not-today { background: #f5f6fa; }
   .drag-hint { font-size: 11px; color: #b6bacb; margin: 2px 0 8px; }
   .quick-add { display: flex; gap: 6px; margin-top: 8px; }
   .quick-add input {
@@ -86,6 +89,12 @@
   .plan-cell {
     display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 3px 6px;
     border-right: 1px solid #f0f1f7; position: relative; min-width: 0;
+  }
+  /* 20분 단위 연한 회색 구분선 */
+  .plan-cell, .do-cell {
+    background-image: linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1);
+    background-size: 1px 100%; background-repeat: no-repeat;
+    background-position: 33.33% 0, 66.66% 0;
   }
   .plan-cell.drag-over { background: #eef1ff; outline: 2px dashed #667eea; outline-offset: -2px; }
   .plan-cell .add-btn {
@@ -339,32 +348,35 @@ function placedHour(type, id) {
 // ============================================================
 function renderLeft() {
   const catNames = getCatNames();
-  // 루틴
-  const routines = load('routines', []).filter(r =>
-    !r.paused && isScheduledOn(r, viewDate) && !(r.skipDates || []).includes(viewDate));
+  // 루틴: 전부 표시 (오늘 예정인 것 먼저, 나머지는 요일 태그 표시)
+  const routines = load('routines', []).filter(r => !r.paused);
   const rl = document.getElementById('routineList');
   document.getElementById('routineCnt').textContent = routines.length ? `${routines.length}개` : '';
-  if (!routines.length) rl.innerHTML = '<div class="empty-note">오늘 예정된 루틴이 없어요</div>';
+  if (!routines.length) rl.innerHTML = '<div class="empty-note">루틴 탭에서 루틴을 만들어 보세요</div>';
   else {
     rl.innerHTML = CAT_DEFS.map(cat => {
       const list = routines.filter(r => (r.category || 'self') === cat.key);
       if (!list.length) return '';
+      list.sort((a,b) => (isScheduledOn(b, viewDate)?1:0) - (isScheduledOn(a, viewDate)?1:0));
       return `<div style="font-size:11px;font-weight:800;color:${cat.color};margin:8px 0 4px">${escHtml(catNames[cat.key])}</div>` +
         list.map(r => {
           const done = (r.doneDates || []).includes(viewDate);
           const ph = placedHour('r', r.id);
-          return `<div class="pick-item ${ph !== null ? 'placed' : ''} ${done ? 'done-item' : ''}" draggable="true"
+          const todaySched = isScheduledOn(r, viewDate) && !(r.skipDates || []).includes(viewDate);
+          const daysTag = todaySched ? '' : `<span class="days-tag">${escHtml((r.days || []).join('·'))}</span>`;
+          return `<div class="pick-item ${ph !== null ? 'placed' : ''} ${done ? 'done-item' : ''} ${todaySched ? '' : 'not-today'}" draggable="true"
             ondragstart="dragFromList(event,'r',${r.id})">
             <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRoutineDone(${r.id})" onclick="event.stopPropagation()">
             <span class="cat-dot" style="background:${cat.color}"></span>
             <span class="pick-text">${escHtml(r.text)}</span>
+            ${daysTag}
             ${ph !== null ? `<span class="placed-tag">${hourLabel(ph)}</span>` : ''}
           </div>`;
         }).join('');
     }).join('');
   }
-  // 할일
-  const todos = load('todos', []).filter(t => !t.done && (!t.date || t.date <= viewDate));
+  // 할일: 완료 안 된 것 전부 표시 (날짜 상관없이)
+  const todos = load('todos', []).filter(t => !t.done);
   todos.sort((a,b) => (b.star?1:0)-(a.star?1:0) || String(a.date||'9999').localeCompare(String(b.date||'9999')));
   const tl = document.getElementById('todoList');
   document.getElementById('todoCnt').textContent = todos.length ? `${todos.length}개` : '';
@@ -372,10 +384,12 @@ function renderLeft() {
   else tl.innerHTML = todos.map(t => {
     const ph = placedHour('t', t.id);
     const overdue = t.date && t.date < viewDate;
-    return `<div class="pick-item ${ph !== null ? 'placed' : ''}" draggable="true" ondragstart="dragFromList(event,'t',${t.id})">
+    const future = t.date && t.date > viewDate;
+    return `<div class="pick-item ${ph !== null ? 'placed' : ''} ${future ? 'not-today' : ''}" draggable="true" ondragstart="dragFromList(event,'t',${t.id})">
       <input type="checkbox" onchange="toggleTodoDone(${t.id})" onclick="event.stopPropagation()">
       <span class="pick-text">${t.star ? '⭐ ' : ''}${escHtml(t.text)}</span>
       ${overdue ? '<span class="overdue-tag">기한지남</span>' : ''}
+      ${future ? `<span class="date-tag">${t.date.slice(5).replace('-','/')}</span>` : ''}
       ${ph !== null ? `<span class="placed-tag">${hourLabel(ph)}</span>` : ''}
     </div>`;
   }).join('');
