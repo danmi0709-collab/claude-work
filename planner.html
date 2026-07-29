@@ -256,6 +256,24 @@
   .chip-menu-row .chip-menu-save:hover { background: #eef1ff; }
   .chip-menu-row .chip-menu-pin.on { background: #fff3cd; border-color: #e0b100; color: #8a5a00; }
 
+  /* 내 주간 고정 스케줄 */
+  .wf-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .wf-day { background: #fafbfe; border: 1.5px solid #eceef5; border-radius: 12px; padding: 8px; min-height: 60px; }
+  .wf-day-title { font-size: 12px; font-weight: 800; color: #555; text-align: center; margin-bottom: 8px; }
+  .wf-day-title.weekend { color: #e53935; }
+  .wf-item {
+    background: white; border-radius: 8px; padding: 6px 7px; margin-bottom: 5px;
+    border: 1.5px solid #f0f1f7; font-size: 11.5px;
+  }
+  .wf-item-time { font-weight: 800; }
+  .wf-item-name { color: #333; margin: 2px 0 4px; word-break: keep-all; }
+  .wf-item-unpin {
+    width: 100%; border: none; background: #f5f5f7; color: #999; border-radius: 6px;
+    font-size: 10px; padding: 3px 0; cursor: pointer; font-family: inherit;
+  }
+  .wf-item-unpin:hover { background: #fdecea; color: #e53935; }
+  .wf-empty { font-size: 11px; color: #c2c5d4; text-align: center; padding: 6px 0; }
+
   /* 토스트 */
   #toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -277,12 +295,28 @@
     </div>
     <button onclick="moveDate(1)">▶</button>
     <button onclick="goToday()" style="background:#667eea;color:white">오늘</button>
+    <input type="date" id="dateJumpInput" onchange="jumpToDate(this.value)" title="날짜 바로 이동"
+      style="border:1.5px solid #e2e4ec;background:#f8f9fc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12px;color:#555;cursor:pointer">
   </div>
+  <button onclick="openWeeklyFixed()" style="background:#fff3cd;border:1.5px solid #e0b100;color:#8a5a00;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📌 주간고정</button>
   <div style="text-align:right">
     <div id="syncStatusIcon" style="font-size:12px;color:#aaa">동기화 준비 중...</div>
     <button id="fbLoginBtn" onclick="fbLogin()" style="display:none;font-size:11px;padding:3px 10px;border-radius:12px;border:1px solid #4285f4;color:#4285f4;background:#fff;margin-top:3px;cursor:pointer;font-family:inherit">☁️ 동기화 로그인</button>
   </div>
 </header>
+
+<!-- 내 주간 고정 스케줄 (고정핀 걸린 루틴만 모아보기) -->
+<div id="weeklyFixedOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:80;align-items:center;justify-content:center;padding:20px"
+  onclick="if(event.target===this)closeWeeklyFixed()">
+  <div style="background:white;border-radius:16px;width:100%;max-width:960px;max-height:85vh;overflow-y:auto;padding:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-size:16px;font-weight:800;color:#333">📌 내 주간 고정 스케줄</div>
+      <button onclick="closeWeeklyFixed()" style="border:none;background:#f5f5f7;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;color:#666">✕</button>
+    </div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:14px">고정핀이 걸린 루틴만 요일별 시각 순으로 모아봤어요. 해제하면 그 이후부터만 사라지고 지난 기록은 그대로 남아요.</div>
+    <div id="weeklyFixedContent"></div>
+  </div>
+</div>
 
 <main>
   <!-- ── 왼쪽: 할일 + 루틴 ── -->
@@ -782,6 +816,52 @@ function openChipMenu(e, col, hour, idx) {
   menu.querySelector('.chip-menu-memo').focus();
 }
 
+// ── 내 주간 고정 스케줄 (고정핀 걸린 루틴만 모아보기) ──
+function openWeeklyFixed() {
+  renderWeeklyFixed();
+  document.getElementById('weeklyFixedOverlay').style.display = 'flex';
+}
+function closeWeeklyFixed() {
+  document.getElementById('weeklyFixedOverlay').style.display = 'none';
+}
+function renderWeeklyFixed() {
+  const DOWS = ['월', '화', '수', '목', '금', '토', '일'];
+  const routines = load('routines', []).filter(r => !r.paused && r.startTime);
+  const catNames = getCatNames();
+  const el = document.getElementById('weeklyFixedContent');
+
+  if (!routines.length) {
+    el.innerHTML = '<div class="empty-note">아직 고정핀을 꽂은 루틴이 없어요. 계획칸 루틴박스를 클릭해서 고정해보세요</div>';
+    return;
+  }
+
+  el.innerHTML = `<div class="wf-grid">${DOWS.map(dow => {
+    const isWeekend = dow === '토' || dow === '일';
+    const isWeekdayDow = !isWeekend;
+    const items = routines
+      .filter(r => (r.days || []).includes('매일') || (r.days || []).includes(dow) || ((r.days || []).includes('평일') && isWeekdayDow))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    return `<div class="wf-day">
+      <div class="wf-day-title ${isWeekend ? 'weekend' : ''}">${dow}</div>
+      ${items.length ? items.map(r => {
+        const cat = catOf(r.category || 'self');
+        return `<div class="wf-item" style="border-color:${cat.color}40">
+          <div class="wf-item-time" style="color:${cat.color}">${r.startTime}${r.durationMin ? ' · '+r.durationMin+'분' : ''}</div>
+          <div class="wf-item-name">${escHtml(r.text)}</div>
+          <button class="wf-item-unpin" onclick="unpinFromWeekly(${r.id})">고정 해제</button>
+        </div>`;
+      }).join('') : '<div class="wf-empty">—</div>'}
+    </div>`;
+  }).join('')}</div>`;
+}
+function unpinFromWeekly(id) {
+  const routines = load('routines', []).map(r => r.id === id ? { ...r, startTime: null } : r);
+  save('routines', routines);
+  renderWeeklyFixed();
+  renderAll();
+  showToast('📌 고정을 해제했어요 (이후부터만 사라져요)');
+}
+
 // ── DO 칸에서 막대 오른쪽 끝을 끌어 실제 걸린 시간(길이) 조절 ──
 let resizeState = null;
 function startResize(e, col, hour, idx) {
@@ -1113,6 +1193,15 @@ function renderDateLabel() {
   const isT = viewDate === plannerToday();
   document.getElementById('dateLabel').textContent =
     `${d.getMonth()+1}월 ${d.getDate()}일 (${dow})${isT ? ' · 오늘' : ''}`;
+  const jumpInput = document.getElementById('dateJumpInput');
+  if (jumpInput) jumpInput.value = viewDate;
+}
+
+// 화살표를 여러 번 누르지 않고 날짜를 바로 이동
+function jumpToDate(v) {
+  if (!v) return;
+  viewDate = v;
+  renderAll();
 }
 
 function showToast(msg) {
