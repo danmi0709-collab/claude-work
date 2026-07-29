@@ -107,6 +107,17 @@
     position: absolute; top: 0; transform: translateX(-50%);
     font-size: 8px; color: #c5c8d6; pointer-events: none; user-select: none; line-height: 1;
   }
+  /* PLAN(회색) ↔ DO(빨간색) 구분 */
+  .do-cell {
+    border-left: 2px solid #555;
+    background-image:
+      linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc),
+      linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc);
+  }
+  .do-cell .tick { color: #e3adad; }
+  .do-cell input { color: #c0392b; }
+  .th-plan { color: #777; }
+  .th-do { color: #e05252; border-left: 2px solid #555; }
   .plan-cell.drag-over { background: #eef1ff; outline: 2px dashed #667eea; outline-offset: -2px; }
   .plan-cell .add-btn {
     opacity: 0; border: none; background: none; color: #b6bacb; font-size: 14px;
@@ -125,7 +136,7 @@
   .do-cell { padding: 2px 4px; display: flex; align-items: center; }
   .do-cell input {
     width: 100%; border: none; background: transparent; font-size: 12px; font-family: inherit;
-    outline: none; color: #555; padding: 4px 6px; border-radius: 6px;
+    outline: none; color: #c0392b; padding: 4px 6px; border-radius: 6px;
   }
   .do-cell input:focus { background: #f4f5fa; }
   .inline-add {
@@ -231,7 +242,7 @@
   <!-- ── 가운데: 시간표 ── -->
   <div class="col">
     <div class="card timetable-card">
-      <div class="tt-head"><div>시간</div><div>PLAN (계획)</div><div>DO (실제 한 일)</div></div>
+      <div class="tt-head"><div>시간</div><div class="th-plan">PLAN (계획)</div><div class="th-do">DO (실제 한 일)</div></div>
       <div id="timetable"></div>
       <div class="memo-area">
         <div class="lbl">📝 하루 메모</div>
