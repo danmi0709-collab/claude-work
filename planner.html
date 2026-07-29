@@ -157,15 +157,23 @@
   .chip .x { border: none; background: none; color: #6b7280; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
   .chip .memo-mark { font-size: 9px; flex-shrink: 0; }
   .chip .pin-mark { font-size: 9px; flex-shrink: 0; }
-  /* 루틴 길이(분)만큼 배경에 색 막대로 표시 */
-  .dur-bar { position: absolute; height: 20px; border-radius: 6px; opacity: 0.28; z-index: 1; }
-  .resize-handle {
-    position: absolute; right: -4px; top: 0; width: 9px; height: 100%;
-    cursor: ew-resize; pointer-events: auto;
+  /* DO의 루틴은 실제 길이(분)만큼 넓은 막대(chip-block) 자체가 되고, 오른쪽 끝에 손잡이가 붙음 */
+  .chip.chip-block {
+    max-width: none; width: auto; justify-content: flex-start; border-width: 1.5px;
   }
+  .chip.chip-block .chip-text { flex: 1; }
+  /* PLAN 등 작은 배지 뒤에 표시하는 흐린 길이 막대(참고용, 손잡이 없음) */
+  .dur-bar { position: absolute; height: 20px; border-radius: 6px; opacity: 0.28; z-index: 1; pointer-events: none; }
+  /* DO 루틴 막대 오른쪽 끝의 크기조절 손잡이 — 눈에 잘 띄게 */
+  .resize-handle {
+    position: absolute; right: -7px; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 22px; border-radius: 5px;
+    cursor: ew-resize; background: rgba(0,0,0,0.18);
+    display: flex; align-items: center; justify-content: center; z-index: 3;
+  }
+  .resize-handle:hover { background: rgba(0,0,0,0.32); }
   .resize-handle::after {
-    content: ''; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 12px; border-radius: 2px; background: rgba(0,0,0,0.35);
+    content: ''; width: 4px; height: 12px; border-radius: 2px; background: rgba(0,0,0,0.55);
   }
   .inline-add {
     position: absolute; top: 3px; left: 4px; z-index: 4;
@@ -221,6 +229,32 @@
     border: none; border-radius: 11px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit;
   }
   #recStatus { font-size: 12px; color: #10b981; text-align: center; margin-top: 7px; min-height: 15px; }
+
+  /* 칩에 마우스를 올리면 바로 뜨는 메모 툴팁 */
+  .chip-tooltip {
+    position: fixed; transform: translateY(-100%); z-index: 60;
+    background: #222; color: white; font-size: 11px; padding: 6px 9px; border-radius: 8px;
+    max-width: 220px; white-space: pre-wrap; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  /* 칩 클릭 시 메모+고정핀 메뉴 팝업 */
+  .chip-menu {
+    position: fixed; z-index: 50; background: white; border: 1.5px solid #d5d8e4; border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(30,40,90,0.18); padding: 9px; width: 210px;
+  }
+  .chip-menu-memo {
+    width: 100%; min-height: 54px; border: 1.5px solid #e5e5e5; border-radius: 8px;
+    font-size: 12px; font-family: inherit; padding: 7px; resize: vertical; outline: none;
+    box-sizing: border-box; margin-bottom: 7px;
+  }
+  .chip-menu-memo:focus { border-color: #667eea; }
+  .chip-menu-row { display: flex; flex-direction: column; gap: 6px; }
+  .chip-menu-row button {
+    padding: 7px 8px; border-radius: 8px; border: 1.5px solid #e5e5e5; background: #f8f9fc;
+    font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; color: #555;
+  }
+  .chip-menu-row .chip-menu-save { border-color: #667eea55; color: #667eea; }
+  .chip-menu-row .chip-menu-save:hover { background: #eef1ff; }
+  .chip-menu-row .chip-menu-pin.on { background: #fff3cd; border-color: #e0b100; color: #8a5a00; }
 
   /* 토스트 */
   #toast {
@@ -618,46 +652,134 @@ function renderChip(c, idx, hour, routines, todos, col, pos) {
   } else { done = !!c.done; }
   // 완료 체크는 DO(실제 한 일)에서만 가능 — 계획은 계획일 뿐, 체크박스 없음
   const checkboxHtml = col === 'do'
-    ? `<input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip('${col}',${hour},${idx})">`
+    ? `<input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onclick="event.stopPropagation()" onchange="toggleChip('${col}',${hour},${idx})">`
     : '';
   // 고정핀(비서앱에서 시각을 정해둔 루틴)은 PLAN 칩에 📌 표시
   const pinHtml = (isPinned && col === 'plan') ? `<span class="pin-mark" title="고정핀: 매번 이 요일·시각에 자동 배치돼요">📌</span>` : '';
   const minHtml = c.min ? `<span class="chip-min">:${String(c.min).padStart(2, '0')}</span>` : '';
   const memoHtml = c.memo ? `<span class="memo-mark">📝</span>` : '';
-  const titleAttr = c.memo ? ` title="${escHtml(c.memo)}"` : '';
+  // 마우스를 올리면 바로 메모가 뜨도록 (커스텀 툴팁 — 브라우저 기본 title은 뜨는 데 시간이 걸려서 대신 사용)
+  const hoverAttrs = c.memo ? ` onmouseenter="showChipTooltip(event,'${col}',${hour},${idx})" onmouseleave="hideChipTooltip()"` : '';
   // 실제 드롭한 분(min) 위치에 맞춰 왼쪽 좌표를 계산 (10분=1/6칸)
   const leftPct = ((c.min || 0) / 60) * 100;
   const topPx = 3 + pos * 24;
-  // 루틴 기본 길이(분)만큼 배경 막대로 표시. DO에서는 오른쪽 끝을 드래그해서 실제 길이를 늘릴 수 있음
+  const clickAttrs = `onclick="openChipMenu(event,'${col}',${hour},${idx})" ondragstart="dragFromSlot(event,'${col}',${hour},${idx})"`;
+  const removeBtn = `<button class="x" onclick="event.stopPropagation();removeChip('${col}',${hour},${idx})">✕</button>`;
+
+  // DO의 루틴(길이가 있는 것)은 칩 자체가 길이(분)만큼 넓은 막대가 되고, 오른쪽 끝에 손잡이가 붙음
+  if (col === 'do' && c.t === 'r' && c.durationMin > 0) {
+    const widthPct = Math.min(100 - leftPct, (c.durationMin / 60) * 100);
+    const resizeHandle = `<div class="resize-handle" onmousedown="startResize(event,'${col}',${hour},${idx})" onclick="event.stopPropagation()" title="끌어서 실제 걸린 시간 조절"></div>`;
+    return `<span class="chip chip-block ${done ? 'done' : ''}" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${bg};border-color:${color}" draggable="true"${hoverAttrs}
+      ${clickAttrs}>
+      ${checkboxHtml}${minHtml}
+      <span class="chip-text">${escHtml(text)}</span>
+      ${memoHtml}
+      ${removeBtn}
+      ${resizeHandle}
+    </span>`;
+  }
+
+  // 그 외(PLAN, 할일, 직접입력)는 기존처럼 작은 배지 + (길이가 있으면) 뒤에 흐린 길이 막대
   let barHtml = '';
   if (c.durationMin && c.durationMin > 0) {
     const widthPct = Math.min(100 - leftPct, (c.durationMin / 60) * 100);
-    const resizeHandle = (col === 'do' && c.t === 'r')
-      ? `<div class="resize-handle" onmousedown="startResize(event,'${col}',${hour},${idx})" title="끌어서 실제 걸린 시간 조절"></div>`
-      : '';
-    barHtml = `<div class="dur-bar" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${color}">${resizeHandle}</div>`;
+    barHtml = `<div class="dur-bar" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${color}"></div>`;
   }
-  return barHtml + `<span class="chip ${done ? 'done' : ''}" style="left:${leftPct.toFixed(3)}%;top:${topPx}px;background:${bg};border-color:${color}40" draggable="true"${titleAttr}
-    ondragstart="dragFromSlot(event,'${col}',${hour},${idx})" oncontextmenu="editChipMemo(event,'${col}',${hour},${idx})">
+  return barHtml + `<span class="chip ${done ? 'done' : ''}" style="left:${leftPct.toFixed(3)}%;top:${topPx}px;background:${bg};border-color:${color}40" draggable="true"${hoverAttrs}
+    ${clickAttrs}>
     ${pinHtml}${checkboxHtml}${minHtml}
     <span class="chip-text">${escHtml(text)}</span>
     ${memoHtml}
-    <button class="x" onclick="removeChip('${col}',${hour},${idx})">✕</button>
+    ${removeBtn}
   </span>`;
 }
 
-// 오른쪽 클릭으로 칩 메모 작성/수정 (마우스를 올리면 title 툴팁으로 보임)
-function editChipMemo(e, col, hour, idx) {
-  e.preventDefault();
+// ── 마우스를 올리면 바로 뜨는 메모 툴팁 ──
+let chipTooltipEl = null;
+function showChipTooltip(e, col, hour, idx) {
   const day = getDay();
-  const arr = day[colArrName(col)];
-  const c = (arr[hour] || [])[idx];
+  const c = (day[colArrName(col)][hour] || [])[idx];
+  if (!c || !c.memo) return;
+  hideChipTooltip();
+  const rect = e.currentTarget.getBoundingClientRect();
+  const tip = document.createElement('div');
+  tip.className = 'chip-tooltip';
+  tip.textContent = c.memo;
+  tip.style.left = Math.round(rect.left) + 'px';
+  tip.style.top = Math.round(rect.top - 6) + 'px';
+  document.body.appendChild(tip);
+  chipTooltipEl = tip;
+}
+function hideChipTooltip() {
+  if (chipTooltipEl) { chipTooltipEl.remove(); chipTooltipEl = null; }
+}
+
+// ── 왼쪽 클릭으로 메모 작성 + (PLAN 루틴이면) 고정핀 토글 메뉴 ──
+let openChipMenuEl = null;
+function closeChipMenu() {
+  if (openChipMenuEl) { openChipMenuEl.remove(); openChipMenuEl = null; }
+  document.removeEventListener('mousedown', onOutsideChipMenuClick, true);
+}
+function onOutsideChipMenuClick(e) {
+  if (openChipMenuEl && !openChipMenuEl.contains(e.target)) closeChipMenu();
+}
+function openChipMenu(e, col, hour, idx) {
+  e.stopPropagation();
+  closeChipMenu();
+  hideChipTooltip();
+  const day = getDay();
+  const c = (day[colArrName(col)][hour] || [])[idx];
   if (!c) return;
-  const val = prompt('메모를 입력하세요 (지우려면 빈 칸으로 두고 확인)', c.memo || '');
-  if (val === null) return;
-  if (val.trim()) c.memo = val.trim(); else delete c.memo;
-  saveDay(day);
-  renderTimetable();
+  const rect = e.currentTarget.getBoundingClientRect();
+
+  const routines = load('routines', []);
+  const r = c.t === 'r' ? routines.find(x => x.id === c.id) : null;
+  const showPin = col === 'plan' && !!r;
+  const isPinned = showPin && !!r.startTime;
+
+  const menu = document.createElement('div');
+  menu.className = 'chip-menu';
+  menu.style.left = Math.round(rect.left) + 'px';
+  menu.style.top = Math.round(rect.bottom + 5) + 'px';
+  menu.innerHTML = `
+    <textarea class="chip-menu-memo" placeholder="메모를 입력하세요...">${escHtml(c.memo || '')}</textarea>
+    <div class="chip-menu-row">
+      <button class="chip-menu-save">💾 메모 저장</button>
+      ${showPin ? `<button class="chip-menu-pin ${isPinned ? 'on' : ''}">📌 ${isPinned ? '고정됨 (눌러서 해제)' : '이 요일·시각에 고정'}</button>` : ''}
+    </div>`;
+  document.body.appendChild(menu);
+  openChipMenuEl = menu;
+
+  menu.querySelector('.chip-menu-save').onclick = () => {
+    const val = menu.querySelector('.chip-menu-memo').value.trim();
+    const dd = getDay();
+    const cc = (dd[colArrName(col)][hour] || [])[idx];
+    if (cc) { if (val) cc.memo = val; else delete cc.memo; saveDay(dd); }
+    closeChipMenu();
+    renderTimetable();
+  };
+  const pinBtn = menu.querySelector('.chip-menu-pin');
+  if (pinBtn) {
+    pinBtn.onclick = () => {
+      const rs = load('routines', []);
+      const ri = rs.findIndex(x => x.id === c.id);
+      if (ri === -1) return;
+      if (rs[ri].startTime) {
+        rs[ri] = { ...rs[ri], startTime: null };
+        showToast('📌 고정을 해제했어요');
+      } else {
+        const hh = String(hour).padStart(2, '0'), mm = String(c.min || 0).padStart(2, '0');
+        rs[ri] = { ...rs[ri], startTime: `${hh}:${mm}`, durationMin: rs[ri].durationMin || c.durationMin || 10 };
+        showToast('📌 이 요일·시각에 고정했어요');
+      }
+      save('routines', rs);
+      closeChipMenu();
+      renderAll();
+    };
+  }
+  setTimeout(() => document.addEventListener('mousedown', onOutsideChipMenuClick, true), 0);
+  menu.querySelector('.chip-menu-memo').focus();
 }
 
 // ── DO 칸에서 막대 오른쪽 끝을 끌어 실제 걸린 시간(길이) 조절 ──
