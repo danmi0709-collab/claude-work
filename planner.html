@@ -639,7 +639,7 @@ function tryInitGcal(retries) {
 
 function gcalAutoConnectPlanner(silent) {
   const clientId = load('gcalClientId', '');
-  if (!clientId) return;
+  if (!clientId) { renderGcalNotConfigured(); return; }
   try {
     const client = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
@@ -648,14 +648,24 @@ function gcalAutoConnectPlanner(silent) {
       login_hint: 'danmi0709@gmail.com',
       prompt: silent ? '' : undefined,
       callback: (resp) => {
-        if (resp.error) { if (!silent) renderGcalReconnectPrompt(); return; }
+        // 조용히 연결 시도한 게 실패해도(silent) 화면엔 항상 "다시 연결" 버튼을 보여줘서
+        // 아무 반응 없이 빈 화면으로 남는 일이 없도록 함
+        if (resp.error) { renderGcalReconnectPrompt(); return; }
         plannerGcalToken = resp.access_token;
         renderPlannerGcal();
         setTimeout(() => gcalAutoConnectPlanner(true), 55 * 60 * 1000);
       }
     });
     client.requestAccessToken({ prompt: silent ? 'none' : '' });
-  } catch (e) { /* 라이브러리 로딩 전 — tryInitGcal이 재시도함 */ }
+  } catch (e) { renderGcalReconnectPrompt(); }
+}
+
+function renderGcalNotConfigured() {
+  const area = document.getElementById('plannerGcalArea');
+  if (!area) return;
+  area.innerHTML = `<div class="card" style="text-align:center;padding:14px">
+    <div style="font-size:12px;color:#999">📅 구글 캘린더가 아직 연동되지 않았어요<br>비서앱에서 먼저 연결해주세요</div>
+  </div>`;
 }
 
 function renderGcalReconnectPrompt() {
