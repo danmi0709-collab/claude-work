@@ -700,9 +700,32 @@ function onResizeEnd() {
   const { col, hour, idx, pendingDuration } = resizeState;
   const day = getDay();
   const c = (day[colArrName(col)][hour] || [])[idx];
-  if (c) { c.durationMin = pendingDuration; saveDay(day); }
+  if (c) {
+    c.durationMin = pendingDuration;
+    if (col === 'do' && c.t === 'r') logRoutineDuration(c, hour);
+    saveDay(day);
+  }
   resizeState = null;
   renderTimetable();
+}
+
+// DO에서 조절한 실제 소요시간을 routineLog에 기록 (비서앱 "⏱️ 소요시간 통계"와 공유)
+function logRoutineDuration(chip, hour) {
+  const r = load('routines', []).find(x => x.id === chip.id);
+  const log = load('routineLog', []);
+  const startTime = `${String(hour).padStart(2, '0')}:${String(chip.min || 0).padStart(2, '0')}`;
+  let entry = chip.logId && log.find(e => e.id === chip.logId);
+  if (!entry) {
+    chip.logId = Date.now() + Math.random();
+    entry = { id: chip.logId, routineId: chip.id, type: 'routine' };
+    log.push(entry);
+  }
+  entry.name = r ? r.text : chip.text;
+  entry.category = (r && r.category) || chip.cat || 'self';
+  entry.date = viewDate;
+  entry.startTime = startTime;
+  entry.durationMin = chip.durationMin;
+  save('routineLog', log);
 }
 
 function toggleChip(col, hour, idx) {
@@ -1005,7 +1028,7 @@ const FIREBASE_CONFIG = {
 };
 // 플래너가 쓰는 키만 동기화
 const PLANNER_SYNC_KEYS = [
-  'todos','routines','catNames','ceoDaily','plannerData',
+  'todos','routines','catNames','ceoDaily','plannerData','routineLog',
   'gratitude','reflections','sleepLog','phoneUsage','moods','moodEnergy','weightLog'
 ];
 let fbUser = null, fbRef = null;
