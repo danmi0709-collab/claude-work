@@ -256,29 +256,36 @@
   .chip-menu-row .chip-menu-save:hover { background: #eef1ff; }
   .chip-menu-row .chip-menu-pin.on { background: #fff3cd; border-color: #e0b100; color: #8a5a00; }
 
-  /* 내 주간 고정 스케줄 */
-  .wf-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-  .wf-day { background: #fafbfe; border: 1.5px solid #eceef5; border-radius: 12px; padding: 8px; min-height: 60px; }
-  .wf-day-title { font-size: 12px; font-weight: 800; color: #555; text-align: center; margin-bottom: 8px; }
-  .wf-day-title.weekend { color: #e53935; }
-  .wf-item {
-    background: white; border-radius: 8px; padding: 6px 7px; margin-bottom: 5px;
-    border: 1.5px solid #f0f1f7; font-size: 11.5px;
+  /* 내 주간 고정 스케줄 — 요일별 가로 행 배열 */
+  .wf-grid { display: flex; flex-direction: column; gap: 8px; }
+  .wf-day {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: #fafbfe; border: 1.5px solid #eceef5; border-radius: 12px; padding: 10px 14px; min-height: 44px;
   }
-  .wf-item-time-row { display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+  .wf-day-title {
+    font-size: 14px; font-weight: 800; color: #555; width: 30px; flex-shrink: 0;
+    padding-top: 6px; text-align: center;
+  }
+  .wf-day-title.weekend { color: #e53935; }
+  .wf-day-items { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; align-items: center; min-height: 32px; }
+  .wf-item {
+    background: white; border-radius: 8px; padding: 7px 10px;
+    border: 1.5px solid #f0f1f7; font-size: 12.5px; min-width: 150px;
+  }
+  .wf-item-time-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
   .wf-item-time-input {
-    border: 1.5px solid transparent; background: transparent; font-weight: 800; font-size: 11.5px;
-    font-family: inherit; padding: 1px 3px; border-radius: 5px; cursor: pointer; width: 68px;
+    border: 1.5px solid transparent; background: transparent; font-weight: 800; font-size: 13px;
+    font-family: inherit; padding: 1px 3px; border-radius: 5px; cursor: pointer; width: 74px;
   }
   .wf-item-time-input:hover, .wf-item-time-input:focus { border-color: #d5d8e4; background: white; cursor: text; }
-  .wf-item-dur { font-size: 10px; color: #999; font-weight: 700; }
-  .wf-item-name { color: #333; margin: 2px 0 4px; word-break: keep-all; }
+  .wf-item-dur { font-size: 11px; color: #999; font-weight: 700; }
+  .wf-item-name { color: #333; margin: 2px 0 5px; word-break: keep-all; white-space: nowrap; }
   .wf-item-unpin {
-    width: 100%; border: none; background: #f5f5f7; color: #999; border-radius: 6px;
-    font-size: 10px; padding: 3px 0; cursor: pointer; font-family: inherit;
+    border: none; background: #f5f5f7; color: #999; border-radius: 6px;
+    font-size: 10.5px; padding: 4px 8px; cursor: pointer; font-family: inherit; white-space: nowrap;
   }
   .wf-item-unpin:hover { background: #fdecea; color: #e53935; }
-  .wf-empty { font-size: 11px; color: #c2c5d4; text-align: center; padding: 6px 0; }
+  .wf-empty { font-size: 11px; color: #c2c5d4; padding: 4px 0; }
 
   /* 토스트 */
   #toast {
@@ -852,20 +859,22 @@ function renderWeeklyFixed() {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
     return `<div class="wf-day">
       <div class="wf-day-title ${isWeekend ? 'weekend' : ''}">${dow}</div>
-      ${items.length ? items.map(r => {
-        const cat = catOf(r.category || 'self');
-        return `<div class="wf-item" style="border-color:${cat.color}40">
-          <div class="wf-item-time-row">
-            <input type="time" class="wf-item-time-input" style="color:${cat.color}" value="${r.startTime}" onchange="updateWeeklyPinTime(${r.id},this.value)">
-            ${r.durationMin ? `<span class="wf-item-dur">${r.durationMin}분</span>` : ''}
-          </div>
-          <div class="wf-item-name">${escHtml(r.text)}</div>
-          <div style="display:flex;gap:4px">
-            <button class="wf-item-unpin" style="flex:1" onclick="unpinFromWeekly(${r.id})">고정 해제</button>
-            <button class="wf-item-unpin" style="flex:1" onclick="cleanupPastPinSeeds(${r.id})" title="핀을 꽂기 전 날짜에 잘못 채워진 항목 정리">🧹 정리</button>
-          </div>
-        </div>`;
-      }).join('') : '<div class="wf-empty">—</div>'}
+      <div class="wf-day-items">
+        ${items.length ? items.map(r => {
+          const cat = catOf(r.category || 'self');
+          return `<div class="wf-item" style="border-color:${cat.color}40">
+            <div class="wf-item-time-row">
+              <input type="time" class="wf-item-time-input" style="color:${cat.color}" value="${r.startTime}" onchange="updateWeeklyPinTime(${r.id},this.value)">
+              ${r.durationMin ? `<span class="wf-item-dur">${r.durationMin}분</span>` : ''}
+            </div>
+            <div class="wf-item-name">${escHtml(r.text)}</div>
+            <div style="display:flex;gap:4px">
+              <button class="wf-item-unpin" style="flex:1" onclick="unpinFromWeekly(${r.id})">고정 해제</button>
+              <button class="wf-item-unpin" style="flex:1" onclick="cleanupPastPinSeeds(${r.id})" title="핀을 꽂기 전 날짜에 잘못 채워진 항목 정리">🧹 정리</button>
+            </div>
+          </div>`;
+        }).join('') : '<div class="wf-empty">—</div>'}
+      </div>
     </div>`;
   }).join('')}</div>`;
 }
