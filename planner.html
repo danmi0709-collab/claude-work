@@ -63,6 +63,11 @@
   .date-tag { font-size: 10px; color: #999; flex-shrink: 0; }
   .pick-item.not-today { background: #f5f6fa; }
   .drag-hint { font-size: 11px; color: #b6bacb; margin: 2px 0 8px; }
+  .app-link {
+    margin-left: auto; font-size: 11px; color: #667eea; text-decoration: none;
+    border: 1.5px solid #667eea55; border-radius: 8px; padding: 3px 9px; font-weight: 700; flex-shrink: 0;
+  }
+  .app-link:hover { background: #eef1ff; }
   .quick-add { display: flex; gap: 6px; margin-top: 8px; }
   .quick-add input {
     flex: 1; padding: 7px 10px; border: 1.5px solid #e2e4ec; border-radius: 8px;
@@ -132,6 +137,7 @@
   }
   .chip input[type=checkbox] { width: 13px; height: 13px; cursor: pointer; margin: 0; }
   .chip .chip-text { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip .chip-min { font-size: 10px; font-weight: 800; color: #999; }
   .chip.done .chip-text { text-decoration: line-through; opacity: 0.55; }
   .chip .x { border: none; background: none; color: #999; cursor: pointer; font-size: 11px; padding: 0; }
   .inline-add {
@@ -217,20 +223,24 @@
 </header>
 
 <main>
-  <!-- ── 왼쪽: 루틴 + 할일 ── -->
+  <!-- ── 왼쪽: 할일 + 루틴 ── -->
   <div class="col">
     <div class="card">
-      <div class="card-title">🔄 오늘의 루틴 <span class="cnt" id="routineCnt"></span></div>
+      <div class="card-title">✅ 할일 <span class="cnt" id="todoCnt"></span>
+        <a class="app-link" href="app.html#tab-todo" target="_blank" rel="noopener">📱 비서앱</a>
+      </div>
       <div class="drag-hint">항목을 가운데 시간표로 끌어다 놓으세요</div>
-      <div id="routineList"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">✅ 할일 <span class="cnt" id="todoCnt"></span></div>
       <div id="todoList"></div>
       <div class="quick-add">
         <input type="text" id="quickTodoInput" placeholder="새 할일 추가" onkeydown="if(event.key==='Enter')quickAddTodo()">
         <button onclick="quickAddTodo()">＋</button>
       </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔄 오늘의 루틴 <span class="cnt" id="routineCnt"></span>
+        <a class="app-link" href="app.html#tab-routine" target="_blank" rel="noopener">📱 비서앱</a>
+      </div>
+      <div id="routineList"></div>
     </div>
   </div>
 
@@ -371,11 +381,12 @@ function isScheduledOn(r, dateStr) {
   return r.days.includes('매일') || r.days.includes(dow) || (r.days.includes('평일') && isWeekday);
 }
 
-// ── 배치 여부 확인 (col: 'plan' 또는 'do') ──
+// ── 배치 여부 확인 (col: 'plan' 또는 'do') → {hour, min} 또는 null ──
 function placedHour(col, type, id) {
   const arr = getDay()[colArrName(col)];
   for (const h of HOURS) {
-    if ((arr[h] || []).some(c => c.t === type && String(c.id) === String(id))) return h;
+    const c = (arr[h] || []).find(c => c.t === type && String(c.id) === String(id));
+    if (c) return { hour: h, min: c.min || 0 };
   }
   return null;
 }
@@ -408,8 +419,8 @@ function renderLeft() {
             <span class="cat-dot" style="background:${cat.color}"></span>
             <span class="pick-text">${escHtml(r.text)}</span>
             ${daysTag}
-            ${ph !== null ? `<span class="placed-tag">계획${hourLabel(ph)}</span>` : ''}
-            ${phDo !== null ? `<span class="placed-tag-do">실행${hourLabel(phDo)}</span>` : ''}
+            ${ph !== null ? `<span class="placed-tag">계획${timeLabel(ph.hour, ph.min)}</span>` : ''}
+            ${phDo !== null ? `<span class="placed-tag-do">실행${timeLabel(phDo.hour, phDo.min)}</span>` : ''}
           </div>`;
         }).join('');
     }).join('');
@@ -430,8 +441,8 @@ function renderLeft() {
       <span class="pick-text">${t.star ? '⭐ ' : ''}${escHtml(t.text)}</span>
       ${overdue ? '<span class="overdue-tag">기한지남</span>' : ''}
       ${future ? `<span class="date-tag">${t.date.slice(5).replace('-','/')}</span>` : ''}
-      ${ph !== null ? `<span class="placed-tag">계획${hourLabel(ph)}</span>` : ''}
-      ${phDo !== null ? `<span class="placed-tag-do">실행${hourLabel(phDo)}</span>` : ''}
+      ${ph !== null ? `<span class="placed-tag">계획${timeLabel(ph.hour, ph.min)}</span>` : ''}
+      ${phDo !== null ? `<span class="placed-tag-do">실행${timeLabel(phDo.hour, phDo.min)}</span>` : ''}
     </div>`;
   }).join('');
 }
@@ -471,7 +482,22 @@ function hourLabel(h) {
   if (h === 12) return '낮12시';
   return `오후${h-12}시`;
 }
+// 분까지 포함한 시간 라벨 (예: 오전6:20, 분이 0이면 기존처럼 "시"로 표기)
+function timeLabel(h, min) {
+  if (!min) return hourLabel(h);
+  const period = h < 3 ? '새벽' : h < 12 ? '오전' : h === 12 ? '낮' : '오후';
+  const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+  return `${period}${h12}:${String(min).padStart(2, '0')}`;
+}
 function hourShort(h) { return String(h).padStart(2, '0'); }
+// 드롭 위치(마우스 x좌표)를 10분 단위로 스냅
+function computeDropMinute(e) {
+  try {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = Math.min(0.999, Math.max(0, (e.clientX - rect.left) / rect.width));
+    return Math.floor(percent * 6) * 10;
+  } catch { return 0; }
+}
 
 // 10분 단위 숫자 눈금 (각 구분선 위에 작게)
 function ticksHtml() {
@@ -487,9 +513,16 @@ function renderTimetable() {
   const routines = load('routines', []);
   const todos = load('todos', []);
 
+  // 배열 내 실제 index는 유지하면서, 화면엔 분(min) 순서대로 정렬해서 보여줌
+  const orderedChips = (arr, hour, col) => (arr || [])
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => (a.c.min || 0) - (b.c.min || 0))
+    .map(o => renderChip(o.c, o.i, hour, routines, todos, col))
+    .join('');
+
   tt.innerHTML = HOURS.map(h => {
-    const planChips = (day.slots[h] || []).map((c, i) => renderChip(c, i, h, routines, todos, 'plan')).join('');
-    const doChips = (day.doSlots[h] || []).map((c, i) => renderChip(c, i, h, routines, todos, 'do')).join('');
+    const planChips = orderedChips(day.slots[h], h, 'plan');
+    const doChips = orderedChips(day.doSlots[h], h, 'do');
     const rowCls = [
       h >= 12 && h <= 23 ? 'pm' : '', h < 3 ? 'dawn' : '',
       h === 0 ? 'next-day-first' : '',
@@ -522,9 +555,14 @@ function renderChip(c, idx, hour, routines, todos, col) {
     if (t) { text = t.text; done = t.done; }
     color = '#667eea'; bg = '#eef1ff';
   } else { done = !!c.done; }
+  // 완료 체크는 DO(실제 한 일)에서만 가능 — 계획은 계획일 뿐, 체크박스 없음
+  const checkboxHtml = col === 'do'
+    ? `<input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip('${col}',${hour},${idx})">`
+    : '';
+  const minHtml = c.min ? `<span class="chip-min">:${String(c.min).padStart(2, '0')}</span>` : '';
   return `<span class="chip ${done ? 'done' : ''}" style="background:${bg};border-color:${color}40" draggable="true"
     ondragstart="dragFromSlot(event,'${col}',${hour},${idx})">
-    <input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip('${col}',${hour},${idx})">
+    ${checkboxHtml}${minHtml}
     <span class="chip-text">${escHtml(text)}</span>
     <button class="x" onclick="removeChip('${col}',${hour},${idx})">✕</button>
   </span>`;
@@ -593,6 +631,7 @@ function dropOnSlot(e, col, hour) {
   e.currentTarget.classList.remove('drag-over');
   let data;
   try { data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
+  const min = computeDropMinute(e);
   const day = getDay();
   const arrName = colArrName(col);
   let chip = null;
@@ -622,6 +661,7 @@ function dropOnSlot(e, col, hour) {
     }
   }
   if (!chip) return;
+  chip.min = min;
   if (!day[arrName][hour]) day[arrName][hour] = [];
   day[arrName][hour].push(chip);
   saveDay(day);

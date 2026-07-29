@@ -7866,10 +7866,15 @@ function softRefresh() {
   }, 1000);
 }
 
-// 새로고침 후 보던 탭 복원 + 동기화 시작
+// 새로고침 후 보던 탭 복원 + 동기화 시작 (플래너 등 외부에서 #tab-이름 으로 바로 이동 가능)
 (function() {
-  const t = sessionStorage.getItem('_lastTab');
-  if (t) { sessionStorage.removeItem('_lastTab'); try { switchTab(t); } catch(e) {} }
+  const hashMatch = location.hash.match(/^#tab-([\w-]+)$/);
+  if (hashMatch) {
+    try { switchTab(hashMatch[1]); } catch(e) {}
+  } else {
+    const t = sessionStorage.getItem('_lastTab');
+    if (t) { sessionStorage.removeItem('_lastTab'); try { switchTab(t); } catch(e) {} }
+  }
   initFirebaseSync();
 })();
 
