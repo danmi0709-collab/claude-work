@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🗓️ 하루 플래너</title>
+<!-- Firebase 실시간 동기화 (비서앱과 동일) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -73,11 +77,11 @@
   /* ── 가운데: 시간표 ── */
   .timetable-card { padding: 0; overflow: hidden; }
   .tt-head {
-    display: grid; grid-template-columns: 46px 1fr 200px; font-size: 11px; font-weight: 800;
+    display: grid; grid-template-columns: 46px 1fr 1fr; font-size: 11px; font-weight: 800;
     color: #888; background: #f7f8fc; border-bottom: 1px solid #e8eaf2; padding: 7px 0;
     text-align: center; position: sticky; top: 0; z-index: 2;
   }
-  .slot-row { display: grid; grid-template-columns: 46px 1fr 200px; border-bottom: 1px solid #f0f1f7; min-height: 34px; }
+  .slot-row { display: grid; grid-template-columns: 46px 1fr 1fr; border-bottom: 1px solid #f0f1f7; min-height: 34px; }
   .slot-row.now-row { background: #fffbea; }
   .slot-row.next-day-first { border-top: 2px dashed #c9cdde; }
   .hour-cell {
@@ -90,11 +94,18 @@
     display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 3px 6px;
     border-right: 1px solid #f0f1f7; position: relative; min-width: 0;
   }
-  /* 20분 단위 연한 회색 구분선 */
+  /* 10분 단위 연한 회색 구분선 */
   .plan-cell, .do-cell {
-    background-image: linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1);
+    position: relative;
+    background-image:
+      linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1),
+      linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1);
     background-size: 1px 100%; background-repeat: no-repeat;
-    background-position: 33.33% 0, 66.66% 0;
+    background-position: 16.667% 0, 33.333% 0, 50% 0, 66.667% 0, 83.333% 0;
+  }
+  .tick {
+    position: absolute; top: 0; transform: translateX(-50%);
+    font-size: 8px; color: #c5c8d6; pointer-events: none; user-select: none; line-height: 1;
   }
   .plan-cell.drag-over { background: #eef1ff; outline: 2px dashed #667eea; outline-offset: -2px; }
   .plan-cell .add-btn {
@@ -193,7 +204,10 @@
     <button onclick="moveDate(1)">▶</button>
     <button onclick="goToday()" style="background:#667eea;color:white">오늘</button>
   </div>
-  <div style="font-size:12px;color:#aaa">비서앱과 같은 데이터를 씁니다</div>
+  <div style="text-align:right">
+    <div id="syncStatusIcon" style="font-size:12px;color:#aaa">동기화 준비 중...</div>
+    <button id="fbLoginBtn" onclick="fbLogin()" style="display:none;font-size:11px;padding:3px 10px;border-radius:12px;border:1px solid #4285f4;color:#4285f4;background:#fff;margin-top:3px;cursor:pointer;font-family:inherit">☁️ 동기화 로그인</button>
+  </div>
 </header>
 
 <main>
@@ -282,6 +296,7 @@ const save = (key, val) => {
       const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
       meta[key] = Date.now();
       localStorage.setItem('_syncMeta', JSON.stringify(meta));
+      scheduleUpload(key);
     }
     return true;
   } catch (e) { showToast('저장 공간이 부족해요 📦'); return false; }
@@ -432,6 +447,12 @@ function hourLabel(h) {
 }
 function hourShort(h) { return String(h).padStart(2, '0'); }
 
+// 10분 단위 숫자 눈금 (각 구분선 위에 작게)
+function ticksHtml() {
+  return [10,20,30,40,50].map((m,i) =>
+    `<span class="tick" style="left:${((i+1)*100/6).toFixed(3)}%">${m}</span>`).join('');
+}
+
 function renderTimetable() {
   const day = getDay();
   const now = new Date();
@@ -450,11 +471,11 @@ function renderTimetable() {
     return `<div class="slot-row ${rowCls}">
       <div class="hour-cell">${hourShort(h)}</div>
       <div class="plan-cell" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,${h})">
-        ${chips}
+        ${ticksHtml()}${chips}
         <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h})">＋</button>
       </div>
       <div class="do-cell">
-        <input type="text" value="${escHtml(day.doLog[h] || '')}" placeholder="" onchange="saveDoLog(${h},this.value)">
+        ${ticksHtml()}<input type="text" value="${escHtml(day.doLog[h] || '')}" placeholder="" onchange="saveDoLog(${h},this.value)">
       </div>
     </div>`;
   }).join('');
@@ -753,7 +774,151 @@ window.addEventListener('storage', e => {
   if (['todos','routines','ceoDaily','catNames','plannerData'].includes(e.key)) renderAll();
 });
 
+// ============================================================
+// ☁️ Firebase 실시간 동기화 (비서앱 app.html과 동일한 계정·데이터)
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDMlWN3fginc5IRLcp7lrkuajlWHKhQwz8",
+  authDomain: "bissa-sync.firebaseapp.com",
+  databaseURL: "https://bissa-sync-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "bissa-sync",
+  storageBucket: "bissa-sync.firebasestorage.app",
+  messagingSenderId: "147900638424",
+  appId: "1:147900638424:web:882d4c582c5e8a9c8da3ad"
+};
+// 플래너가 쓰는 키만 동기화
+const PLANNER_SYNC_KEYS = [
+  'todos','routines','catNames','ceoDaily','plannerData',
+  'gratitude','reflections','sleepLog','phoneUsage','moods','moodEnergy','weightLog'
+];
+let fbUser = null, fbRef = null;
+const DEVICE_ID = (() => {
+  let d = localStorage.getItem('_deviceId');
+  if (!d) { d = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('_deviceId', d); }
+  return d;
+})();
+
+function setSyncStatus(status) {
+  const el = document.getElementById('syncStatusIcon');
+  if (!el) return;
+  const icons  = { syncing: '🔄', synced: '☁️', offline: '⚠️' };
+  const labels = { syncing: '동기화 중', synced: '실시간 동기화 중', offline: '오프라인' };
+  const colors = { syncing: '#4285f4', synced: '#4caf50', offline: '#f59e0b' };
+  el.textContent = icons[status] + ' ' + labels[status];
+  el.style.color = colors[status];
+}
+
+function initFirebaseSync() {
+  if (typeof firebase === 'undefined') { setSyncStatus('offline'); return; }
+  try { firebase.initializeApp(FIREBASE_CONFIG); } catch (e) {}
+  firebase.auth().onAuthStateChanged(user => {
+    fbUser = user;
+    const btn = document.getElementById('fbLoginBtn');
+    if (user) {
+      if (btn) btn.style.display = 'none';
+      startFbSync();
+    } else {
+      setSyncStatus('offline');
+      if (btn) btn.style.display = 'inline-block';
+    }
+  });
+}
+
+function fbLogin() {
+  if (typeof firebase === 'undefined') { showToast('인터넷 연결을 확인해주세요'); return; }
+  if (location.protocol === 'file:') { showToast('로그인은 넷리파이 주소로 열었을 때만 가능해요'); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(e => {
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+      firebase.auth().signInWithRedirect(provider);
+    } else {
+      showToast('로그인 실패: ' + (e.message || '').substring(0, 60));
+    }
+  });
+}
+
+// ── 업로드: 저장 후 0.3초 안에 전송 ──
+const _fbPending = new Set();
+let _fbTimer = null;
+function scheduleUpload(key) {
+  if (!key || !PLANNER_SYNC_KEYS.includes(key)) return;
+  _fbPending.add(key);
+  if (_fbTimer) clearTimeout(_fbTimer);
+  _fbTimer = setTimeout(flushFb, 300);
+}
+function flushFb() {
+  if (_fbTimer) { clearTimeout(_fbTimer); _fbTimer = null; }
+  if (!fbUser || !fbRef || _fbPending.size === 0) return;
+  setSyncStatus('syncing');
+  const updates = {};
+  _fbPending.forEach(k => {
+    updates[k] = { v: localStorage.getItem(k) ?? 'null', t: firebase.database.ServerValue.TIMESTAMP, src: DEVICE_ID };
+  });
+  _fbPending.clear();
+  fbRef.update(updates)
+    .then(() => setSyncStatus('synced'))
+    .catch(e => { console.warn('동기화 업로드 실패:', e); setSyncStatus('offline'); });
+}
+window.addEventListener('pagehide', flushFb);
+
+// ── 다운로드 + 실시간 감지 ──
+function startFbSync() {
+  setSyncStatus('syncing');
+  fbRef = firebase.database().ref('users/' + fbUser.uid + '/data');
+  fbRef.once('value').then(snap => {
+    const remote = snap.val() || {};
+    const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
+    let changed = false;
+    Object.entries(remote).forEach(([k, o]) => {
+      if (!o || typeof o.v !== 'string' || !PLANNER_SYNC_KEYS.includes(k)) return;
+      const localTime = meta[k] || 0;
+      if ((o.t || 0) >= localTime) {
+        if (localStorage.getItem(k) !== o.v) { localStorage.setItem(k, o.v); changed = true; }
+        meta[k] = o.t || 0;
+      } else {
+        _fbPending.add(k); // 로컬이 더 최신 → 올림
+      }
+    });
+    // 로컬에만 있는 키는 올림
+    PLANNER_SYNC_KEYS.forEach(k => { if (localStorage.getItem(k) !== null && remote[k] === undefined) _fbPending.add(k); });
+    localStorage.setItem('_syncMeta', JSON.stringify(meta));
+    flushFb();
+    setSyncStatus('synced');
+    if (changed) renderAll();
+    // 실시간 변경 감지 시작
+    fbRef.on('child_changed', onFbRemoteChange);
+    fbRef.on('child_added', onFbRemoteChange);
+  }).catch(e => { console.warn('동기화 다운로드 실패:', e); setSyncStatus('offline'); });
+  firebase.database().ref('.info/connected').on('value', s => {
+    if (fbUser) setSyncStatus(s.val() === true ? 'synced' : 'offline');
+  });
+}
+
+function onFbRemoteChange(snap) {
+  const k = snap.key, o = snap.val();
+  if (!o || o.src === DEVICE_ID || typeof o.v !== 'string') return;
+  if (!PLANNER_SYNC_KEYS.includes(k)) return;
+  if (localStorage.getItem(k) === o.v) return;
+  localStorage.setItem(k, o.v);
+  const meta = JSON.parse(localStorage.getItem('_syncMeta') || '{}');
+  meta[k] = o.t || Date.now();
+  localStorage.setItem('_syncMeta', JSON.stringify(meta));
+  softRefresh();
+}
+
+// 다른 기기 변경 반영 (입력 중이면 방해하지 않고 대기)
+let _softRefreshTimer = null;
+function softRefresh() {
+  if (_softRefreshTimer) clearTimeout(_softRefreshTimer);
+  _softRefreshTimer = setTimeout(() => {
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) { softRefresh(); return; }
+    renderAll();
+  }, 1000);
+}
+
 renderAll();
+initFirebaseSync();
 </script>
 </body>
 </html>
