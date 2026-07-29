@@ -375,7 +375,7 @@
   <div class="col">
     <div class="card timetable-card">
       <div class="tt-head"><div>시간</div><div class="th-plan">PLAN (계획)</div><div class="th-do">DO (실제 한 일)</div></div>
-      <div id="timetable"></div>
+      <div id="timetable"><div style="text-align:center;padding:40px 0;color:#9096ab;font-size:13px">☁️ 최신 기록을 불러오는 중...</div></div>
       <div class="memo-area">
         <div class="lbl">📝 하루 메모</div>
         <textarea id="dayMemo" placeholder="오늘 하루에 대한 메모..." onchange="saveMemo()"></textarea>
@@ -1553,8 +1553,19 @@ function setSyncStatus(status) {
   el.style.color = colors[status];
 }
 
+// 클라우드에서 최신 데이터를 받아오기 전에 화면을 먼저 그리면, 이 기기에 남아있던
+// 오래된 데이터가 "방금 저장한 것"처럼 찍혀서 오히려 최신 기록을 덮어써버릴 수 있음
+// (다른 기기에서 넣어둔 DO 기록이 사라지는 원인이었음) → 동기화가 끝난 뒤에만 그리기 시작
+let _syncReadyFired = false;
+function onSyncReady() {
+  if (_syncReadyFired) return;
+  _syncReadyFired = true;
+  renderAll();
+}
+setTimeout(onSyncReady, 4000); // 네트워크가 느리거나 오프라인이어도 4초 뒤엔 일단 그림
+
 function initFirebaseSync() {
-  if (typeof firebase === 'undefined') { setSyncStatus('offline'); return; }
+  if (typeof firebase === 'undefined') { setSyncStatus('offline'); onSyncReady(); return; }
   try { firebase.initializeApp(FIREBASE_CONFIG); } catch (e) {}
   firebase.auth().onAuthStateChanged(user => {
     fbUser = user;
@@ -1565,6 +1576,7 @@ function initFirebaseSync() {
     } else {
       setSyncStatus('offline');
       if (btn) btn.style.display = 'inline-block';
+      onSyncReady();
     }
   });
 }
@@ -1629,11 +1641,12 @@ function startFbSync() {
     localStorage.setItem('_syncMeta', JSON.stringify(meta));
     flushFb();
     setSyncStatus('synced');
-    if (changed) renderAll();
+    if (_syncReadyFired && changed) renderAll();
+    onSyncReady();
     // 실시간 변경 감지 시작
     fbRef.on('child_changed', onFbRemoteChange);
     fbRef.on('child_added', onFbRemoteChange);
-  }).catch(e => { console.warn('동기화 다운로드 실패:', e); setSyncStatus('offline'); });
+  }).catch(e => { console.warn('동기화 다운로드 실패:', e); setSyncStatus('offline'); onSyncReady(); });
   firebase.database().ref('.info/connected').on('value', s => {
     if (fbUser) setSyncStatus(s.val() === true ? 'synced' : 'offline');
   });
@@ -1662,7 +1675,6 @@ function softRefresh() {
   }, 1000);
 }
 
-renderAll();
 initFirebaseSync();
 tryInitGcal(15);
 
