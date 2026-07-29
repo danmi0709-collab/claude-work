@@ -57,6 +57,7 @@
   .pick-item input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
   .pick-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .placed-tag { font-size: 10px; color: #667eea; font-weight: 700; flex-shrink: 0; }
+  .placed-tag-do { font-size: 10px; color: #c0392b; font-weight: 700; flex-shrink: 0; }
   .overdue-tag { font-size: 10px; color: #ef4444; font-weight: 700; flex-shrink: 0; }
   .days-tag { font-size: 10px; color: #b6bacb; flex-shrink: 0; }
   .date-tag { font-size: 10px; color: #999; flex-shrink: 0; }
@@ -90,13 +91,12 @@
   }
   .slot-row.pm .hour-cell { color: #b58a2a; }
   .slot-row.dawn .hour-cell { color: #9aa0b5; }
-  .plan-cell {
+  .plan-cell, .do-cell {
     display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 3px 6px;
     border-right: 1px solid #f0f1f7; position: relative; min-width: 0;
   }
   /* 10분 단위 연한 회색 구분선 */
   .plan-cell, .do-cell {
-    position: relative;
     background-image:
       linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1),
       linear-gradient(#e7e9f1,#e7e9f1), linear-gradient(#e7e9f1,#e7e9f1);
@@ -115,15 +115,16 @@
       linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc);
   }
   .do-cell .tick { color: #e3adad; }
-  .do-cell input { color: #c0392b; }
   .th-plan { color: #777; }
   .th-do { color: #e05252; border-left: 2px solid #555; }
   .plan-cell.drag-over { background: #eef1ff; outline: 2px dashed #667eea; outline-offset: -2px; }
-  .plan-cell .add-btn {
+  .do-cell.drag-over { background-color: #fbe9e9; outline: 2px dashed #e05252; outline-offset: -2px; }
+  .plan-cell .add-btn, .do-cell .add-btn {
     opacity: 0; border: none; background: none; color: #b6bacb; font-size: 14px;
     cursor: pointer; padding: 0 3px; margin-left: auto;
   }
-  .plan-cell:hover .add-btn { opacity: 1; }
+  .do-cell .add-btn { color: #e3adad; }
+  .plan-cell:hover .add-btn, .do-cell:hover .add-btn { opacity: 1; }
   .chip {
     display: inline-flex; align-items: center; gap: 4px; max-width: 100%;
     padding: 2px 6px; border-radius: 7px; font-size: 12px; cursor: grab;
@@ -133,12 +134,6 @@
   .chip .chip-text { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chip.done .chip-text { text-decoration: line-through; opacity: 0.55; }
   .chip .x { border: none; background: none; color: #999; cursor: pointer; font-size: 11px; padding: 0; }
-  .do-cell { padding: 2px 4px; display: flex; align-items: center; }
-  .do-cell input {
-    width: 100%; border: none; background: transparent; font-size: 12px; font-family: inherit;
-    outline: none; color: #c0392b; padding: 4px 6px; border-radius: 6px;
-  }
-  .do-cell input:focus { background: #f4f5fa; }
   .inline-add {
     border: 1.5px solid #667eea; border-radius: 7px; font-size: 12px; padding: 2px 6px;
     font-family: inherit; outline: none; width: 140px;
@@ -340,18 +335,34 @@ let viewDate = plannerToday();
 const HOURS = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2];
 
 // ============================================================
-// 플래너 데이터: plannerData[날짜] = { slots:{h:[chip]}, doLog:{h:text}, memo:'' }
+// 플래너 데이터: plannerData[날짜] = { slots:{h:[chip]}(PLAN), doSlots:{h:[chip]}(DO), memo:'' }
 // chip = { t:'r'(루틴)|'t'(할일)|'x'(직접입력), id, text, cat, done(직접입력만) }
 // ============================================================
+function colArrName(col) { return col === 'do' ? 'doSlots' : 'slots'; }
+
 function getDay() {
   const all = load('plannerData', {});
-  return all[viewDate] || { slots: {}, doLog: {}, memo: '' };
+  const d = all[viewDate] || { slots: {}, doSlots: {}, doLog: {}, memo: '' };
+  if (!d.slots) d.slots = {};
+  if (!d.doSlots) d.doSlots = {};
+  // 예전 방식(자유 텍스트 DO 기록)이 남아있으면 DO 칩으로 한 번만 변환
+  if (d.doLog && Object.keys(d.doLog).length) {
+    Object.entries(d.doLog).forEach(([h, text]) => {
+      if (!text || !text.trim()) return;
+      if (!d.doSlots[h]) d.doSlots[h] = [];
+      d.doSlots[h].push({ t: 'x', id: Date.now() + Math.random(), text: text.trim(), done: false });
+    });
+    d.doLog = {};
+    saveDayObj(d);
+  }
+  return d;
 }
-function saveDay(day) {
+function saveDayObj(day) {
   const all = load('plannerData', {});
   all[viewDate] = day;
   save('plannerData', all);
 }
+function saveDay(day) { saveDayObj(day); }
 
 function isScheduledOn(r, dateStr) {
   const dayIdx = new Date(dateStr + 'T00:00:00').getDay();
@@ -360,11 +371,11 @@ function isScheduledOn(r, dateStr) {
   return r.days.includes('매일') || r.days.includes(dow) || (r.days.includes('평일') && isWeekday);
 }
 
-// ── 배치 여부 확인 ──
-function placedHour(type, id) {
-  const slots = getDay().slots;
+// ── 배치 여부 확인 (col: 'plan' 또는 'do') ──
+function placedHour(col, type, id) {
+  const arr = getDay()[colArrName(col)];
   for (const h of HOURS) {
-    if ((slots[h] || []).some(c => c.t === type && String(c.id) === String(id))) return h;
+    if ((arr[h] || []).some(c => c.t === type && String(c.id) === String(id))) return h;
   }
   return null;
 }
@@ -387,16 +398,18 @@ function renderLeft() {
       return `<div style="font-size:11px;font-weight:800;color:${cat.color};margin:8px 0 4px">${escHtml(catNames[cat.key])}</div>` +
         list.map(r => {
           const done = (r.doneDates || []).includes(viewDate);
-          const ph = placedHour('r', r.id);
+          const ph = placedHour('plan', 'r', r.id);
+          const phDo = placedHour('do', 'r', r.id);
           const todaySched = isScheduledOn(r, viewDate) && !(r.skipDates || []).includes(viewDate);
           const daysTag = todaySched ? '' : `<span class="days-tag">${escHtml((r.days || []).join('·'))}</span>`;
-          return `<div class="pick-item ${ph !== null ? 'placed' : ''} ${done ? 'done-item' : ''} ${todaySched ? '' : 'not-today'}" draggable="true"
+          return `<div class="pick-item ${(ph !== null || phDo !== null) ? 'placed' : ''} ${done ? 'done-item' : ''} ${todaySched ? '' : 'not-today'}" draggable="true"
             ondragstart="dragFromList(event,'r',${r.id})">
             <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRoutineDone(${r.id})" onclick="event.stopPropagation()">
             <span class="cat-dot" style="background:${cat.color}"></span>
             <span class="pick-text">${escHtml(r.text)}</span>
             ${daysTag}
-            ${ph !== null ? `<span class="placed-tag">${hourLabel(ph)}</span>` : ''}
+            ${ph !== null ? `<span class="placed-tag">계획${hourLabel(ph)}</span>` : ''}
+            ${phDo !== null ? `<span class="placed-tag-do">실행${hourLabel(phDo)}</span>` : ''}
           </div>`;
         }).join('');
     }).join('');
@@ -408,15 +421,17 @@ function renderLeft() {
   document.getElementById('todoCnt').textContent = todos.length ? `${todos.length}개` : '';
   if (!todos.length) tl.innerHTML = '<div class="empty-note">할일이 없어요 🎉</div>';
   else tl.innerHTML = todos.map(t => {
-    const ph = placedHour('t', t.id);
+    const ph = placedHour('plan', 't', t.id);
+    const phDo = placedHour('do', 't', t.id);
     const overdue = t.date && t.date < viewDate;
     const future = t.date && t.date > viewDate;
-    return `<div class="pick-item ${ph !== null ? 'placed' : ''} ${future ? 'not-today' : ''}" draggable="true" ondragstart="dragFromList(event,'t',${t.id})">
+    return `<div class="pick-item ${(ph !== null || phDo !== null) ? 'placed' : ''} ${future ? 'not-today' : ''}" draggable="true" ondragstart="dragFromList(event,'t',${t.id})">
       <input type="checkbox" onchange="toggleTodoDone(${t.id})" onclick="event.stopPropagation()">
       <span class="pick-text">${t.star ? '⭐ ' : ''}${escHtml(t.text)}</span>
       ${overdue ? '<span class="overdue-tag">기한지남</span>' : ''}
       ${future ? `<span class="date-tag">${t.date.slice(5).replace('-','/')}</span>` : ''}
-      ${ph !== null ? `<span class="placed-tag">${hourLabel(ph)}</span>` : ''}
+      ${ph !== null ? `<span class="placed-tag">계획${hourLabel(ph)}</span>` : ''}
+      ${phDo !== null ? `<span class="placed-tag-do">실행${hourLabel(phDo)}</span>` : ''}
     </div>`;
   }).join('');
 }
@@ -473,7 +488,8 @@ function renderTimetable() {
   const todos = load('todos', []);
 
   tt.innerHTML = HOURS.map(h => {
-    const chips = (day.slots[h] || []).map((c, i) => renderChip(c, i, h, routines, todos)).join('');
+    const planChips = (day.slots[h] || []).map((c, i) => renderChip(c, i, h, routines, todos, 'plan')).join('');
+    const doChips = (day.doSlots[h] || []).map((c, i) => renderChip(c, i, h, routines, todos, 'do')).join('');
     const rowCls = [
       h >= 12 && h <= 23 ? 'pm' : '', h < 3 ? 'dawn' : '',
       h === 0 ? 'next-day-first' : '',
@@ -481,19 +497,20 @@ function renderTimetable() {
     ].join(' ');
     return `<div class="slot-row ${rowCls}">
       <div class="hour-cell">${hourShort(h)}</div>
-      <div class="plan-cell" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,${h})">
-        ${ticksHtml()}${chips}
-        <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h})">＋</button>
+      <div class="plan-cell" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'plan',${h})">
+        ${ticksHtml()}${planChips}
+        <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h},'plan')">＋</button>
       </div>
-      <div class="do-cell">
-        ${ticksHtml()}<input type="text" value="${escHtml(day.doLog[h] || '')}" placeholder="" onchange="saveDoLog(${h},this.value)">
+      <div class="do-cell" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'do',${h})">
+        ${ticksHtml()}${doChips}
+        <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h},'do')">＋</button>
       </div>
     </div>`;
   }).join('');
   document.getElementById('dayMemo').value = day.memo || '';
 }
 
-function renderChip(c, idx, hour, routines, todos) {
+function renderChip(c, idx, hour, routines, todos, col) {
   let text = c.text, done = false, color = '#888', bg = '#f0f1f7';
   if (c.t === 'r') {
     const r = routines.find(x => x.id === c.id);
@@ -506,16 +523,17 @@ function renderChip(c, idx, hour, routines, todos) {
     color = '#667eea'; bg = '#eef1ff';
   } else { done = !!c.done; }
   return `<span class="chip ${done ? 'done' : ''}" style="background:${bg};border-color:${color}40" draggable="true"
-    ondragstart="dragFromSlot(event,${hour},${idx})">
-    <input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip(${hour},${idx})">
+    ondragstart="dragFromSlot(event,'${col}',${hour},${idx})">
+    <input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip('${col}',${hour},${idx})">
     <span class="chip-text">${escHtml(text)}</span>
-    <button class="x" onclick="removeChip(${hour},${idx})">✕</button>
+    <button class="x" onclick="removeChip('${col}',${hour},${idx})">✕</button>
   </span>`;
 }
 
-function toggleChip(hour, idx) {
+function toggleChip(col, hour, idx) {
   const day = getDay();
-  const c = (day.slots[hour] || [])[idx];
+  const arr = day[colArrName(col)];
+  const c = (arr[hour] || [])[idx];
   if (!c) return;
   if (c.t === 'r') return toggleRoutineDone(c.id);
   if (c.t === 't') return toggleTodoDone(c.id);
@@ -523,16 +541,12 @@ function toggleChip(hour, idx) {
   saveDay(day);
   renderTimetable();
 }
-function removeChip(hour, idx) {
+function removeChip(col, hour, idx) {
   const day = getDay();
-  (day.slots[hour] || []).splice(idx, 1);
+  const arr = day[colArrName(col)];
+  (arr[hour] || []).splice(idx, 1);
   saveDay(day);
   renderAll();
-}
-function saveDoLog(hour, val) {
-  const day = getDay();
-  day.doLog[hour] = val.trim();
-  saveDay(day);
 }
 function saveMemo() {
   const day = getDay();
@@ -540,18 +554,19 @@ function saveMemo() {
   saveDay(day);
 }
 
-// 직접 입력 칩
-function inlineAdd(btn, hour) {
+// 직접 입력 칩 (PLAN/DO 공통, col: 'plan' 또는 'do')
+function inlineAdd(btn, hour, col) {
   const cell = btn.parentElement;
   if (cell.querySelector('.inline-add')) return;
   const inp = document.createElement('input');
   inp.className = 'inline-add';
-  inp.placeholder = '일정 입력 후 Enter';
+  inp.placeholder = '입력 후 Enter';
   inp.onkeydown = e => {
     if (e.key === 'Enter' && inp.value.trim()) {
       const day = getDay();
-      if (!day.slots[hour]) day.slots[hour] = [];
-      day.slots[hour].push({ t: 'x', id: Date.now(), text: inp.value.trim(), done: false });
+      const arrName = colArrName(col);
+      if (!day[arrName][hour]) day[arrName][hour] = [];
+      day[arrName][hour].push({ t: 'x', id: Date.now(), text: inp.value.trim(), done: false });
       saveDay(day);
       renderTimetable();
     } else if (e.key === 'Escape') inp.remove();
@@ -565,29 +580,34 @@ function inlineAdd(btn, hour) {
 function dragFromList(e, type, id) {
   e.dataTransfer.setData('text/plain', JSON.stringify({ src: 'list', type, id }));
 }
-function dragFromSlot(e, hour, idx) {
+function dragFromSlot(e, col, hour, idx) {
   e.stopPropagation();
-  e.dataTransfer.setData('text/plain', JSON.stringify({ src: 'slot', hour, idx }));
+  e.dataTransfer.setData('text/plain', JSON.stringify({ src: 'slot', col, hour, idx }));
 }
 function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
 function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 
-function dropOnSlot(e, hour) {
+// col: 놓는 곳이 PLAN인지 DO인지 ('plan'|'do')
+function dropOnSlot(e, col, hour) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
   let data;
   try { data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
   const day = getDay();
+  const arrName = colArrName(col);
   let chip = null;
 
   if (data.src === 'slot') {
-    chip = (day.slots[data.hour] || []).splice(data.idx, 1)[0];
+    // 기존에 놓여있던 칩을 다른 시간/칸으로 옮기기
+    const srcArr = day[colArrName(data.col)];
+    chip = (srcArr[data.hour] || []).splice(data.idx, 1)[0];
   } else if (data.src === 'list') {
-    // 이미 다른 시간에 있으면 옮기기 (중복 배치 방지)
+    // 같은 칸(PLAN 또는 DO) 안에서 이미 배치돼 있으면 옮기기 (중복 방지, 다른 칸엔 영향 없음)
+    const arr = day[arrName];
     for (const h of HOURS) {
-      const arr = day.slots[h] || [];
-      const i = arr.findIndex(c => c.t === data.type && String(c.id) === String(data.id));
-      if (i !== -1) { chip = arr.splice(i, 1)[0]; break; }
+      const list = arr[h] || [];
+      const i = list.findIndex(c => c.t === data.type && String(c.id) === String(data.id));
+      if (i !== -1) { chip = list.splice(i, 1)[0]; break; }
     }
     if (!chip) {
       if (data.type === 'r') {
@@ -602,8 +622,8 @@ function dropOnSlot(e, hour) {
     }
   }
   if (!chip) return;
-  if (!day.slots[hour]) day.slots[hour] = [];
-  day.slots[hour].push(chip);
+  if (!day[arrName][hour]) day[arrName][hour] = [];
+  day[arrName][hour].push(chip);
   saveDay(day);
   renderAll();
 }
