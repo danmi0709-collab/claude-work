@@ -2131,11 +2131,13 @@
     <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">루틴 이름</label>
     <input id="routineEditText" type="text" style="width:100%;padding:10px 14px;border:1.5px solid #667eea;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;outline:none"
       onkeydown="if(event.key==='Enter')saveRoutineEditModal()">
-    <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">⏰ 하루일정 시각 <span style="font-weight:400;color:#aaa">(선택 — 비워두면 자동 배치)</span></label>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">⏰ 하루일정 시각 <span style="font-weight:400;color:#aaa">(선택 — 정해두면 플래너에서 매번 같은 요일·시각에 자동 고정됨)</span></label>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <input id="routineEditTime" type="time" style="padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none;flex:1">
       <button onclick="document.getElementById('routineEditTime').value=''" style="padding:7px 12px;border:none;background:#f5f5f7;border-radius:10px;font-size:12px;color:#999;cursor:pointer;font-family:inherit">지우기</button>
     </div>
+    <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">⏱️ 기본 길이(분) <span style="font-weight:400;color:#aaa">(선택 — 예: 수업 40분)</span></label>
+    <input id="routineEditDuration" type="number" min="5" max="600" step="5" placeholder="예: 40" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;box-sizing:border-box">
     <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:8px">반복 요일</label>
     <div id="routineEditDayBtns" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
     <div style="display:flex;gap:8px">
@@ -2713,6 +2715,7 @@ function startEditRoutine(id) {
   editingRoutineDays = [...(r.days || ['매일'])];
   document.getElementById('routineEditText').value = r.text || '';
   document.getElementById('routineEditTime').value = r.startTime || '';
+  document.getElementById('routineEditDuration').value = r.durationMin || '';
   renderRoutineEditDayBtns();
   const overlay = document.getElementById('routineEditOverlay');
   overlay.style.display = 'flex';
@@ -2747,7 +2750,9 @@ function saveRoutineEditModal() {
   const text = document.getElementById('routineEditText').value.trim();
   if (!text) { showToast('루틴 이름을 입력해주세요'); return; }
   const startTime = document.getElementById('routineEditTime').value || null;
-  saveRoutines(getRoutines().map(r => r.id === id ? { ...r, text, days: editingRoutineDays, startTime } : r));
+  const durationVal = parseInt(document.getElementById('routineEditDuration').value, 10);
+  const durationMin = (!isNaN(durationVal) && durationVal > 0) ? durationVal : null;
+  saveRoutines(getRoutines().map(r => r.id === id ? { ...r, text, days: editingRoutineDays, startTime, durationMin } : r));
   closeRoutineEditModal();
   renderRoutines();
   showToast('✅ 수정됐어요!');

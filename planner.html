@@ -61,6 +61,10 @@
   .overdue-tag { font-size: 10px; color: #ef4444; font-weight: 700; flex-shrink: 0; }
   .days-tag { font-size: 10px; color: #5b6472; font-weight: 700; flex-shrink: 0; }
   .date-tag { font-size: 10px; color: #5b6472; font-weight: 700; flex-shrink: 0; }
+  .pin-tag {
+    font-size: 10px; color: #8a5a00; font-weight: 700; flex-shrink: 0;
+    background: #fff3cd; padding: 1px 5px; border-radius: 5px;
+  }
   .pick-item.not-today { background: #f5f6fa; }
   .drag-hint { font-size: 11px; color: #6b7280; font-weight: 600; margin: 2px 0 8px; }
   .app-link {
@@ -151,6 +155,10 @@
   .chip .chip-min { font-size: 10px; font-weight: 800; color: #4b5563; flex-shrink: 0; }
   .chip.done .chip-text { text-decoration: line-through; opacity: 0.6; }
   .chip .x { border: none; background: none; color: #6b7280; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
+  .chip .memo-mark { font-size: 9px; flex-shrink: 0; }
+  .chip .pin-mark { font-size: 9px; flex-shrink: 0; }
+  /* 루틴 길이(분)만큼 배경에 색 막대로 표시 */
+  .dur-bar { position: absolute; height: 20px; border-radius: 6px; opacity: 0.28; z-index: 1; pointer-events: none; }
   .inline-add {
     position: absolute; top: 3px; left: 4px; z-index: 4;
     border: 1.5px solid #667eea; border-radius: 7px; font-size: 12px; padding: 2px 6px;
@@ -358,12 +366,15 @@ const HOURS = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2];
 
 // ============================================================
 // 플래너 데이터: plannerData[날짜] = { slots:{h:[chip]}(PLAN), doSlots:{h:[chip]}(DO), memo:'' }
-// chip = { t:'r'(루틴)|'t'(할일)|'x'(직접입력), id, text, cat, done(직접입력만) }
+// chip = { t:'r'(루틴)|'t'(할일)|'x'(직접입력), id, text, cat, min, durationMin, done(직접입력만), memo }
+// 루틴에 startTime(비서앱에서 설정)이 있으면 "고정핀" 취급 — 그 날짜를 처음 열 때 PLAN에 자동 배치됨.
+// startTime을 지우면(비서앱에서 "지우기") 그 이후 처음 여는 날부터 자동 배치가 사라짐 (이미 생성된 과거 날짜는 그대로 둠)
 // ============================================================
 function colArrName(col) { return col === 'do' ? 'doSlots' : 'slots'; }
 
 function getDay() {
   const all = load('plannerData', {});
+  const isNewDay = !all[viewDate];
   const d = all[viewDate] || { slots: {}, doSlots: {}, doLog: {}, memo: '' };
   if (!d.slots) d.slots = {};
   if (!d.doSlots) d.doSlots = {};
@@ -377,6 +388,7 @@ function getDay() {
     d.doLog = {};
     saveDayObj(d);
   }
+  if (isNewDay) seedPinnedRoutines(d);
   return d;
 }
 function saveDayObj(day) {
@@ -385,6 +397,23 @@ function saveDayObj(day) {
   save('plannerData', all);
 }
 function saveDay(day) { saveDayObj(day); }
+
+// 고정핀(startTime이 설정된) 루틴을 새로 여는 날짜의 PLAN에 자동 배치
+function seedPinnedRoutines(d) {
+  const routines = load('routines', []);
+  let changed = false;
+  routines.forEach(r => {
+    if (r.paused || !r.startTime) return;
+    if (!isScheduledOn(r, viewDate) || (r.skipDates || []).includes(viewDate)) return;
+    const [hh, mm] = r.startTime.split(':').map(Number);
+    if (isNaN(hh)) return;
+    if (!d.slots[hh]) d.slots[hh] = [];
+    if (d.slots[hh].some(c => c.t === 'r' && c.id === r.id)) return;
+    d.slots[hh].push({ t: 'r', id: r.id, text: r.text, cat: r.category || 'self', min: mm || 0, durationMin: r.durationMin || null });
+    changed = true;
+  });
+  if (changed) saveDayObj(d);
+}
 
 function isScheduledOn(r, dateStr) {
   const dayIdx = new Date(dateStr + 'T00:00:00').getDay();
@@ -425,11 +454,13 @@ function renderLeft() {
           const phDo = placedHour('do', 'r', r.id);
           const todaySched = isScheduledOn(r, viewDate) && !(r.skipDates || []).includes(viewDate);
           const daysTag = todaySched ? '' : `<span class="days-tag">${escHtml((r.days || []).join('·'))}</span>`;
+          const pinTag = r.startTime ? `<span class="pin-tag">📌${r.startTime}${r.durationMin ? '·'+r.durationMin+'분' : ''}</span>` : '';
           return `<div class="pick-item ${(ph !== null || phDo !== null) ? 'placed' : ''} ${done ? 'done-item' : ''} ${todaySched ? '' : 'not-today'}" draggable="true"
             ondragstart="dragFromList(event,'r',${r.id})">
             <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRoutineDone(${r.id})" onclick="event.stopPropagation()">
             <span class="cat-dot" style="background:${cat.color}"></span>
             <span class="pick-text">${escHtml(r.text)}</span>
+            ${pinTag}
             ${daysTag}
             ${ph !== null ? `<span class="placed-tag">계획${timeLabel(ph.hour, ph.min)}</span>` : ''}
             ${phDo !== null ? `<span class="placed-tag-do">실행${timeLabel(phDo.hour, phDo.min)}</span>` : ''}
@@ -565,10 +596,10 @@ function renderTimetable() {
 }
 
 function renderChip(c, idx, hour, routines, todos, col, pos) {
-  let text = c.text, done = false, color = '#888', bg = '#f0f1f7';
+  let text = c.text, done = false, color = '#888', bg = '#f0f1f7', isPinned = false;
   if (c.t === 'r') {
     const r = routines.find(x => x.id === c.id);
-    if (r) { text = r.text; done = (r.doneDates || []).includes(viewDate); }
+    if (r) { text = r.text; done = (r.doneDates || []).includes(viewDate); isPinned = !!r.startTime; }
     const cat = catOf(c.cat);
     color = cat.color; bg = cat.light;
   } else if (c.t === 't') {
@@ -580,16 +611,41 @@ function renderChip(c, idx, hour, routines, todos, col, pos) {
   const checkboxHtml = col === 'do'
     ? `<input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip('${col}',${hour},${idx})">`
     : '';
+  // 고정핀(비서앱에서 시각을 정해둔 루틴)은 PLAN 칩에 📌 표시
+  const pinHtml = (isPinned && col === 'plan') ? `<span class="pin-mark" title="고정핀: 매번 이 요일·시각에 자동 배치돼요">📌</span>` : '';
   const minHtml = c.min ? `<span class="chip-min">:${String(c.min).padStart(2, '0')}</span>` : '';
+  const memoHtml = c.memo ? `<span class="memo-mark">📝</span>` : '';
+  const titleAttr = c.memo ? ` title="${escHtml(c.memo)}"` : '';
   // 실제 드롭한 분(min) 위치에 맞춰 왼쪽 좌표를 계산 (10분=1/6칸)
-  const leftPct = (((c.min || 0) / 60) * 100).toFixed(3);
+  const leftPct = ((c.min || 0) / 60) * 100;
   const topPx = 3 + pos * 24;
-  return `<span class="chip ${done ? 'done' : ''}" style="left:${leftPct}%;top:${topPx}px;background:${bg};border-color:${color}40" draggable="true"
-    ondragstart="dragFromSlot(event,'${col}',${hour},${idx})">
-    ${checkboxHtml}${minHtml}
+  // 루틴 기본 길이(분)만큼 배경 막대로 표시
+  let barHtml = '';
+  if (c.durationMin && c.durationMin > 0) {
+    const widthPct = Math.min(100 - leftPct, (c.durationMin / 60) * 100);
+    barHtml = `<div class="dur-bar" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${color}"></div>`;
+  }
+  return barHtml + `<span class="chip ${done ? 'done' : ''}" style="left:${leftPct.toFixed(3)}%;top:${topPx}px;background:${bg};border-color:${color}40" draggable="true"${titleAttr}
+    ondragstart="dragFromSlot(event,'${col}',${hour},${idx})" oncontextmenu="editChipMemo(event,'${col}',${hour},${idx})">
+    ${pinHtml}${checkboxHtml}${minHtml}
     <span class="chip-text">${escHtml(text)}</span>
+    ${memoHtml}
     <button class="x" onclick="removeChip('${col}',${hour},${idx})">✕</button>
   </span>`;
+}
+
+// 오른쪽 클릭으로 칩 메모 작성/수정 (마우스를 올리면 title 툴팁으로 보임)
+function editChipMemo(e, col, hour, idx) {
+  e.preventDefault();
+  const day = getDay();
+  const arr = day[colArrName(col)];
+  const c = (arr[hour] || [])[idx];
+  if (!c) return;
+  const val = prompt('메모를 입력하세요 (지우려면 빈 칸으로 두고 확인)', c.memo || '');
+  if (val === null) return;
+  if (val.trim()) c.memo = val.trim(); else delete c.memo;
+  saveDay(day);
+  renderTimetable();
 }
 
 function toggleChip(col, hour, idx) {
@@ -661,9 +717,18 @@ function dropOnSlot(e, col, hour) {
   let chip = null;
 
   if (data.src === 'slot') {
-    // 기존에 놓여있던 칩을 다른 시간/칸으로 옮기기
     const srcArr = day[colArrName(data.col)];
-    chip = (srcArr[data.hour] || []).splice(data.idx, 1)[0];
+    const original = (srcArr[data.hour] || [])[data.idx];
+    if (!original) return;
+    if (data.col === col) {
+      // 같은 칸(PLAN→PLAN, DO→DO) 안에서 재배치 = 이동
+      chip = srcArr[data.hour].splice(data.idx, 1)[0];
+    } else {
+      // PLAN↔DO로 옮기면 복사 (원본은 그대로 둠 — 계획과 실제를 독립적으로 기록)
+      chip = { ...original };
+      if (chip.t === 'x') chip.id = Date.now(); // 직접입력은 새 항목으로 분리
+      delete chip.memo; // 메모는 계획/실제 각각 따로 (동기화 안 됨)
+    }
   } else if (data.src === 'list') {
     // 같은 칸(PLAN 또는 DO) 안에서 이미 배치돼 있으면 옮기기 (중복 방지, 다른 칸엔 영향 없음)
     const arr = day[arrName];
@@ -676,7 +741,7 @@ function dropOnSlot(e, col, hour) {
       if (data.type === 'r') {
         const r = load('routines', []).find(x => x.id === data.id);
         if (!r) return;
-        chip = { t: 'r', id: r.id, text: r.text, cat: r.category || 'self' };
+        chip = { t: 'r', id: r.id, text: r.text, cat: r.category || 'self', durationMin: r.durationMin || null };
       } else {
         const t = load('todos', []).find(x => x.id === data.id);
         if (!t) return;
