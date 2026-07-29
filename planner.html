@@ -11,7 +11,7 @@
 <style>
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: #eef0f6; color: #333;
+    margin: 0; background: #eef0f6; color: #1c1c1e;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
     height: 100vh; display: flex; flex-direction: column; overflow: hidden;
   }
@@ -29,7 +29,7 @@
   }
   .date-nav button:hover { background: #e6e8f2; }
   #dateLabel { font-size: 16px; font-weight: 800; min-width: 150px; text-align: center; }
-  .day-range-hint { font-size: 11px; color: #aaa; }
+  .day-range-hint { font-size: 11px; color: #6b7280; font-weight: 600; }
 
   /* ── 3단 레이아웃 ── */
   main {
@@ -42,7 +42,7 @@
 
   .card { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 1px 4px rgba(30,40,90,0.06); flex-shrink: 0; }
   .card-title { font-size: 13px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .card-title .cnt { font-size: 11px; color: #999; font-weight: 600; }
+  .card-title .cnt { font-size: 11px; color: #6b7280; font-weight: 700; }
 
   /* ── 왼쪽: 루틴·할일 아이템 ── */
   .pick-item {
@@ -52,17 +52,17 @@
   }
   .pick-item:active { cursor: grabbing; }
   .pick-item.placed { opacity: 0.55; }
-  .pick-item.done-item .pick-text { text-decoration: line-through; color: #aaa; }
+  .pick-item.done-item .pick-text { text-decoration: line-through; color: #8a8f9c; }
   .pick-item .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .pick-item input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
   .pick-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .placed-tag { font-size: 10px; color: #667eea; font-weight: 700; flex-shrink: 0; }
   .placed-tag-do { font-size: 10px; color: #c0392b; font-weight: 700; flex-shrink: 0; }
   .overdue-tag { font-size: 10px; color: #ef4444; font-weight: 700; flex-shrink: 0; }
-  .days-tag { font-size: 10px; color: #b6bacb; flex-shrink: 0; }
-  .date-tag { font-size: 10px; color: #999; flex-shrink: 0; }
+  .days-tag { font-size: 10px; color: #5b6472; font-weight: 700; flex-shrink: 0; }
+  .date-tag { font-size: 10px; color: #5b6472; font-weight: 700; flex-shrink: 0; }
   .pick-item.not-today { background: #f5f6fa; }
-  .drag-hint { font-size: 11px; color: #b6bacb; margin: 2px 0 8px; }
+  .drag-hint { font-size: 11px; color: #6b7280; font-weight: 600; margin: 2px 0 8px; }
   .app-link {
     margin-left: auto; font-size: 11px; color: #667eea; text-decoration: none;
     border: 1.5px solid #667eea55; border-radius: 8px; padding: 3px 9px; font-weight: 700; flex-shrink: 0;
@@ -78,13 +78,13 @@
     background: #667eea; color: white; border: none; border-radius: 8px;
     padding: 0 12px; font-size: 14px; cursor: pointer;
   }
-  .empty-note { font-size: 12px; color: #c2c5d4; text-align: center; padding: 8px 0; }
+  .empty-note { font-size: 12px; color: #6b7280; font-weight: 600; text-align: center; padding: 8px 0; }
 
   /* ── 가운데: 시간표 ── */
   .timetable-card { padding: 0; overflow: hidden; }
   .tt-head {
     display: grid; grid-template-columns: 46px 1fr 1fr; font-size: 11px; font-weight: 800;
-    color: #888; background: #f7f8fc; border-bottom: 1px solid #e8eaf2; padding: 7px 0;
+    color: #444; background: #f7f8fc; border-bottom: 1px solid #e8eaf2; padding: 7px 0;
     text-align: center; position: sticky; top: 0; z-index: 2;
   }
   .slot-row { display: grid; grid-template-columns: 46px 1fr 1fr; border-bottom: 1px solid #f0f1f7; min-height: 34px; }
@@ -103,8 +103,8 @@
     display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
     color: #667eea; border-right: 1px solid #f0f1f7;
   }
-  .slot-row.pm .hour-cell { color: #b58a2a; }
-  .slot-row.dawn .hour-cell { color: #9aa0b5; }
+  .slot-row.pm .hour-cell { color: #9c6b0a; }
+  .slot-row.dawn .hour-cell { color: #545d70; }
   .plan-cell, .do-cell {
     border-right: 1px solid #f0f1f7; position: relative; min-width: 0; min-height: 34px;
   }
@@ -118,7 +118,7 @@
   }
   .tick {
     position: absolute; top: 0; transform: translateX(-50%);
-    font-size: 8px; color: #c5c8d6; pointer-events: none; user-select: none; line-height: 1;
+    font-size: 8px; font-weight: 700; color: #8790a8; pointer-events: none; user-select: none; line-height: 1;
   }
   /* PLAN(회색) ↔ DO(빨간색) 구분 */
   .do-cell {
@@ -127,17 +127,17 @@
       linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc),
       linear-gradient(#f3dcdc,#f3dcdc), linear-gradient(#f3dcdc,#f3dcdc);
   }
-  .do-cell .tick { color: #e3adad; }
-  .th-plan { color: #777; }
+  .do-cell .tick { color: #c1656a; }
+  .th-plan { color: #444; }
   .th-do { color: #e05252; border-left: 2px solid #555; }
   .plan-cell.drag-over { background: #eef1ff; outline: 2px dashed #667eea; outline-offset: -2px; }
   .do-cell.drag-over { background-color: #fbe9e9; outline: 2px dashed #e05252; outline-offset: -2px; }
   .plan-cell .add-btn, .do-cell .add-btn {
     position: absolute; right: 2px; top: 4px; z-index: 3;
-    opacity: 0; border: none; background: none; color: #b6bacb; font-size: 14px;
+    opacity: 0; border: none; background: none; color: #6b7280; font-size: 14px;
     cursor: pointer; padding: 0 3px;
   }
-  .do-cell .add-btn { color: #e3adad; }
+  .do-cell .add-btn { color: #c1656a; }
   .plan-cell:hover .add-btn, .do-cell:hover .add-btn { opacity: 1; }
   /* 칩을 실제 분(min) 위치에 맞춰 절대 배치 (드롭한 자리 = 눈에 보이는 자리) */
   .chip {
@@ -148,16 +148,16 @@
   }
   .chip input[type=checkbox] { width: 13px; height: 13px; cursor: pointer; margin: 0; flex-shrink: 0; }
   .chip .chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chip .chip-min { font-size: 10px; font-weight: 800; color: #999; flex-shrink: 0; }
-  .chip.done .chip-text { text-decoration: line-through; opacity: 0.55; }
-  .chip .x { border: none; background: none; color: #999; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
+  .chip .chip-min { font-size: 10px; font-weight: 800; color: #4b5563; flex-shrink: 0; }
+  .chip.done .chip-text { text-decoration: line-through; opacity: 0.6; }
+  .chip .x { border: none; background: none; color: #6b7280; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
   .inline-add {
     position: absolute; top: 3px; left: 4px; z-index: 4;
     border: 1.5px solid #667eea; border-radius: 7px; font-size: 12px; padding: 2px 6px;
     font-family: inherit; outline: none; width: 140px;
   }
   .memo-area { padding: 10px 14px 14px; border-top: 2px solid #e8eaf2; }
-  .memo-area .lbl { font-size: 12px; font-weight: 800; color: #888; margin-bottom: 6px; }
+  .memo-area .lbl { font-size: 12px; font-weight: 800; color: #444; margin-bottom: 6px; }
   .memo-area textarea {
     width: 100%; min-height: 64px; border: 1.5px solid #e8eaf2; border-radius: 10px;
     font-size: 13px; font-family: inherit; padding: 9px; resize: vertical; outline: none;
@@ -170,20 +170,20 @@
   .ceo-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .ceo-head .dot { width: 8px; height: 8px; border-radius: 50%; }
   .ceo-head .nm { font-size: 12px; font-weight: 800; }
-  .ceo-head .sub { font-size: 11px; color: #aaa; }
+  .ceo-head .sub { font-size: 11px; color: #6b7280; font-weight: 600; }
   .ceo-item {
     display: flex; align-items: center; gap: 7px; padding: 6px 8px; margin-bottom: 4px;
     background: white; border: 1.5px solid #eceef5; border-radius: 8px; font-size: 13px;
   }
   .ceo-item.done { background: #f9f9fb; }
-  .ceo-item.done .txt { text-decoration: line-through; color: #aaa; }
+  .ceo-item.done .txt { text-decoration: line-through; color: #8a8f9c; }
   .ceo-item .txt { flex: 1; }
-  .ceo-item .x { border: none; background: none; color: #ccc; cursor: pointer; font-size: 13px; padding: 0; }
+  .ceo-item .x { border: none; background: none; color: #8a8f9c; cursor: pointer; font-size: 13px; padding: 0; }
   .ceo-add-row { display: flex; gap: 5px; margin-top: 4px; }
   .ceo-add-row input {
     flex: 1; padding: 6px 9px; border-radius: 8px; font-size: 12px; font-family: inherit; outline: none;
   }
-  .rec-lbl { font-size: 11px; color: #888; margin: 0 0 3px; }
+  .rec-lbl { font-size: 11px; color: #444; font-weight: 600; margin: 0 0 3px; }
   .rec-grid3 { display: flex; gap: 7px; margin-bottom: 9px; }
   .rec-grid3 > div { flex: 1; }
   .rec-input {
