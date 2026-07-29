@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<!-- 구글 캘린더 (비서앱과 동일 연동 방식) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -83,6 +85,18 @@
     padding: 0 12px; font-size: 14px; cursor: pointer;
   }
   .empty-note { font-size: 12px; color: #6b7280; font-weight: 600; text-align: center; padding: 8px 0; }
+
+  /* 구글 캘린더 (오늘부터 3일) */
+  .gcal-day-label { font-size: 11px; font-weight: 800; color: #667eea; margin-bottom: 4px; }
+  .gcal-day-label.today { color: #e05252; }
+  .gcal-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 12.5px; }
+  .gcal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .gcal-time { font-weight: 700; color: #4285f4; min-width: 46px; flex-shrink: 0; }
+  .gcal-summary { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #333; }
+  .gcal-reconnect-btn {
+    margin-top: 6px; padding: 6px 12px; border: 1.5px solid #4285f4; color: #4285f4; background: white;
+    border-radius: 8px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
 
   /* ── 가운데: 시간표 ── */
   .timetable-card { padding: 0; overflow: hidden; }
@@ -337,6 +351,7 @@
 <main>
   <!-- ── 왼쪽: 할일 + 루틴 ── -->
   <div class="col">
+    <div id="plannerGcalArea"></div>
     <div class="card">
       <div class="card-title">✅ 할일 <span class="cnt" id="todoCnt"></span>
         <a class="app-link" href="app.html#tab-todo" target="_blank" rel="noopener">📱 비서앱</a>
@@ -609,6 +624,97 @@ function quickAddTodo() {
   save('todos', todos);
   inp.value = '';
   renderLeft();
+}
+
+// ============================================================
+// 구글 캘린더 — 오늘부터 3일 일정 (비서앱과 같은 연동 방식·같은 로그인 정보 재사용)
+// ============================================================
+let plannerGcalToken = null;
+
+function tryInitGcal(retries) {
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) { gcalAutoConnectPlanner(true); return; }
+  if (retries <= 0) return;
+  setTimeout(() => tryInitGcal(retries - 1), 300);
+}
+
+function gcalAutoConnectPlanner(silent) {
+  const clientId = load('gcalClientId', '');
+  if (!clientId) return;
+  try {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/calendar.readonly',
+      hint: 'danmi0709@gmail.com',
+      login_hint: 'danmi0709@gmail.com',
+      prompt: silent ? '' : undefined,
+      callback: (resp) => {
+        if (resp.error) { if (!silent) renderGcalReconnectPrompt(); return; }
+        plannerGcalToken = resp.access_token;
+        renderPlannerGcal();
+        setTimeout(() => gcalAutoConnectPlanner(true), 55 * 60 * 1000);
+      }
+    });
+    client.requestAccessToken({ prompt: silent ? 'none' : '' });
+  } catch (e) { /* 라이브러리 로딩 전 — tryInitGcal이 재시도함 */ }
+}
+
+function renderGcalReconnectPrompt() {
+  const area = document.getElementById('plannerGcalArea');
+  if (!area) return;
+  area.innerHTML = `<div class="card" style="text-align:center;padding:14px">
+    <div style="font-size:12px;color:#999;margin-bottom:2px">📅 구글 캘린더 연결이 끊겼어요</div>
+    <button class="gcal-reconnect-btn" onclick="gcalAutoConnectPlanner(false)">다시 연결</button>
+  </div>`;
+}
+
+function renderPlannerGcal() {
+  const area = document.getElementById('plannerGcalArea');
+  if (!area || !plannerGcalToken) return;
+  area.innerHTML = '<div class="card" style="text-align:center;padding:12px;color:#999;font-size:12px">📅 구글 일정 불러오는 중...</div>';
+
+  const start = new Date(plannerToday() + 'T00:00:00');
+  const end = new Date(start); end.setDate(end.getDate() + 3); // 오늘부터 3일(오늘·+1·+2)
+  const params = new URLSearchParams({ timeMin: start.toISOString(), timeMax: end.toISOString(), singleEvents: 'true', orderBy: 'startTime', maxResults: '50' });
+
+  fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', { headers: { Authorization: 'Bearer ' + plannerGcalToken } })
+    .then(r => r.json())
+    .then(calList => {
+      const calendars = (calList.items || []).filter(c => c.selected !== false);
+      return Promise.all(calendars.map(cal =>
+        fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?${params}`, { headers: { Authorization: 'Bearer ' + plannerGcalToken } })
+          .then(r => r.json())
+          .then(data => (data.items || []).map(e => ({ ...e, _calColor: cal.backgroundColor || '#4285f4' })))
+          .catch(() => [])
+      ));
+    })
+    .then(results => {
+      const events = results.flat().sort((a, b) => (a.start.dateTime || a.start.date) > (b.start.dateTime || b.start.date) ? 1 : -1);
+      if (!events.length) { area.innerHTML = `<div class="card"><div class="card-title">📅 구글 일정 (오늘부터 3일)</div><div class="empty-note">일정이 없어요</div></div>`; return; }
+      const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+      const grouped = {};
+      events.forEach(e => {
+        const ds = (e.start.dateTime || e.start.date || '').slice(0, 10);
+        if (!ds) return;
+        (grouped[ds] = grouped[ds] || []).push(e);
+      });
+      const td = plannerToday();
+      const body = Object.keys(grouped).sort().map(ds => {
+        const d = new Date(ds + 'T00:00:00');
+        const isToday = ds === td;
+        const label = isToday ? `오늘 ${d.getMonth() + 1}/${d.getDate()}` : `${d.getMonth() + 1}/${d.getDate()} (${DAY_LABELS[d.getDay()]})`;
+        const rows = grouped[ds].map(e => {
+          const timeStr = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '종일';
+          return `<div class="gcal-row">
+            <span class="gcal-dot" style="background:${e._calColor}"></span>
+            <span class="gcal-time">${timeStr}</span>
+            <span class="gcal-summary">${escHtml(e.summary || '(제목 없음)')}</span>
+          </div>`;
+        }).join('');
+        return `<div style="margin-bottom:8px"><div class="gcal-day-label ${isToday ? 'today' : ''}">${label}</div>${rows}</div>`;
+      }).join('');
+      area.innerHTML = `<div class="card"><div class="card-title">📅 구글 일정 (오늘부터 3일)</div>${body}</div>`;
+    })
+    .catch(() => { area.innerHTML = ''; });
 }
 
 // ============================================================
@@ -1548,6 +1654,7 @@ function softRefresh() {
 
 renderAll();
 initFirebaseSync();
+tryInitGcal(15);
 
 // "지금 여기" 세로선을 1분마다 최신 시각으로 갱신 (입력 중이면 방해하지 않음)
 setInterval(() => {
