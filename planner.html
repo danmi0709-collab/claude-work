@@ -89,6 +89,15 @@
   }
   .slot-row { display: grid; grid-template-columns: 46px 1fr 1fr; border-bottom: 1px solid #f0f1f7; min-height: 34px; }
   .slot-row.now-row { background: #fffbea; }
+  /* "지금 여기" 세로선 */
+  .now-line {
+    position: absolute; top: 0; bottom: 0; width: 2px; background: #ff5722; z-index: 6; pointer-events: none;
+  }
+  .now-line .now-label {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; font-weight: 800; color: #fff; white-space: nowrap;
+    background: #ff5722; padding: 0 4px; border-radius: 4px; line-height: 1.4;
+  }
   .slot-row.next-day-first { border-top: 2px dashed #c9cdde; }
   .hour-cell {
     display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
@@ -530,19 +539,24 @@ function renderTimetable() {
     const planChips = orderedChips(planArr, h, 'plan');
     const doChips = orderedChips(doArr, h, 'do');
     const rowH = Math.max(cellHeight(planArr), cellHeight(doArr));
+    const isNowRow = isViewingToday && now.getHours() === h;
     const rowCls = [
       h >= 12 && h <= 23 ? 'pm' : '', h < 3 ? 'dawn' : '',
       h === 0 ? 'next-day-first' : '',
-      isViewingToday && now.getHours() === h ? 'now-row' : ''
+      isNowRow ? 'now-row' : ''
     ].join(' ');
+    // "지금 여기" 세로선: 현재 분 위치에 정확히 표시 (PLAN·DO 양쪽에 같은 위치로)
+    const nowLeftPct = isNowRow ? (now.getMinutes() / 60 * 100).toFixed(3) : null;
+    const nowLinePlan = isNowRow ? `<div class="now-line" style="left:${nowLeftPct}%"><span class="now-label">지금</span></div>` : '';
+    const nowLineDo = isNowRow ? `<div class="now-line" style="left:${nowLeftPct}%"></div>` : '';
     return `<div class="slot-row ${rowCls}">
       <div class="hour-cell">${hourShort(h)}</div>
       <div class="plan-cell" style="height:${rowH}px" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'plan',${h})">
-        ${ticksHtml()}${planChips}
+        ${ticksHtml()}${planChips}${nowLinePlan}
         <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h},'plan')">＋</button>
       </div>
       <div class="do-cell" style="height:${rowH}px" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'do',${h})">
-        ${ticksHtml()}${doChips}
+        ${ticksHtml()}${doChips}${nowLineDo}
         <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h},'do')">＋</button>
       </div>
     </div>`;
@@ -1000,6 +1014,14 @@ function softRefresh() {
 
 renderAll();
 initFirebaseSync();
+
+// "지금 여기" 세로선을 1분마다 최신 시각으로 갱신 (입력 중이면 방해하지 않음)
+setInterval(() => {
+  if (viewDate !== plannerToday()) return;
+  const ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+  renderTimetable();
+}, 60000);
 </script>
 </body>
 </html>
