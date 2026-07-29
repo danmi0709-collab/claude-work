@@ -97,8 +97,7 @@
   .slot-row.pm .hour-cell { color: #b58a2a; }
   .slot-row.dawn .hour-cell { color: #9aa0b5; }
   .plan-cell, .do-cell {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 3px 6px;
-    border-right: 1px solid #f0f1f7; position: relative; min-width: 0;
+    border-right: 1px solid #f0f1f7; position: relative; min-width: 0; min-height: 34px;
   }
   /* 10분 단위 연한 회색 구분선 */
   .plan-cell, .do-cell {
@@ -125,22 +124,26 @@
   .plan-cell.drag-over { background: #eef1ff; outline: 2px dashed #667eea; outline-offset: -2px; }
   .do-cell.drag-over { background-color: #fbe9e9; outline: 2px dashed #e05252; outline-offset: -2px; }
   .plan-cell .add-btn, .do-cell .add-btn {
+    position: absolute; right: 2px; top: 4px; z-index: 3;
     opacity: 0; border: none; background: none; color: #b6bacb; font-size: 14px;
-    cursor: pointer; padding: 0 3px; margin-left: auto;
+    cursor: pointer; padding: 0 3px;
   }
   .do-cell .add-btn { color: #e3adad; }
   .plan-cell:hover .add-btn, .do-cell:hover .add-btn { opacity: 1; }
+  /* 칩을 실제 분(min) 위치에 맞춰 절대 배치 (드롭한 자리 = 눈에 보이는 자리) */
   .chip {
-    display: inline-flex; align-items: center; gap: 4px; max-width: 100%;
+    position: absolute; top: 3px;
+    display: inline-flex; align-items: center; gap: 4px; max-width: 110px;
     padding: 2px 6px; border-radius: 7px; font-size: 12px; cursor: grab;
-    border: 1px solid transparent; background: #f0f1f7; user-select: none;
+    border: 1px solid transparent; background: #f0f1f7; user-select: none; z-index: 2;
   }
-  .chip input[type=checkbox] { width: 13px; height: 13px; cursor: pointer; margin: 0; }
-  .chip .chip-text { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chip .chip-min { font-size: 10px; font-weight: 800; color: #999; }
+  .chip input[type=checkbox] { width: 13px; height: 13px; cursor: pointer; margin: 0; flex-shrink: 0; }
+  .chip .chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip .chip-min { font-size: 10px; font-weight: 800; color: #999; flex-shrink: 0; }
   .chip.done .chip-text { text-decoration: line-through; opacity: 0.55; }
-  .chip .x { border: none; background: none; color: #999; cursor: pointer; font-size: 11px; padding: 0; }
+  .chip .x { border: none; background: none; color: #999; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
   .inline-add {
+    position: absolute; top: 3px; left: 4px; z-index: 4;
     border: 1.5px solid #667eea; border-radius: 7px; font-size: 12px; padding: 2px 6px;
     font-family: inherit; outline: none; width: 140px;
   }
@@ -513,16 +516,20 @@ function renderTimetable() {
   const routines = load('routines', []);
   const todos = load('todos', []);
 
-  // 배열 내 실제 index는 유지하면서, 화면엔 분(min) 순서대로 정렬해서 보여줌
+  // 배열 내 실제 index는 유지하면서, 화면엔 분(min) 위치에 맞춰 절대 배치
   const orderedChips = (arr, hour, col) => (arr || [])
     .map((c, i) => ({ c, i }))
     .sort((a, b) => (a.c.min || 0) - (b.c.min || 0))
-    .map(o => renderChip(o.c, o.i, hour, routines, todos, col))
+    .map((o, pos) => renderChip(o.c, o.i, hour, routines, todos, col, pos))
     .join('');
+  // 칩이 여러 개(세로로 겹칠 수 있음)면 칸 높이를 늘려줌
+  const cellHeight = arr => Math.max(34, (arr || []).length * 24 + 10);
 
   tt.innerHTML = HOURS.map(h => {
-    const planChips = orderedChips(day.slots[h], h, 'plan');
-    const doChips = orderedChips(day.doSlots[h], h, 'do');
+    const planArr = day.slots[h], doArr = day.doSlots[h];
+    const planChips = orderedChips(planArr, h, 'plan');
+    const doChips = orderedChips(doArr, h, 'do');
+    const rowH = Math.max(cellHeight(planArr), cellHeight(doArr));
     const rowCls = [
       h >= 12 && h <= 23 ? 'pm' : '', h < 3 ? 'dawn' : '',
       h === 0 ? 'next-day-first' : '',
@@ -530,11 +537,11 @@ function renderTimetable() {
     ].join(' ');
     return `<div class="slot-row ${rowCls}">
       <div class="hour-cell">${hourShort(h)}</div>
-      <div class="plan-cell" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'plan',${h})">
+      <div class="plan-cell" style="height:${rowH}px" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'plan',${h})">
         ${ticksHtml()}${planChips}
         <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h},'plan')">＋</button>
       </div>
-      <div class="do-cell" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'do',${h})">
+      <div class="do-cell" style="height:${rowH}px" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,'do',${h})">
         ${ticksHtml()}${doChips}
         <button class="add-btn" title="직접 입력" onclick="inlineAdd(this,${h},'do')">＋</button>
       </div>
@@ -543,7 +550,7 @@ function renderTimetable() {
   document.getElementById('dayMemo').value = day.memo || '';
 }
 
-function renderChip(c, idx, hour, routines, todos, col) {
+function renderChip(c, idx, hour, routines, todos, col, pos) {
   let text = c.text, done = false, color = '#888', bg = '#f0f1f7';
   if (c.t === 'r') {
     const r = routines.find(x => x.id === c.id);
@@ -560,7 +567,10 @@ function renderChip(c, idx, hour, routines, todos, col) {
     ? `<input type="checkbox" ${done ? 'checked' : ''} style="accent-color:${color}" onchange="toggleChip('${col}',${hour},${idx})">`
     : '';
   const minHtml = c.min ? `<span class="chip-min">:${String(c.min).padStart(2, '0')}</span>` : '';
-  return `<span class="chip ${done ? 'done' : ''}" style="background:${bg};border-color:${color}40" draggable="true"
+  // 실제 드롭한 분(min) 위치에 맞춰 왼쪽 좌표를 계산 (10분=1/6칸)
+  const leftPct = (((c.min || 0) / 60) * 100).toFixed(3);
+  const topPx = 3 + pos * 24;
+  return `<span class="chip ${done ? 'done' : ''}" style="left:${leftPct}%;top:${topPx}px;background:${bg};border-color:${color}40" draggable="true"
     ondragstart="dragFromSlot(event,'${col}',${hour},${idx})">
     ${checkboxHtml}${minHtml}
     <span class="chip-text">${escHtml(text)}</span>
