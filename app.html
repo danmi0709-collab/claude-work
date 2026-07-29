@@ -2537,6 +2537,7 @@ const CAT_DEFS = [
   { key: 'writer',   defaultName: '소설가',   color: '#E53935', light: '#fde8e8' },
   { key: 'investor', defaultName: '투자자',   color: '#F5A623', light: '#fff8e1' },
   { key: 'family',   defaultName: '가족',     color: '#27AE60', light: '#e8f5e9' },
+  { key: 'school',   defaultName: '학교',     color: '#8E44AD', light: '#f3e8fc' },
 ];
 
 function getCatNames() {
@@ -3256,7 +3257,7 @@ function toggleOneThing(routineId) {
     d.items.splice(existing, 1);
   } else {
     const r = getRoutines().find(r => r.id === routineId);
-    const catRoleMap = { self: '자기계발', writer: '소설가', investor: '투자자', family: '가족' };
+    const catRoleMap = { self: '자기계발', writer: '소설가', investor: '투자자', family: '가족', school: '학교' };
     const role = r ? (catRoleMap[r.category] || null) : null;
     d.items.push({ id: Date.now(), routineId, role, text: r ? r.text : '', done: false });
   }
@@ -8240,7 +8241,7 @@ function updateSchedDateNav() {
 }
 
 // 카테고리별 기본 시작 시각 (분 단위)
-const CAT_BASE_MINUTES = { writer: 7*60, family: 8*60, investor: 10*60, self: 14*60 };
+const CAT_BASE_MINUTES = { writer: 7*60, family: 8*60, investor: 10*60, self: 14*60, school: 8*60 };
 
 function getScheduleKey() { return 'schedule_' + today(); }
 
@@ -8291,7 +8292,7 @@ function generateSchedule() {
   const usedSlots = new Set();
 
   // ── 1. 시각이 지정된 루틴 + 키워드 시간고정 루틴: 고정 배치
-  const catOrder = ['writer','family','investor','self'];
+  const catOrder = ['writer','family','investor','self','school'];
 
   // startTime(HH:MM) → 분 변환 헬퍼
   function timeToMin(hhmm) {

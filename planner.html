@@ -158,7 +158,15 @@
   .chip .memo-mark { font-size: 9px; flex-shrink: 0; }
   .chip .pin-mark { font-size: 9px; flex-shrink: 0; }
   /* 루틴 길이(분)만큼 배경에 색 막대로 표시 */
-  .dur-bar { position: absolute; height: 20px; border-radius: 6px; opacity: 0.28; z-index: 1; pointer-events: none; }
+  .dur-bar { position: absolute; height: 20px; border-radius: 6px; opacity: 0.28; z-index: 1; }
+  .resize-handle {
+    position: absolute; right: -4px; top: 0; width: 9px; height: 100%;
+    cursor: ew-resize; pointer-events: auto;
+  }
+  .resize-handle::after {
+    content: ''; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 12px; border-radius: 2px; background: rgba(0,0,0,0.35);
+  }
   .inline-add {
     position: absolute; top: 3px; left: 4px; z-index: 4;
     border: 1.5px solid #667eea; border-radius: 7px; font-size: 12px; padding: 2px 6px;
@@ -344,6 +352,7 @@ const CAT_DEFS = [
   { key: 'writer',   defaultName: '소설가',   color: '#E53935', light: '#fde8e8' },
   { key: 'investor', defaultName: '투자자',   color: '#F5A623', light: '#fff8e1' },
   { key: 'family',   defaultName: '가족',     color: '#27AE60', light: '#e8f5e9' },
+  { key: 'school',   defaultName: '학교',     color: '#8E44AD', light: '#f3e8fc' },
 ];
 const catOf = k => CAT_DEFS.find(c => c.key === k) || CAT_DEFS[0];
 function getCatNames() {
@@ -409,7 +418,7 @@ function seedPinnedRoutines(d) {
     if (isNaN(hh)) return;
     if (!d.slots[hh]) d.slots[hh] = [];
     if (d.slots[hh].some(c => c.t === 'r' && c.id === r.id)) return;
-    d.slots[hh].push({ t: 'r', id: r.id, text: r.text, cat: r.category || 'self', min: mm || 0, durationMin: r.durationMin || null });
+    d.slots[hh].push({ t: 'r', id: r.id, text: r.text, cat: r.category || 'self', min: mm || 0, durationMin: r.durationMin || 10 });
     changed = true;
   });
   if (changed) saveDayObj(d);
@@ -619,11 +628,14 @@ function renderChip(c, idx, hour, routines, todos, col, pos) {
   // 실제 드롭한 분(min) 위치에 맞춰 왼쪽 좌표를 계산 (10분=1/6칸)
   const leftPct = ((c.min || 0) / 60) * 100;
   const topPx = 3 + pos * 24;
-  // 루틴 기본 길이(분)만큼 배경 막대로 표시
+  // 루틴 기본 길이(분)만큼 배경 막대로 표시. DO에서는 오른쪽 끝을 드래그해서 실제 길이를 늘릴 수 있음
   let barHtml = '';
   if (c.durationMin && c.durationMin > 0) {
     const widthPct = Math.min(100 - leftPct, (c.durationMin / 60) * 100);
-    barHtml = `<div class="dur-bar" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${color}"></div>`;
+    const resizeHandle = (col === 'do' && c.t === 'r')
+      ? `<div class="resize-handle" onmousedown="startResize(event,'${col}',${hour},${idx})" title="끌어서 실제 걸린 시간 조절"></div>`
+      : '';
+    barHtml = `<div class="dur-bar" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${color}">${resizeHandle}</div>`;
   }
   return barHtml + `<span class="chip ${done ? 'done' : ''}" style="left:${leftPct.toFixed(3)}%;top:${topPx}px;background:${bg};border-color:${color}40" draggable="true"${titleAttr}
     ondragstart="dragFromSlot(event,'${col}',${hour},${idx})" oncontextmenu="editChipMemo(event,'${col}',${hour},${idx})">
@@ -645,6 +657,51 @@ function editChipMemo(e, col, hour, idx) {
   if (val === null) return;
   if (val.trim()) c.memo = val.trim(); else delete c.memo;
   saveDay(day);
+  renderTimetable();
+}
+
+// ── DO 칸에서 막대 오른쪽 끝을 끌어 실제 걸린 시간(길이) 조절 ──
+let resizeState = null;
+function startResize(e, col, hour, idx) {
+  e.preventDefault();
+  e.stopPropagation();
+  const cell = e.currentTarget.closest('.do-cell');
+  if (!cell) return;
+  const day = getDay();
+  const c = (day[colArrName(col)][hour] || [])[idx];
+  if (!c) return;
+  resizeState = {
+    col, hour, idx,
+    cellRect: cell.getBoundingClientRect(),
+    startMin: c.min || 0,
+    barEl: e.currentTarget.parentElement,
+    pendingDuration: c.durationMin || 10
+  };
+  document.addEventListener('mousemove', onResizeMove);
+  document.addEventListener('mouseup', onResizeEnd);
+}
+function onResizeMove(e) {
+  if (!resizeState) return;
+  const { cellRect, startMin, barEl } = resizeState;
+  const percent = Math.min(1, Math.max(0, (e.clientX - cellRect.left) / cellRect.width));
+  const endMinAbs = percent * 60;
+  let newDuration = Math.round((endMinAbs - startMin) / 5) * 5;
+  if (newDuration < 5) newDuration = 5;
+  resizeState.pendingDuration = newDuration;
+  if (barEl) {
+    const widthPct = Math.min(100 - (startMin / 60 * 100), (newDuration / 60) * 100);
+    barEl.style.width = widthPct.toFixed(3) + '%';
+  }
+}
+function onResizeEnd() {
+  document.removeEventListener('mousemove', onResizeMove);
+  document.removeEventListener('mouseup', onResizeEnd);
+  if (!resizeState) return;
+  const { col, hour, idx, pendingDuration } = resizeState;
+  const day = getDay();
+  const c = (day[colArrName(col)][hour] || [])[idx];
+  if (c) { c.durationMin = pendingDuration; saveDay(day); }
+  resizeState = null;
   renderTimetable();
 }
 
@@ -741,7 +798,7 @@ function dropOnSlot(e, col, hour) {
       if (data.type === 'r') {
         const r = load('routines', []).find(x => x.id === data.id);
         if (!r) return;
-        chip = { t: 'r', id: r.id, text: r.text, cat: r.category || 'self', durationMin: r.durationMin || null };
+        chip = { t: 'r', id: r.id, text: r.text, cat: r.category || 'self', durationMin: r.durationMin || 10 };
       } else {
         const t = load('todos', []).find(x => x.id === data.id);
         if (!t) return;
