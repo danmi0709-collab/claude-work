@@ -1030,19 +1030,36 @@ function startResize(e, col, hour, idx) {
 function onResizeMove(e) {
   if (!resizeState) return;
   const { cellRect, startMin, barEl } = resizeState;
-  const percent = Math.min(1, Math.max(0, (e.clientX - cellRect.left) / cellRect.width));
+  // 1로 막지 않음 → 마우스가 시간 칸 오른쪽 경계를 넘어가도 길이가 계속 늘어남 (다음 시간까지 이어짐)
+  const percent = Math.max(0, (e.clientX - cellRect.left) / cellRect.width);
   const endMinAbs = percent * 60;
   let newDuration = Math.round((endMinAbs - startMin) / 5) * 5;
   if (newDuration < 5) newDuration = 5;
   resizeState.pendingDuration = newDuration;
   if (barEl) {
+    // 미리보기 막대는 이번 칸 안에서만 보이고, 시간 경계를 넘는 부분은 마우스를 떼면 다음 칸에 이어져 표시됨
     const widthPct = Math.min(100 - (startMin / 60 * 100), (newDuration / 60) * 100);
     barEl.style.width = widthPct.toFixed(3) + '%';
   }
+  showResizeLiveLabel(e, newDuration);
+}
+function showResizeLiveLabel(e, duration) {
+  let el = document.getElementById('resizeLiveLabel');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'resizeLiveLabel';
+    el.className = 'chip-tooltip';
+    el.style.transform = 'none';
+    document.body.appendChild(el);
+  }
+  el.textContent = duration + '분';
+  el.style.left = Math.round(e.clientX + 12) + 'px';
+  el.style.top = Math.round(e.clientY - 10) + 'px';
 }
 function onResizeEnd() {
   document.removeEventListener('mousemove', onResizeMove);
   document.removeEventListener('mouseup', onResizeEnd);
+  document.getElementById('resizeLiveLabel')?.remove();
   if (!resizeState) return;
   const { col, hour, idx, pendingDuration } = resizeState;
   const day = getDay();
