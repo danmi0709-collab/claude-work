@@ -487,6 +487,8 @@ function seedPinnedRoutines(d) {
   let changed = false;
   routines.forEach(r => {
     if (r.paused || !r.startTime) return;
+    // 고정핀을 꽂은 날짜(pinnedSince) 이전에는 절대 채우지 않음 — 과거를 건드리지 않기 위함
+    if (r.pinnedSince && viewDate < r.pinnedSince) return;
     if (!isScheduledOn(r, viewDate) || (r.skipDates || []).includes(viewDate)) return;
     const [hh, mm] = r.startTime.split(':').map(Number);
     if (isNaN(hh)) return;
@@ -806,12 +808,13 @@ function openChipMenu(e, col, hour, idx) {
       const ri = rs.findIndex(x => x.id === c.id);
       if (ri === -1) return;
       if (rs[ri].startTime) {
-        rs[ri] = { ...rs[ri], startTime: null };
+        rs[ri] = { ...rs[ri], startTime: null, pinnedSince: null };
         showToast('📌 고정을 해제했어요');
       } else {
         const hh = String(hour).padStart(2, '0'), mm = String(c.min || 0).padStart(2, '0');
-        rs[ri] = { ...rs[ri], startTime: `${hh}:${mm}`, durationMin: rs[ri].durationMin || c.durationMin || 10 };
-        showToast('📌 이 요일·시각에 고정했어요');
+        // pinnedSince: 지금 보고 있는 날짜부터만 고정 적용 (그 이전 날짜는 절대 안 건드림)
+        rs[ri] = { ...rs[ri], startTime: `${hh}:${mm}`, durationMin: rs[ri].durationMin || c.durationMin || 10, pinnedSince: viewDate };
+        showToast('📌 이 요일·시각에 고정했어요 (오늘부터)');
       }
       save('routines', rs);
       closeChipMenu();
@@ -857,7 +860,10 @@ function renderWeeklyFixed() {
             ${r.durationMin ? `<span class="wf-item-dur">${r.durationMin}분</span>` : ''}
           </div>
           <div class="wf-item-name">${escHtml(r.text)}</div>
-          <button class="wf-item-unpin" onclick="unpinFromWeekly(${r.id})">고정 해제</button>
+          <div style="display:flex;gap:4px">
+            <button class="wf-item-unpin" style="flex:1" onclick="unpinFromWeekly(${r.id})">고정 해제</button>
+            <button class="wf-item-unpin" style="flex:1" onclick="cleanupPastPinSeeds(${r.id})" title="핀을 꽂기 전 날짜에 잘못 채워진 항목 정리">🧹 정리</button>
+          </div>
         </div>`;
       }).join('') : '<div class="wf-empty">—</div>'}
     </div>`;
@@ -867,9 +873,68 @@ function updateWeeklyPinTime(id, newTime) {
   if (!newTime) return;
   const routines = load('routines', []).map(r => r.id === id ? { ...r, startTime: newTime } : r);
   save('routines', routines);
+  const r = routines.find(x => x.id === id);
+  const [hh, mm] = newTime.split(':').map(Number);
+  propagatePinTimeChange(id, hh, mm, r?.durationMin);
   renderWeeklyFixed();
   renderAll();
-  showToast('⏰ 고정 시각을 수정했어요');
+  showToast('⏰ 고정 시각을 수정했어요 (이미 채워진 날짜에도 반영)');
+}
+
+// 고정핀 시각/길이를 고치면, 이미 자동 배치돼 있던 날짜들(핀을 꽂은 날짜 이후)도 함께 업데이트
+function propagatePinTimeChange(routineId, hh, mm, durationMin) {
+  const all = load('plannerData', {});
+  const routines = load('routines', []);
+  const r = routines.find(x => x.id === routineId);
+  if (!r) return;
+  let changed = false;
+  Object.keys(all).forEach(dateKey => {
+    if (r.pinnedSince && dateKey < r.pinnedSince) return;
+    const day = all[dateKey];
+    if (!day || !day.slots) return;
+    let found = null;
+    Object.keys(day.slots).forEach(hKey => {
+      if (found) return;
+      const arr = day.slots[hKey];
+      const i = arr.findIndex(c => c.t === 'r' && c.id === routineId);
+      if (i !== -1) found = arr.splice(i, 1)[0];
+    });
+    if (found) {
+      found.min = mm || 0;
+      if (durationMin) found.durationMin = durationMin;
+      if (!day.slots[hh]) day.slots[hh] = [];
+      day.slots[hh].push(found);
+      changed = true;
+    }
+  });
+  if (changed) save('plannerData', all);
+}
+
+// 핀을 꽂기 전(pinnedSince 이전)에 잘못 채워진 과거 날짜 정리
+function cleanupPastPinSeeds(id) {
+  const routines = load('routines', []);
+  const r = routines.find(x => x.id === id);
+  if (!r) return;
+  const input = prompt('이 고정이 몇 일부터 적용돼야 하나요? (예: 2026-08-17)\n그 이전 날짜에 잘못 들어간 항목은 정리돼요.', r.pinnedSince || viewDate);
+  if (!input) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) { showToast('날짜 형식이 올바르지 않아요 (예: 2026-08-17)'); return; }
+  save('routines', routines.map(x => x.id === id ? { ...x, pinnedSince: input } : x));
+  const all = load('plannerData', {});
+  let changed = false;
+  Object.keys(all).forEach(dateKey => {
+    if (dateKey >= input) return;
+    const day = all[dateKey];
+    if (!day || !day.slots) return;
+    Object.keys(day.slots).forEach(hKey => {
+      const before = day.slots[hKey].length;
+      day.slots[hKey] = day.slots[hKey].filter(c => !(c.t === 'r' && c.id === id));
+      if (day.slots[hKey].length !== before) changed = true;
+    });
+  });
+  if (changed) save('plannerData', all);
+  renderWeeklyFixed();
+  renderAll();
+  showToast('🧹 이전 날짜를 정리했어요');
 }
 function unpinFromWeekly(id) {
   const routines = load('routines', []).map(r => r.id === id ? { ...r, startTime: null } : r);
