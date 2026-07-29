@@ -715,9 +715,11 @@ function renderChip(c, idx, hour, routines, todos, col, pos) {
   const clickAttrs = `onclick="openChipMenu(event,'${col}',${hour},${idx})" ondragstart="dragFromSlot(event,'${col}',${hour},${idx})"`;
   const removeBtn = `<button class="x" onclick="event.stopPropagation();removeChip('${col}',${hour},${idx})">✕</button>`;
 
-  // DO의 루틴(길이가 있는 것)은 칩 자체가 길이(분)만큼 넓은 막대가 되고, 오른쪽 끝에 손잡이가 붙음
-  if (col === 'do' && c.t === 'r' && c.durationMin > 0) {
-    const widthPct = Math.min(100 - leftPct, (c.durationMin / 60) * 100);
+  // DO의 루틴은 칩 자체가 길이(분)만큼 넓은 막대가 되고, 오른쪽 끝에 손잡이가 붙음
+  // (예전에 만들어져 길이 정보가 없는 칩도 기본 10분으로 취급해서 손잡이가 항상 보이게 함)
+  if (col === 'do' && c.t === 'r') {
+    const dur = c.durationMin || 10;
+    const widthPct = Math.min(100 - leftPct, (dur / 60) * 100);
     const resizeHandle = `<div class="resize-handle" onmousedown="startResize(event,'${col}',${hour},${idx})" onclick="event.stopPropagation()" title="끌어서 실제 걸린 시간 조절"></div>`;
     return `<span class="chip chip-block ${done ? 'done' : ''}" style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;top:${topPx}px;background:${bg};border-color:${color}" draggable="true"${hoverAttrs}
       ${clickAttrs}>
@@ -784,8 +786,9 @@ function openChipMenu(e, col, hour, idx) {
 
   const routines = load('routines', []);
   const r = c.t === 'r' ? routines.find(x => x.id === c.id) : null;
-  const showPin = col === 'plan' && !!r;
-  const isPinned = showPin && !!r.startTime;
+  // 직접입력(＋버튼으로 적은 것)도 PLAN에서는 고정 가능 — 고정하는 순간 진짜 루틴으로 전환됨
+  const showPin = col === 'plan' && (c.t === 'r' || c.t === 'x');
+  const isPinned = c.t === 'r' && !!r && !!r.startTime;
 
   const menu = document.createElement('div');
   menu.className = 'chip-menu';
@@ -811,19 +814,36 @@ function openChipMenu(e, col, hour, idx) {
   const pinBtn = menu.querySelector('.chip-menu-pin');
   if (pinBtn) {
     pinBtn.onclick = () => {
-      const rs = load('routines', []);
-      const ri = rs.findIndex(x => x.id === c.id);
-      if (ri === -1) return;
-      if (rs[ri].startTime) {
-        rs[ri] = { ...rs[ri], startTime: null, pinnedSince: null };
-        showToast('📌 고정을 해제했어요');
+      const hh = String(hour).padStart(2, '0'), mm = String(c.min || 0).padStart(2, '0');
+      if (c.t === 'x') {
+        // 직접입력 항목을 진짜 루틴으로 만들면서 그 자리 그대로 고정
+        const DOW = ['일', '월', '화', '수', '목', '금', '토'][new Date(viewDate + 'T00:00:00').getDay()];
+        const rs2 = load('routines', []);
+        const newId = Date.now();
+        rs2.push({
+          id: newId, text: c.text, category: c.cat || 'self', days: [DOW],
+          doneDates: c.done ? [viewDate] : [], startTime: `${hh}:${mm}`,
+          durationMin: c.durationMin || 10, pinnedSince: viewDate
+        });
+        save('routines', rs2);
+        const dd = getDay();
+        const cc = (dd[colArrName(col)][hour] || [])[idx];
+        if (cc) { cc.t = 'r'; cc.id = newId; delete cc.done; saveDay(dd); }
+        showToast(`📌 루틴으로 만들어서 고정했어요 (매주 ${DOW}요일)`);
       } else {
-        const hh = String(hour).padStart(2, '0'), mm = String(c.min || 0).padStart(2, '0');
-        // pinnedSince: 지금 보고 있는 날짜부터만 고정 적용 (그 이전 날짜는 절대 안 건드림)
-        rs[ri] = { ...rs[ri], startTime: `${hh}:${mm}`, durationMin: rs[ri].durationMin || c.durationMin || 10, pinnedSince: viewDate };
-        showToast('📌 이 요일·시각에 고정했어요 (오늘부터)');
+        const rs = load('routines', []);
+        const ri = rs.findIndex(x => x.id === c.id);
+        if (ri === -1) return;
+        if (rs[ri].startTime) {
+          rs[ri] = { ...rs[ri], startTime: null, pinnedSince: null };
+          showToast('📌 고정을 해제했어요');
+        } else {
+          // pinnedSince: 지금 보고 있는 날짜부터만 고정 적용 (그 이전 날짜는 절대 안 건드림)
+          rs[ri] = { ...rs[ri], startTime: `${hh}:${mm}`, durationMin: rs[ri].durationMin || c.durationMin || 10, pinnedSince: viewDate };
+          showToast('📌 이 요일·시각에 고정했어요 (오늘부터)');
+        }
+        save('routines', rs);
       }
-      save('routines', rs);
       closeChipMenu();
       renderAll();
     };
