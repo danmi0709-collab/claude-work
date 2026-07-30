@@ -359,7 +359,7 @@
       <div class="drag-hint">항목을 가운데 시간표로 끌어다 놓으세요</div>
       <div id="todoList"></div>
       <div class="quick-add">
-        <input type="text" id="quickTodoInput" placeholder="새 할일 추가" onkeydown="if(event.key==='Enter')quickAddTodo()">
+        <input type="text" lang="ko" id="quickTodoInput" placeholder="새 할일 추가" onkeydown="if(event.key==='Enter')quickAddTodo()">
         <button onclick="quickAddTodo()">＋</button>
       </div>
     </div>
@@ -378,7 +378,7 @@
       <div id="timetable"><div style="text-align:center;padding:40px 0;color:#9096ab;font-size:13px">☁️ 최신 기록을 불러오는 중...</div></div>
       <div class="memo-area">
         <div class="lbl">📝 하루 메모</div>
-        <textarea id="dayMemo" placeholder="오늘 하루에 대한 메모..." onchange="saveMemo()"></textarea>
+        <textarea lang="ko" id="dayMemo" placeholder="오늘 하루에 대한 메모..." onchange="saveMemo()"></textarea>
       </div>
     </div>
   </div>
@@ -398,7 +398,7 @@
       </div>
       <div style="margin-bottom:9px">
         <div class="rec-lbl">📱 어제 폰 사용시간 (예: 0320)</div>
-        <input type="text" id="recPhone" placeholder="0320 → 3시간 20분" class="rec-input">
+        <input type="text" lang="ko" id="recPhone" placeholder="0320 → 3시간 20분" class="rec-input">
       </div>
       <div class="rec-lbl">기분</div>
       <div class="mood-row" id="moodRow">
@@ -414,11 +414,11 @@
         <button data-e="low" onclick="pickEnergy('low')">😴 낮음</button>
       </div>
       <div class="rec-lbl">🙏 오늘 감사한 일</div>
-      <textarea id="recGratitude" class="rec-input" rows="2" style="resize:none;margin-bottom:9px" placeholder="오늘 감사한 일을 적어요..."></textarea>
+      <textarea lang="ko" id="recGratitude" class="rec-input" rows="2" style="resize:none;margin-bottom:9px" placeholder="오늘 감사한 일을 적어요..."></textarea>
       <div class="rec-lbl">🌙 오늘의 반성</div>
-      <input type="text" id="recGood" class="rec-input" placeholder="✅ 잘한 것" style="margin-bottom:5px">
-      <input type="text" id="recRegret" class="rec-input" placeholder="😔 아쉬운 것" style="margin-bottom:5px">
-      <input type="text" id="recTomorrow" class="rec-input" placeholder="🌅 내일 할 것" style="margin-bottom:10px">
+      <input type="text" lang="ko" id="recGood" class="rec-input" placeholder="✅ 잘한 것" style="margin-bottom:5px">
+      <input type="text" lang="ko" id="recRegret" class="rec-input" placeholder="😔 아쉬운 것" style="margin-bottom:5px">
+      <input type="text" lang="ko" id="recTomorrow" class="rec-input" placeholder="🌅 내일 할 것" style="margin-bottom:10px">
       <button class="save-btn" onclick="saveRecord()">💾 오늘 기록 저장</button>
       <div id="recStatus"></div>
     </div>
@@ -532,14 +532,14 @@ function isScheduledOn(r, dateStr) {
   return r.days.includes('매일') || r.days.includes(dow) || (r.days.includes('평일') && isWeekday);
 }
 
-// ── 배치 여부 확인 (col: 'plan' 또는 'do') → {hour, min} 또는 null ──
-function placedHour(col, type, id) {
+// ── 배치 여부 확인 (col: 'plan' 또는 'do') → [{hour, min}, ...] (루틴은 하루 여러 번 배치될 수 있음) ──
+function placedHours(col, type, id) {
   const arr = getDay()[colArrName(col)];
+  const found = [];
   for (const h of HOURS) {
-    const c = (arr[h] || []).find(c => c.t === type && String(c.id) === String(id));
-    if (c) return { hour: h, min: c.min || 0 };
+    (arr[h] || []).forEach(c => { if (c.t === type && String(c.id) === String(id)) found.push({ hour: h, min: c.min || 0 }); });
   }
-  return null;
+  return found;
 }
 
 // ============================================================
@@ -560,20 +560,20 @@ function renderLeft() {
       return `<div style="font-size:11px;font-weight:800;color:${cat.color};margin:8px 0 4px">${escHtml(catNames[cat.key])}</div>` +
         list.map(r => {
           const done = (r.doneDates || []).includes(viewDate);
-          const ph = placedHour('plan', 'r', r.id);
-          const phDo = placedHour('do', 'r', r.id);
+          const phs = placedHours('plan', 'r', r.id);
+          const phDos = placedHours('do', 'r', r.id);
           const todaySched = isScheduledOn(r, viewDate) && !(r.skipDates || []).includes(viewDate);
           const daysTag = todaySched ? '' : `<span class="days-tag">${escHtml((r.days || []).join('·'))}</span>`;
           const pinTag = r.startTime ? `<span class="pin-tag">📌${r.startTime}${r.durationMin ? '·'+r.durationMin+'분' : ''}</span>` : '';
-          return `<div class="pick-item ${(ph !== null || phDo !== null) ? 'placed' : ''} ${done ? 'done-item' : ''} ${todaySched ? '' : 'not-today'}" draggable="true"
+          return `<div class="pick-item ${(phs.length || phDos.length) ? 'placed' : ''} ${done ? 'done-item' : ''} ${todaySched ? '' : 'not-today'}" draggable="true"
             ondragstart="dragFromList(event,'r',${r.id})">
             <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRoutineDone(${r.id})" onclick="event.stopPropagation()">
             <span class="cat-dot" style="background:${cat.color}"></span>
             <span class="pick-text">${escHtml(r.text)}</span>
             ${pinTag}
             ${daysTag}
-            ${ph !== null ? `<span class="placed-tag">계획${timeLabel(ph.hour, ph.min)}</span>` : ''}
-            ${phDo !== null ? `<span class="placed-tag-do">실행${timeLabel(phDo.hour, phDo.min)}</span>` : ''}
+            ${phs.length ? `<span class="placed-tag">계획${phs.map(p => timeLabel(p.hour, p.min)).join('·')}</span>` : ''}
+            ${phDos.length ? `<span class="placed-tag-do">실행${phDos.map(p => timeLabel(p.hour, p.min)).join('·')}</span>` : ''}
           </div>`;
         }).join('');
     }).join('');
@@ -585,17 +585,17 @@ function renderLeft() {
   document.getElementById('todoCnt').textContent = todos.length ? `${todos.length}개` : '';
   if (!todos.length) tl.innerHTML = '<div class="empty-note">할일이 없어요 🎉</div>';
   else tl.innerHTML = todos.map(t => {
-    const ph = placedHour('plan', 't', t.id);
-    const phDo = placedHour('do', 't', t.id);
+    const phs = placedHours('plan', 't', t.id);
+    const phDos = placedHours('do', 't', t.id);
     const overdue = t.date && t.date < viewDate;
     const future = t.date && t.date > viewDate;
-    return `<div class="pick-item ${(ph !== null || phDo !== null) ? 'placed' : ''} ${future ? 'not-today' : ''}" draggable="true" ondragstart="dragFromList(event,'t',${t.id})">
+    return `<div class="pick-item ${(phs.length || phDos.length) ? 'placed' : ''} ${future ? 'not-today' : ''}" draggable="true" ondragstart="dragFromList(event,'t',${t.id})">
       <input type="checkbox" onchange="toggleTodoDone(${t.id})" onclick="event.stopPropagation()">
       <span class="pick-text">${t.star ? '⭐ ' : ''}${escHtml(t.text)}</span>
       ${overdue ? '<span class="overdue-tag">기한지남</span>' : ''}
       ${future ? `<span class="date-tag">${t.date.slice(5).replace('-','/')}</span>` : ''}
-      ${ph !== null ? `<span class="placed-tag">계획${timeLabel(ph.hour, ph.min)}</span>` : ''}
-      ${phDo !== null ? `<span class="placed-tag-do">실행${timeLabel(phDo.hour, phDo.min)}</span>` : ''}
+      ${phs.length ? `<span class="placed-tag">계획${phs.map(p => timeLabel(p.hour, p.min)).join('·')}</span>` : ''}
+      ${phDos.length ? `<span class="placed-tag-do">실행${phDos.map(p => timeLabel(p.hour, p.min)).join('·')}</span>` : ''}
     </div>`;
   }).join('');
 }
@@ -945,7 +945,7 @@ function openChipMenu(e, col, hour, idx) {
   menu.style.left = Math.round(rect.left) + 'px';
   menu.style.top = Math.round(rect.bottom + 5) + 'px';
   menu.innerHTML = `
-    <textarea class="chip-menu-memo" placeholder="메모를 입력하세요...">${escHtml(c.memo || '')}</textarea>
+    <textarea lang="ko" class="chip-menu-memo" placeholder="메모를 입력하세요...">${escHtml(c.memo || '')}</textarea>
     <div class="chip-menu-row">
       <button class="chip-menu-save">💾 메모 저장</button>
       ${showPin ? `<button class="chip-menu-pin ${isPinned ? 'on' : ''}">📌 ${isPinned ? '고정됨 (눌러서 해제)' : '이 요일·시각에 고정'}</button>` : ''}
@@ -1305,19 +1305,20 @@ function dropOnSlot(e, col, hour) {
       delete chip.memo; // 메모는 계획/실제 각각 따로 (동기화 안 됨)
     }
   } else if (data.src === 'list') {
-    // 같은 칸(PLAN 또는 DO) 안에서 이미 배치돼 있으면 옮기기 (중복 방지, 다른 칸엔 영향 없음)
-    const arr = day[arrName];
-    for (const h of HOURS) {
-      const list = arr[h] || [];
-      const i = list.findIndex(c => c.t === data.type && String(c.id) === String(data.id));
-      if (i !== -1) { chip = list.splice(i, 1)[0]; break; }
-    }
-    if (!chip) {
-      if (data.type === 'r') {
-        const r = load('routines', []).find(x => x.id === data.id);
-        if (!r) return;
-        chip = { t: 'r', id: r.id, text: r.text, cat: r.category || 'self', durationMin: r.durationMin || 10 };
-      } else {
+    if (data.type === 'r') {
+      // 루틴은 하루에 여러 번 할 수 있으므로(예: 수학공부 오전+오후) 중복 없이 항상 새로 추가
+      const r = load('routines', []).find(x => x.id === data.id);
+      if (!r) return;
+      chip = { t: 'r', id: r.id, text: r.text, cat: r.category || 'self', durationMin: r.durationMin || 10 };
+    } else {
+      // 할일은 기존처럼: 같은 칸 안에 이미 배치돼 있으면 옮기기 (중복 방지, 다른 칸엔 영향 없음)
+      const arr = day[arrName];
+      for (const h of HOURS) {
+        const list = arr[h] || [];
+        const i = list.findIndex(c => c.t === data.type && String(c.id) === String(data.id));
+        if (i !== -1) { chip = list.splice(i, 1)[0]; break; }
+      }
+      if (!chip) {
         const t = load('todos', []).find(x => x.id === data.id);
         if (!t) return;
         chip = { t: 't', id: t.id, text: t.text };
@@ -1364,7 +1365,7 @@ function renderCeo() {
           <button class="x" onclick="delCeo('${g.k}',${i})">✕</button>
         </div>`).join('') : '<div class="empty-note" style="padding:2px 0">아직 없어요</div>'}
       <div class="ceo-add-row">
-        <input type="text" id="ceoInp${g.k}" maxlength="30" placeholder="+ 추가" style="border:1.5px solid ${g.color}40"
+        <input type="text" lang="ko" id="ceoInp${g.k}" maxlength="30" placeholder="+ 추가" style="border:1.5px solid ${g.color}40"
           onkeydown="if(event.key==='Enter')addCeo('${g.k}',${g.max})">
       </div>
     </div>`;

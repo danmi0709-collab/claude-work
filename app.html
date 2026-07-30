@@ -898,7 +898,7 @@
         <div id="ceoListC" style="display:flex;flex-direction:column;gap:4px"></div>
         <div id="ceoAddC" style="display:none;margin-top:6px">
           <div style="display:flex;gap:6px">
-            <input type="text" id="ceoInputC" placeholder="Core 할일 입력" maxlength="30" onkeydown="if(event.key==='Enter')commitCeoItem('C')"
+            <input type="text" lang="ko" id="ceoInputC" placeholder="Core 할일 입력" maxlength="30" onkeydown="if(event.key==='Enter')commitCeoItem('C')"
               style="flex:1;padding:7px 10px;border:1.5px solid #ef4444;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
             <button onclick="commitCeoItem('C')" style="background:#ef4444;color:white;border:none;border-radius:8px;padding:0 12px;font-size:13px;cursor:pointer">✓</button>
           </div>
@@ -915,7 +915,7 @@
         <div id="ceoListE" style="display:flex;flex-direction:column;gap:4px"></div>
         <div id="ceoAddE" style="display:none;margin-top:6px">
           <div style="display:flex;gap:6px">
-            <input type="text" id="ceoInputE" placeholder="Execution 할일 입력" maxlength="30" onkeydown="if(event.key==='Enter')commitCeoItem('E')"
+            <input type="text" lang="ko" id="ceoInputE" placeholder="Execution 할일 입력" maxlength="30" onkeydown="if(event.key==='Enter')commitCeoItem('E')"
               style="flex:1;padding:7px 10px;border:1.5px solid #10b981;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
             <button onclick="commitCeoItem('E')" style="background:#10b981;color:white;border:none;border-radius:8px;padding:0 12px;font-size:13px;cursor:pointer">✓</button>
           </div>
@@ -932,7 +932,7 @@
         <div id="ceoListO" style="display:flex;flex-direction:column;gap:4px"></div>
         <div id="ceoAddO" style="display:none;margin-top:6px">
           <div style="display:flex;gap:6px">
-            <input type="text" id="ceoInputO" placeholder="내려놓을 것 입력" maxlength="30" onkeydown="if(event.key==='Enter')commitCeoItem('O')"
+            <input type="text" lang="ko" id="ceoInputO" placeholder="내려놓을 것 입력" maxlength="30" onkeydown="if(event.key==='Enter')commitCeoItem('O')"
               style="flex:1;padding:7px 10px;border:1.5px solid #f59e0b;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
             <button onclick="commitCeoItem('O')" style="background:#f59e0b;color:white;border:none;border-radius:8px;padding:0 12px;font-size:13px;cursor:pointer">✓</button>
           </div>
@@ -967,7 +967,7 @@
           </div>
           <div style="margin-bottom:8px">
             <div style="font-size:11px;color:#888;margin-bottom:3px">📱 어제 폰 사용시간 (예: 0320)</div>
-            <input type="text" id="drPhone" placeholder="0320 → 3시간 20분" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
+            <input type="text" lang="ko" id="drPhone" placeholder="0320 → 3시간 20분" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
           </div>
           <div style="font-size:11px;color:#888;margin-bottom:5px">기분</div>
           <div style="display:flex;gap:6px;justify-content:space-around;margin-bottom:8px" id="drMoodBtns">
@@ -995,7 +995,7 @@
         <!-- 감사일기 (사진+표정 포함) -->
         <div style="margin-bottom:14px">
           <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:6px">🙏 오늘 감사한 일</div>
-          <textarea id="schedGratitudeInput" rows="2" placeholder="오늘 감사한 일을 적어요..." style="width:100%;padding:9px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="schedGratitudeInput" rows="2" placeholder="오늘 감사한 일을 적어요..." style="width:100%;padding:9px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
           <div style="margin-top:8px">
             <div style="font-size:11px;color:#888;margin-bottom:5px">표정 태그 (선택)</div>
             <div id="drGratitudeEmotionPicker" style="display:flex;flex-wrap:wrap;gap:5px"></div>
@@ -1011,9 +1011,9 @@
         <!-- 반성 -->
         <div style="margin-bottom:14px">
           <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:6px">🌙 오늘의 반성</div>
-          <input type="text" id="schedReflGood" placeholder="✅ 잘한 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'">
-          <input type="text" id="schedReflRegret" placeholder="😔 아쉬운 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'">
-          <input type="text" id="schedReflTomorrow" placeholder="🌅 내일 할 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
+          <input type="text" lang="ko" id="schedReflGood" placeholder="✅ 잘한 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'">
+          <input type="text" lang="ko" id="schedReflRegret" placeholder="😔 아쉬운 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'">
+          <input type="text" lang="ko" id="schedReflTomorrow" placeholder="🌅 내일 할 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
         </div>
         <button onclick="saveDailyRecord()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">💾 오늘 기록 저장</button>
         <div id="dailyRecordStatus" style="font-size:12px;color:#aaa;text-align:center;margin-top:8px"></div>
@@ -1058,7 +1058,7 @@
     <div class="card">
       <div class="card-title">➕ 새 할일 추가</div>
       <div class="input-row">
-        <input type="text" id="todoInput" placeholder="할일을 입력하세요" onkeydown="if(event.key==='Enter')addTodo()">
+        <input type="text" lang="ko" id="todoInput" placeholder="할일을 입력하세요" onkeydown="if(event.key==='Enter')addTodo()">
         <button class="btn btn-primary" onclick="addTodo()">추가</button>
       </div>
       <div class="date-input-row">
@@ -1116,7 +1116,7 @@
       <div class="card-title">➕ 루틴 추가</div>
       <div class="routine-add-form">
         <div class="input-row">
-          <input type="text" id="routineInput" placeholder="루틴 이름 (예: 물 2L 마시기)" style="margin-bottom:0">
+          <input type="text" lang="ko" id="routineInput" placeholder="루틴 이름 (예: 물 2L 마시기)" style="margin-bottom:0">
         </div>
         <div style="margin-bottom:4px">
           <div style="font-size:12px;color:#888;margin-bottom:6px;">카테고리</div>
@@ -1136,6 +1136,19 @@
             <button class="weekday-btn" data-day="일">일</button>
           </div>
         </div>
+        <div style="display:flex;gap:8px;margin:10px 0">
+          <div style="flex:1">
+            <div style="font-size:12px;color:#888;margin-bottom:6px">⏰ 시각 (선택)</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="time" id="routineAddTime" step="300" lang="ko" style="flex:1;padding:9px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+              <button onclick="document.getElementById('routineAddTime').value=''" style="padding:9px 10px;border:none;background:#f5f5f7;border-radius:10px;font-size:11px;color:#999;cursor:pointer;font-family:inherit">지우기</button>
+            </div>
+          </div>
+          <div style="width:110px">
+            <div style="font-size:12px;color:#888;margin-bottom:6px">⏱️ 길이(분)</div>
+            <input type="number" id="routineAddDuration" min="5" max="600" step="5" placeholder="예: 40" style="width:100%;padding:9px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+          </div>
+        </div>
         <button class="btn btn-primary" onclick="addRoutine()" style="width:100%">루틴 추가</button>
       </div>
     </div>
@@ -1151,7 +1164,7 @@
       </div>
       <div id="bookAddForm" style="display:none;margin-top:10px">
         <div class="input-row">
-          <input type="text" id="bookTitle" placeholder="책 제목" oninput="searchBookCover()">
+          <input type="text" lang="ko" id="bookTitle" placeholder="책 제목" oninput="searchBookCover()">
           <button class="btn btn-gray btn-sm" onclick="searchBookCover(true)">🔍 표지 검색</button>
         </div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px" id="bookCatSelector"></div>
@@ -1221,13 +1234,13 @@
         <div class="card-title" style="margin:0">🧠 브레인 덤프</div>
         <div style="font-size:11px;color:#aaa">머릿속 전부 쏟아내요</div>
       </div>
-      <textarea id="brainDumpInput" rows="4" placeholder="지금 머릿속에 있는 것 전부 적어요&#10;할 것, 걱정, 아이디어, 뭐든..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+      <textarea lang="ko" id="brainDumpInput" rows="4" placeholder="지금 머릿속에 있는 것 전부 적어요&#10;할 것, 걱정, 아이디어, 뭐든..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       <button onclick="saveBrainDump()" style="width:100%;padding:10px;background:#667eea;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">🧠 덤프!</button>
       <div id="brainDumpList" style="margin-top:10px"></div>
     </div>
     <div class="card">
       <div class="card-title">💬 빠른 메모</div>
-      <textarea class="memo-input-area" id="memoInput" rows="3" placeholder="메모를 입력하고 저장하세요..." onkeydown="if(event.ctrlKey&&event.key==='Enter')saveMemo()"></textarea>
+      <textarea lang="ko" class="memo-input-area" id="memoInput" rows="3" placeholder="메모를 입력하고 저장하세요..." onkeydown="if(event.ctrlKey&&event.key==='Enter')saveMemo()"></textarea>
       <div id="memoPhotoPreview" style="margin-bottom:6px"></div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-gray" onclick="document.getElementById('memoPhotoInput').click()" style="padding:10px 14px;flex-shrink:0">📷</button>
@@ -1248,7 +1261,7 @@
     <div class="card" style="margin-bottom:12px">
       <div class="card-title">🔍 일정 검색</div>
       <div style="display:flex;gap:8px">
-        <input type="text" id="gcalSearchInput" placeholder="일정 이름 검색 (예: 돈독모, 병원…)"
+        <input type="text" lang="ko" id="gcalSearchInput" placeholder="일정 이름 검색 (예: 돈독모, 병원…)"
           style="flex:1;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none"
           onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"
           onkeydown="if(event.key==='Enter')searchGcalEvents()">
@@ -1292,7 +1305,7 @@
           4. 클라이언트 ID 복사 후 아래 붙여넣기</p>
           <p style="font-size:12px;color:#888;margin-top:6px">☁️ 캘린더 읽기 권한과 함께 Drive 자동 저장 권한도 요청됩니다.</p>
           <label>Google OAuth Client ID</label>
-          <input type="text" id="gcalClientId" placeholder="xxxxx.apps.googleusercontent.com">
+          <input type="text" lang="ko" id="gcalClientId" placeholder="xxxxx.apps.googleusercontent.com">
           <button class="btn btn-primary" onclick="saveGcalSettings()" style="width:100%">설정 저장</button>
         </div>
       </details>
@@ -1301,14 +1314,14 @@
     <div class="card" style="margin-top:4px">
       <div class="card-title">🎬 TMDB 영화 검색 API</div>
       <p style="font-size:12px;color:#888;margin-bottom:8px">영화/드라마 검색 시 포스터·감독·배우·스트리밍 매체 자동입력에 사용해요.<br>무료 가입: <a href="https://www.themoviedb.org/signup" target="_blank" style="color:#667eea">themoviedb.org</a> → 설정 → API</p>
-      <input type="text" id="tmdbApiKeyInput" placeholder="TMDB API 키 입력" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+      <input type="text" lang="ko" id="tmdbApiKeyInput" placeholder="TMDB API 키 입력" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
       <button class="btn btn-primary" onclick="saveTmdbApiKey()" style="width:100%">API 키 저장</button>
     </div>
 
     <div class="card" style="margin-top:4px">
       <div class="card-title">☁️ 데이터 동기화</div>
       <p style="font-size:12px;color:#888;margin-bottom:8px">폰에서 기록한 내용을 PC에서 불러오거나, 앱 데이터를 시트에 올릴 수 있어요.</p>
-      <input type="text" id="syncSheetUrl" placeholder="Apps Script 웹앱 URL" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:12px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+      <input type="text" lang="ko" id="syncSheetUrl" placeholder="Apps Script 웹앱 URL" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:12px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <button class="btn btn-green" onclick="fetchFromSyncSheet()" style="flex:1">⬇️ 시트에서 가져오기</button>
         <button class="btn btn-primary" onclick="pushToSyncSheet()" style="flex:1">⬆️ 시트에 올리기</button>
@@ -1340,7 +1353,7 @@
         <button class="btn btn-gray" style="width:100%" onclick="showPasteImport()">📋 텍스트로 가져오기 (모바일용)</button>
       </div>
       <div id="pasteImportBox" style="display:none;margin-top:8px">
-        <textarea id="pasteImportText" style="width:100%;height:120px;font-size:12px;border:1px solid #ddd;border-radius:8px;padding:8px;box-sizing:border-box" placeholder="PC에서 내보낸 JSON 내용을 여기에 붙여넣으세요"></textarea>
+        <textarea lang="ko" id="pasteImportText" style="width:100%;height:120px;font-size:12px;border:1px solid #ddd;border-radius:8px;padding:8px;box-sizing:border-box" placeholder="PC에서 내보낸 JSON 내용을 여기에 붙여넣으세요"></textarea>
         <div style="display:flex;gap:8px;margin-top:6px">
           <button class="btn btn-primary" style="flex:1" onclick="importFromPaste()">✅ 가져오기</button>
           <button class="btn btn-gray" style="flex:1" onclick="hidePasteImport()">취소</button>
@@ -1372,12 +1385,12 @@
         <!-- TMDB 검색 -->
         <div style="position:relative;margin-bottom:10px">
           <div style="display:flex;gap:6px">
-            <input type="text" id="movieSearchInput" placeholder="🔍 제목 검색 → 자동입력 (TMDB)" style="flex:1;padding:10px 12px;border:1.5px solid #667eea;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box" onkeydown="if(event.key==='Enter')searchTMDB()">
+            <input type="text" lang="ko" id="movieSearchInput" placeholder="🔍 제목 검색 → 자동입력 (TMDB)" style="flex:1;padding:10px 12px;border:1.5px solid #667eea;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box" onkeydown="if(event.key==='Enter')searchTMDB()">
             <button id="movieSearchBtn" onclick="searchTMDB()" style="padding:10px 14px;background:#667eea;color:white;border:none;border-radius:10px;font-size:16px;cursor:pointer">🔍</button>
           </div>
           <div id="movieSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.18);z-index:200;max-height:280px;overflow-y:auto;margin-top:4px;border:1px solid #eee"></div>
         </div>
-        <input type="text" id="movieTitle" placeholder="영화 제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="movieTitle" placeholder="영화 제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
         <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
           <div id="moviePosterPreview" class="book-cover-placeholder" onclick="document.getElementById('moviePosterFile').click()" style="width:60px;height:84px;flex-shrink:0">
             <span>🎞️</span><small>포스터<br>추가</small>
@@ -1393,10 +1406,10 @@
           <label style="font-size:13px;color:#555;white-space:nowrap">별점</label>
           <div id="movieStarPicker" style="display:flex;gap:4px"></div>
         </div>
-        <input type="text" id="movieMedium" placeholder="관람 매체 (예: CGV, Netflix, 왓챠)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
-        <input type="text" id="movieDirector" placeholder="감독 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
-        <input type="text" id="movieActors" placeholder="주요 배우 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
-        <textarea id="movieReview" placeholder="간단평 (선택)" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
+        <input type="text" lang="ko" id="movieMedium" placeholder="관람 매체 (예: CGV, Netflix, 왓챠)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="movieDirector" placeholder="감독 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="movieActors" placeholder="주요 배우 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <textarea lang="ko" id="movieReview" placeholder="간단평 (선택)" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
         <div id="moviePhotoPreview" onclick="document.getElementById('moviePhotoFile').click()"
           style="width:100%;min-height:50px;background:#f5f5f7;border-radius:10px;border:1.5px dashed #ddd;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:8px">
           <span style="color:#bbb;font-size:13px">📸 사진 추가 (가로형, 선택)</span>
@@ -1416,7 +1429,7 @@
         <span id="cultureFormIcon" style="font-size:18px;color:#aaa;transition:transform 0.2s">▼</span>
       </div>
       <div id="cultureAddForm" style="display:none;margin-top:10px">
-        <input type="text" id="cultureTitle" placeholder="제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="cultureTitle" placeholder="제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="cultureTypePicker">
           <button onclick="selectCultureType('전시')" id="ctype-전시" style="padding:6px 12px;border-radius:20px;border:1.5px solid #e0e0e0;background:white;color:#666;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">전시</button>
           <button onclick="selectCultureType('공연')" id="ctype-공연" style="padding:6px 12px;border-radius:20px;border:1.5px solid #e0e0e0;background:white;color:#666;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">공연</button>
@@ -1429,12 +1442,12 @@
           <label style="font-size:13px;color:#555;white-space:nowrap">날짜</label>
           <input type="date" id="cultureDate" style="flex:1;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit">
         </div>
-        <input type="text" id="cultureVenue" placeholder="장소 (예: 국립현대미술관, LG아트센터)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="cultureVenue" placeholder="장소 (예: 국립현대미술관, LG아트센터)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
           <label style="font-size:13px;color:#555;white-space:nowrap">별점</label>
           <div id="cultureStarPicker" style="display:flex;gap:4px"></div>
         </div>
-        <textarea id="cultureReview" placeholder="한줄 감상" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
+        <textarea lang="ko" id="cultureReview" placeholder="한줄 감상" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
         <div id="culturePhotoPreview" onclick="document.getElementById('culturePhotoFile').click()"
           style="width:100%;min-height:50px;background:#f5f5f7;border-radius:10px;border:1.5px dashed #ddd;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:10px">
           <span style="color:#bbb;font-size:13px">📸 사진 추가 (선택)</span>
@@ -1453,18 +1466,18 @@
         <div style="font-weight:700;font-size:16px">✏️ 수정</div>
         <button onclick="closeCultureEdit()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa">✕</button>
       </div>
-      <input type="text" id="cultureEditTitle" placeholder="제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+      <input type="text" lang="ko" id="cultureEditTitle" placeholder="제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="cultureEditTypePicker"></div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <label style="font-size:13px;color:#555;white-space:nowrap">날짜</label>
         <input type="date" id="cultureEditDate" style="flex:1;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit">
       </div>
-      <input type="text" id="cultureEditVenue" placeholder="장소" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+      <input type="text" lang="ko" id="cultureEditVenue" placeholder="장소" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
         <label style="font-size:13px;color:#555;white-space:nowrap">별점</label>
         <div id="cultureEditStarPicker" style="display:flex;gap:4px"></div>
       </div>
-      <textarea id="cultureEditReview" placeholder="한줄 감상" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
+      <textarea lang="ko" id="cultureEditReview" placeholder="한줄 감상" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
       <div id="cultureEditPhotoPreview" onclick="document.getElementById('cultureEditPhotoFile').click()"
         style="width:100%;min-height:50px;background:#f5f5f7;border-radius:10px;border:1.5px dashed #ddd;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:10px">
         <span style="color:#bbb;font-size:13px">📸 사진 변경 (선택)</span>
@@ -1527,12 +1540,12 @@
         <span id="draftFormIcon" style="font-size:18px;color:#aaa;transition:transform 0.2s">▼</span>
       </div>
       <div id="draftAddForm" style="display:none;margin-top:10px">
-        <input type="text" id="draftTitle" placeholder="제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="draftTitle" placeholder="제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <label style="font-size:13px;color:#555;white-space:nowrap">작성일</label>
           <input type="date" id="draftDate" style="flex:1;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit">
         </div>
-        <textarea id="draftContent" rows="6" placeholder="여기에 습작을 붙여넣거나 직접 써보세요..." style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:8px;line-height:1.7;box-sizing:border-box"></textarea>
+        <textarea lang="ko" id="draftContent" rows="6" placeholder="여기에 습작을 붙여넣거나 직접 써보세요..." style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:8px;line-height:1.7;box-sizing:border-box"></textarea>
         <button class="btn btn-primary" onclick="addDraft()" style="width:100%;margin-bottom:4px">추가</button>
       </div>
     </div>
@@ -1549,9 +1562,9 @@
         <span id="storyFormToggleIcon" style="font-size:18px;color:#aaa;transition:transform 0.2s">▼</span>
       </div>
       <div id="storyAddForm" style="display:none;margin-top:10px">
-        <input type="text" id="storyTitle" placeholder="소설 제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
-        <input type="text" id="storyAuthor" placeholder="작가" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
-        <input type="text" id="storyBook" placeholder="수록도서 (예: 무진기행, 오 헨리 단편집)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="storyTitle" placeholder="소설 제목" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="storyAuthor" placeholder="작가" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
+        <input type="text" lang="ko" id="storyBook" placeholder="수록도서 (예: 무진기행, 오 헨리 단편집)" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:8px;box-sizing:border-box">
         <div class="input-row" style="align-items:center;gap:8px;margin-bottom:8px">
           <label style="font-size:13px;color:#555;white-space:nowrap">읽은 날짜</label>
           <input type="date" id="storyDate" style="flex:1;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit">
@@ -1560,7 +1573,7 @@
           <label style="font-size:13px;color:#555;white-space:nowrap">별점</label>
           <div id="storyStarPicker" style="display:flex;gap:4px"></div>
         </div>
-        <textarea id="storyReview" placeholder="간단평 (선택)" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
+        <textarea lang="ko" id="storyReview" placeholder="간단평 (선택)" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;resize:none;margin-bottom:8px;box-sizing:border-box"></textarea>
         <button class="btn btn-primary" onclick="addStory()" style="width:100%;margin-bottom:4px">추가</button>
       </div>
     </div>
@@ -1573,7 +1586,7 @@
     <div class="card" style="padding-bottom:4px">
       <div class="card-title">🙏 감사일기</div>
       <div id="gratitudeDateNav" style="display:flex;align-items:center;justify-content:center;gap:0;background:#f8f9ff;border-radius:14px;padding:6px 12px;margin-bottom:10px"></div>
-      <textarea id="gratitudeInput" rows="5" placeholder="감사한 일들을 적어보세요 :)" style="width:100%;padding:12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.7;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+      <textarea lang="ko" id="gratitudeInput" rows="5" placeholder="감사한 일들을 적어보세요 :)" style="width:100%;padding:12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.7;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       <!-- 감정 태그 -->
       <div style="margin-top:10px;margin-bottom:4px">
         <div style="font-size:11px;color:#888;margin-bottom:6px">오늘의 감정 태그 (선택)</div>
@@ -1633,9 +1646,9 @@
       <div class="card-title">🔮 미래의 나에게 묻기</div>
       <div id="futureMeProfilePreview" style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.5"></div>
       <div style="font-size:12px;color:#888;margin-bottom:4px">📍 지금 나의 상황 · 고민 <span style="color:#ccc">(선택)</span></div>
-      <textarea id="futureMeContext" rows="3" placeholder="예: 요즘 글을 전혀 못 쓰고 있어. 아이가 아파서 루틴도 무너진 상태야. 부동산은 이번 달 계약이 하나 있어." style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:10px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
+      <textarea lang="ko" id="futureMeContext" rows="3" placeholder="예: 요즘 글을 전혀 못 쓰고 있어. 아이가 아파서 루틴도 무너진 상태야. 부동산은 이번 달 계약이 하나 있어." style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:10px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
       <div style="font-size:12px;color:#888;margin-bottom:4px">❓ 질문 <span style="color:#ccc">(선택 — 비워두면 자유 조언)</span></div>
-      <textarea id="futureMeQuestion" rows="2" placeholder="예: 글쓰기 슬럼프를 어떻게 극복했어?" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:10px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
+      <textarea lang="ko" id="futureMeQuestion" rows="2" placeholder="예: 글쓰기 슬럼프를 어떻게 극복했어?" style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:10px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
       <button id="futureMeAskBtn" onclick="askFutureMe()" style="width:100%;padding:13px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">✨ 조언 받기</button>
     </div>
 
@@ -1655,21 +1668,21 @@
           <button onclick="saveClaudeApiKey()" style="padding:9px 16px;background:#667eea;color:white;border:none;border-radius:10px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit">저장</button>
         </div>
         <div style="font-size:12px;color:#888;margin-bottom:4px">나를 한 줄로</div>
-        <textarea id="futureMeSelfDesc" rows="2" placeholder="예: 새벽에 글이 잘 써지고, 결정을 오래 고민하고, 칭찬받으면 더 열심히 함. 완벽주의라 시작을 못 할 때가 많아." style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:12px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
+        <textarea lang="ko" id="futureMeSelfDesc" rows="2" placeholder="예: 새벽에 글이 잘 써지고, 결정을 오래 고민하고, 칭찬받으면 더 열심히 함. 완벽주의라 시작을 못 할 때가 많아." style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:12px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
         <div style="font-size:12px;color:#888;margin-bottom:4px">미래 나이</div>
         <input type="number" id="futureMeAge" placeholder="예: 45" min="20" max="99" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;box-sizing:border-box">
         <div style="font-size:12px;color:#888;margin-bottom:4px">이룬 것들 (자유롭게 적어주세요)</div>
-        <textarea id="futureMeAchievements" rows="3" placeholder="예: 소설 3편 출판, 아파트 10채 보유, 아이 독립, 건강하고 여유로운 삶..." style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:12px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
+        <textarea lang="ko" id="futureMeAchievements" rows="3" placeholder="예: 소설 3편 출판, 아파트 10채 보유, 아이 독립, 건강하고 여유로운 삶..." style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;margin-bottom:12px;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
         <div style="border-top:1px solid #f0f0f0;margin-bottom:12px;padding-top:12px">
           <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:10px">👤 현재 나에 대해 (고정 정보)</div>
           <div style="font-size:12px;color:#888;margin-bottom:4px">아이 나이 · 상황</div>
-          <input type="text" id="futureMeChild" placeholder="예: 7살, 초등학교 입학 준비 중" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
+          <input type="text" lang="ko" id="futureMeChild" placeholder="예: 7살, 초등학교 입학 준비 중" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
           <div style="font-size:12px;color:#888;margin-bottom:4px">현재 쓰고 있는 글 · 목표</div>
-          <input type="text" id="futureMeWritingGoal" placeholder="예: 단편소설 월 1편 목표, 지금은 슬럼프 중" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
+          <input type="text" lang="ko" id="futureMeWritingGoal" placeholder="예: 단편소설 월 1편 목표, 지금은 슬럼프 중" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
           <div style="font-size:12px;color:#888;margin-bottom:4px">부동산 현황 · 목표</div>
-          <input type="text" id="futureMeRealty" placeholder="예: 아파트 2채 보유, 올해 1채 더 목표" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
+          <input type="text" lang="ko" id="futureMeRealty" placeholder="예: 아파트 2채 보유, 올해 1채 더 목표" style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
           <div style="font-size:12px;color:#888;margin-bottom:4px">기타 (건강, 관계, 하고 싶은 말 등)</div>
-          <textarea id="futureMeEtc" rows="2" placeholder="예: 요즘 체력이 많이 떨어진 것 같아. 운동을 시작하고 싶어." style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
+          <textarea lang="ko" id="futureMeEtc" rows="2" placeholder="예: 요즘 체력이 많이 떨어진 것 같아. 운동을 시작하고 싶어." style="width:100%;padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;resize:none;font-family:inherit;line-height:1.5;box-sizing:border-box"></textarea>
         </div>
         <div style="font-size:12px;color:#888;margin-bottom:8px">말투 스타일</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="futureStyleBtns">
@@ -1689,15 +1702,15 @@
       <div style="font-size:11px;color:#aaa;margin-bottom:14px;line-height:1.5">데일 카네기의 걱정 해결법 — 걱정을 직면하면 사라집니다</div>
       <div style="margin-bottom:10px">
         <div style="font-size:12px;color:#667eea;font-weight:700;margin-bottom:5px">① 현재 상황 — 무엇이 걱정되나요?</div>
-        <textarea id="worrySituation" rows="2" placeholder="걱정되는 상황을 구체적으로 적어요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="worrySituation" rows="2" placeholder="걱정되는 상황을 구체적으로 적어요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:12px;color:#f59e0b;font-weight:700;margin-bottom:5px">② 최악의 경우 — 정말 일어난다면?</div>
-        <textarea id="worryWorst" rows="2" placeholder="최악의 결과를 받아들일 수 있나요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="worryWorst" rows="2" placeholder="최악의 결과를 받아들일 수 있나요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <div style="margin-bottom:14px">
         <div style="font-size:12px;color:#10b981;font-weight:700;margin-bottom:5px">③ 개선 방안 — 지금 할 수 있는 것은?</div>
-        <textarea id="worryImprove" rows="2" placeholder="최악을 막거나 상황을 개선할 방법" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="worryImprove" rows="2" placeholder="최악을 막거나 상황을 개선할 방법" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <button class="btn btn-primary" onclick="addWorry()" style="width:100%">걱정 기록하기</button>
     </div>
@@ -1711,15 +1724,15 @@
       <div id="reflectionDateNav" style="display:flex;align-items:center;justify-content:center;gap:0;background:#f8f9ff;border-radius:14px;padding:6px 12px;margin-bottom:12px"></div>
       <div style="margin-bottom:10px">
         <div style="font-size:12px;color:#6bcb77;font-weight:700;margin-bottom:5px">✅ 잘한 것</div>
-        <textarea id="reflectionGood" rows="2" placeholder="오늘 잘한 일..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="reflectionGood" rows="2" placeholder="오늘 잘한 일..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:12px;color:#f59e0b;font-weight:700;margin-bottom:5px">😔 아쉬운 것</div>
-        <textarea id="reflectionRegret" rows="2" placeholder="아쉬웠던 점..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="reflectionRegret" rows="2" placeholder="아쉬웠던 점..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <div style="margin-bottom:14px">
         <div style="font-size:12px;color:#667eea;font-weight:700;margin-bottom:5px">🌅 내일 할 것</div>
-        <textarea id="reflectionTomorrow" rows="2" placeholder="내일 꼭 할 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="reflectionTomorrow" rows="2" placeholder="내일 꼭 할 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <button class="btn btn-primary" onclick="saveReflection()" style="width:100%">저장</button>
     </div>
@@ -1728,7 +1741,7 @@
       <div class="card-title">📅 이번 주 회고</div>
       <div id="weeklyDotBar" style="display:flex;gap:4px;justify-content:center;margin-bottom:14px"></div>
       <div style="font-size:12px;color:#888;margin-bottom:6px">이번 주 한 줄 소감</div>
-      <textarea id="weeklyInsightInput" rows="2" placeholder="이번 주 어땠어? 잘한 것, 아쉬운 것, 느낀 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+      <textarea lang="ko" id="weeklyInsightInput" rows="2" placeholder="이번 주 어땠어? 잘한 것, 아쉬운 것, 느낀 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       <button onclick="saveWeeklyInsight()" style="width:100%;padding:10px;background:#667eea;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">저장</button>
     </div>
     <div id="reflectionList"></div>
@@ -1760,7 +1773,7 @@
       <!-- 폰 사용시간 (전날) -->
       <div style="margin-bottom:14px">
         <div id="phoneUsageLabel" style="font-size:11px;color:#888;margin-bottom:4px">📱 어제 폰 사용시간</div>
-        <input type="text" id="phoneUsage" placeholder="숫자 입력 (예: 0320 → 3시간 20분)" onblur="savePhoneUsage(this.value)"
+        <input type="text" lang="ko" id="phoneUsage" placeholder="숫자 입력 (예: 0320 → 3시간 20분)" onblur="savePhoneUsage(this.value)"
           style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box">
       </div>
 
@@ -1788,7 +1801,7 @@
         <button onclick="pickMoodEnergy('low')" id="energyBtn-low" style="flex:1;padding:7px 4px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;background:white;color:#555;font-family:inherit;transition:all 0.15s">😴 낮음</button>
       </div>
       <!-- 기분 원인 메모 -->
-      <input type="text" id="moodReasonInput" placeholder="기분의 원인 (선택, 최대 50자)" maxlength="50"
+      <input type="text" lang="ko" id="moodReasonInput" placeholder="기분의 원인 (선택, 최대 50자)" maxlength="50"
         style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:12px"
         onfocus="this.style.borderColor='#667eea'" onblur="saveMoodReason(this.value);this.style.borderColor='#e5e5e5'">
       <div id="moodHistory" style="font-size:12px;color:#888"></div>
@@ -1799,23 +1812,23 @@
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
           <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">🌅 아침</div>
-          <textarea id="mealBreakfast" rows="1" placeholder="아침 식사" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('breakfast',this.value);this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="mealBreakfast" rows="1" placeholder="아침 식사" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('breakfast',this.value);this.style.borderColor='#e5e5e5'"></textarea>
         </div>
         <div>
           <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">☀️ 점심</div>
-          <textarea id="mealLunch" rows="1" placeholder="점심 식사" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('lunch',this.value);this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="mealLunch" rows="1" placeholder="점심 식사" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('lunch',this.value);this.style.borderColor='#e5e5e5'"></textarea>
         </div>
         <div>
           <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">🌙 저녁</div>
-          <textarea id="mealDinner" rows="1" placeholder="저녁 식사" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('dinner',this.value);this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="mealDinner" rows="1" placeholder="저녁 식사" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('dinner',this.value);this.style.borderColor='#e5e5e5'"></textarea>
         </div>
         <div>
           <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">🍫 간식</div>
-          <textarea id="mealSnack" rows="1" placeholder="간식" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('snack',this.value);this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="mealSnack" rows="1" placeholder="간식" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="saveMeal('snack',this.value);this.style.borderColor='#e5e5e5'"></textarea>
         </div>
         <div>
           <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">💪 운동</div>
-          <textarea id="mealExercise" rows="1" placeholder="오늘 운동 (예: 필라테스 1시간, 산책 30분)" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#6bcb77'" onblur="saveMeal('exercise',this.value);this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="mealExercise" rows="1" placeholder="오늘 운동 (예: 필라테스 1시간, 산책 30분)" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#6bcb77'" onblur="saveMeal('exercise',this.value);this.style.borderColor='#e5e5e5'"></textarea>
         </div>
       </div>
     </div>
@@ -1836,7 +1849,7 @@
         </div>
         <button onclick="resetEcho()" style="background:rgba(255,255,255,0.15);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit">초기화</button>
       </div>
-      <input type="text" id="echoMainGoal" placeholder="🎯 핵심 목표 (예: 1년 안에 소설 출판)" maxlength="40"
+      <input type="text" lang="ko" id="echoMainGoal" placeholder="🎯 핵심 목표 (예: 1년 안에 소설 출판)" maxlength="40"
         style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;box-sizing:border-box;outline:none;color:white;margin-bottom:12px"
         oninput="saveEchoMain(this.value)" onfocus="this.style.borderColor='rgba(255,255,255,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.25)'">
       <div style="background:rgba(255,255,255,0.12);border-radius:8px;height:8px;overflow:hidden">
@@ -1925,7 +1938,7 @@
     <div class="card">
       <div class="card-title">💌 미래의 나에게 편지</div>
       <div style="font-size:12px;color:#aaa;margin-bottom:10px;line-height:1.5">지금의 마음을 적으면 30일 or 90일 후 열려요 🔒<br>90일 편지는 분기 시작할 때 써두면 딱 좋아요</div>
-      <textarea id="letterInput" rows="5" placeholder="지금 나의 상태, 고민, 다짐, 하고 싶은 말..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+      <textarea lang="ko" id="letterInput" rows="5" placeholder="지금 나의 상태, 고민, 다짐, 하고 싶은 말..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button onclick="saveLetter(30)" style="flex:1;padding:10px;background:#667eea18;color:#667eea;border:1.5px solid #667eea50;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📬 30일 후</button>
         <button onclick="saveLetter(90)" style="flex:1;padding:10px;background:#764ba218;color:#764ba2;border:1.5px solid #764ba250;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📬 90일 후</button>
@@ -1942,15 +1955,15 @@
         <span id="quoteFormIcon" style="font-size:18px;color:#aaa;transition:transform 0.2s">▼</span>
       </div>
       <div id="quoteAddForm" style="display:none;margin-top:10px">
-        <textarea id="quoteText" rows="3" placeholder="마음에 남은 문장을 적어요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;margin-bottom:8px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
-        <input type="text" id="quoteSource" placeholder="출처 (책 제목 / 영화 / 사람)" style="width:100%;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:8px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
-        <input type="text" id="quoteMemo" placeholder="메모 (선택)" style="width:100%;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:10px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
+        <textarea lang="ko" id="quoteText" rows="3" placeholder="마음에 남은 문장을 적어요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;margin-bottom:8px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <input type="text" lang="ko" id="quoteSource" placeholder="출처 (책 제목 / 영화 / 사람)" style="width:100%;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:8px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
+        <input type="text" lang="ko" id="quoteMemo" placeholder="메모 (선택)" style="width:100%;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:10px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
         <button class="btn btn-primary" onclick="addQuote()" style="width:100%">저장</button>
       </div>
     </div>
     <!-- 검색 -->
     <div class="card" style="padding:10px 16px">
-      <input type="text" id="quoteSearch" placeholder="🔍 문장 검색" oninput="renderQuotes()"
+      <input type="text" lang="ko" id="quoteSearch" placeholder="🔍 문장 검색" oninput="renderQuotes()"
         style="width:100%;border:none;outline:none;font-size:14px;font-family:inherit;background:transparent">
     </div>
     <div id="quoteList"></div>
@@ -1964,10 +1977,10 @@
         <span id="visionFormIcon" style="font-size:18px;color:#aaa;transition:transform 0.2s">▼</span>
       </div>
       <div id="visionAddForm" style="display:none;margin-top:10px">
-        <input type="text" id="visionTitle" placeholder="비전 제목 (예: 소설 출판)" maxlength="30"
+        <input type="text" lang="ko" id="visionTitle" placeholder="비전 제목 (예: 소설 출판)" maxlength="30"
           style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:8px"
           onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
-        <textarea id="visionDesc" rows="2" placeholder="이 비전을 이루면 어떤 모습일까요?" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;margin-bottom:8px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <textarea lang="ko" id="visionDesc" rows="2" placeholder="이 비전을 이루면 어떤 모습일까요?" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;margin-bottom:8px" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
         <!-- 사진 첨부 -->
         <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:#f5f5f7;border:1.5px dashed #ccc;border-radius:10px;padding:8px 14px;font-size:13px;color:#666;margin-bottom:8px">
           🖼️ 이미지 추가 (선택)
@@ -2057,7 +2070,7 @@
             onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
           <span style="font-size:13px;color:#bbb">← 선택 입력</span>
         </div>
-        <textarea id="bookNoteInput" rows="3" placeholder="마음에 드는 구절이나 느낀 점을 적어보세요..." style="width:100%;padding:12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;resize:none;outline:none;font-family:inherit;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'" onkeydown="if(event.ctrlKey&&event.key==='Enter')addBookNote()"></textarea>
+        <textarea lang="ko" id="bookNoteInput" rows="3" placeholder="마음에 드는 구절이나 느낀 점을 적어보세요..." style="width:100%;padding:12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;resize:none;outline:none;font-family:inherit;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'" onkeydown="if(event.ctrlKey&&event.key==='Enter')addBookNote()"></textarea>
         <button class="btn btn-primary" onclick="addBookNote()" style="width:100%;margin-top:6px">메모 저장 (Ctrl+Enter)</button>
       </div>
       <div id="bookNoteList"></div>
@@ -2130,11 +2143,11 @@
   <div style="background:white;border-radius:20px;width:100%;max-width:400px;padding:20px">
     <div style="font-size:15px;font-weight:700;color:#333;margin-bottom:14px">✏️ 루틴 수정</div>
     <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">루틴 이름</label>
-    <input id="routineEditText" type="text" style="width:100%;padding:10px 14px;border:1.5px solid #667eea;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;outline:none"
+    <input id="routineEditText" type="text" lang="ko" style="width:100%;padding:10px 14px;border:1.5px solid #667eea;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;outline:none"
       onkeydown="if(event.key==='Enter')saveRoutineEditModal()">
     <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">⏰ 하루일정 시각 <span style="font-weight:400;color:#aaa">(선택 — 정해두면 플래너에서 매번 같은 요일·시각에 자동 고정됨)</span></label>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <input id="routineEditTime" type="time" style="padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none;flex:1">
+      <input id="routineEditTime" type="time" step="300" lang="ko" style="padding:9px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none;flex:1">
       <button onclick="document.getElementById('routineEditTime').value=''" style="padding:7px 12px;border:none;background:#f5f5f7;border-radius:10px;font-size:12px;color:#999;cursor:pointer;font-family:inherit">지우기</button>
     </div>
     <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">⏱️ 기본 길이(분) <span style="font-weight:400;color:#aaa">(선택 — 예: 수업 40분)</span></label>
@@ -2158,7 +2171,7 @@
     <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
       <div>
         <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">제목</label>
-        <input id="bookEditTitle" type="text" style="width:100%;padding:10px 14px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+        <input id="bookEditTitle" type="text" lang="ko" style="width:100%;padding:10px 14px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
       </div>
       <div>
         <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px">카테고리</label>
@@ -2200,7 +2213,7 @@
   onclick="if(event.target===this)closeAddSeriesModal()">
   <div style="background:white;border-radius:20px;width:100%;max-width:380px;padding:20px">
     <div style="font-size:15px;font-weight:700;color:#333;margin-bottom:16px">📚 새 시리즈 추가</div>
-    <input id="newSeriesName" type="text" placeholder="시리즈 이름 (예: Biff and Chip)" style="width:100%;padding:10px 14px;border:1.5px solid #667eea;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;outline:none"
+    <input id="newSeriesName" type="text" lang="ko" placeholder="시리즈 이름 (예: Biff and Chip)" style="width:100%;padding:10px 14px;border:1.5px solid #667eea;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;outline:none"
       onkeydown="if(event.key==='Enter')saveNewSeries()">
     <div style="display:flex;gap:8px">
       <button onclick="saveNewSeries()" class="btn btn-primary" style="flex:1;padding:12px">추가</button>
@@ -2259,7 +2272,7 @@
       <span style="font-size:13px;color:#555;margin-right:6px">별점</span>
       <div id="completeBookStarPicker" style="display:flex;gap:6px"></div>
     </div>
-    <textarea id="completeBookReview" placeholder="이 책에 대한 한 줄 감상 (선택)" rows="3"
+    <textarea lang="ko" id="completeBookReview" placeholder="이 책에 대한 한 줄 감상 (선택)" rows="3"
       style="width:100%;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;box-sizing:border-box;margin-bottom:14px"></textarea>
     <button class="btn btn-green" onclick="confirmCompleteBook()" style="width:100%;font-size:15px;padding:14px">🏆 명예의 전당에 올리기</button>
     <button onclick="closeCompleteBook()" style="width:100%;margin-top:8px;padding:10px;border:none;background:#f5f5f7;border-radius:10px;font-size:14px;color:#888;cursor:pointer;font-family:inherit">취소</button>
@@ -2641,9 +2654,19 @@ function addRoutine() {
   const text = document.getElementById('routineInput').value.trim();
   if (!text) return;
   const routines = getRoutines();
-  routines.push({ id: Date.now(), text, days: [...selectedWeekdays], doneDates: [], category: selectedCat });
+  const startTime = document.getElementById('routineAddTime')?.value || null;
+  const durationVal = parseInt(document.getElementById('routineAddDuration')?.value, 10);
+  const durationMin = (!isNaN(durationVal) && durationVal > 0) ? durationVal : null;
+  const routine = { id: Date.now(), text, days: [...selectedWeekdays], doneDates: [], category: selectedCat };
+  if (startTime) { routine.startTime = startTime; routine.pinnedSince = today(); } // 오늘부터 그 요일·시각에 자동 고정
+  if (durationMin) routine.durationMin = durationMin;
+  routines.push(routine);
   saveRoutines(routines);
   document.getElementById('routineInput').value = '';
+  const timeInput = document.getElementById('routineAddTime');
+  const durInput = document.getElementById('routineAddDuration');
+  if (timeInput) timeInput.value = '';
+  if (durInput) durInput.value = '';
   renderRoutines();
 }
 
@@ -2767,7 +2790,13 @@ function saveRoutineEditModal() {
   const startTime = document.getElementById('routineEditTime').value || null;
   const durationVal = parseInt(document.getElementById('routineEditDuration').value, 10);
   const durationMin = (!isNaN(durationVal) && durationVal > 0) ? durationVal : null;
-  saveRoutines(getRoutines().map(r => r.id === id ? { ...r, text, days: editingRoutineDays, startTime, durationMin } : r));
+  saveRoutines(getRoutines().map(r => {
+    if (r.id !== id) return r;
+    let pinnedSince = r.pinnedSince;
+    if (startTime && !r.startTime) pinnedSince = today(); // 새로 고정하면 오늘부터만 적용 (과거 날짜는 안 건드림)
+    if (!startTime) pinnedSince = null; // 고정 해제
+    return { ...r, text, days: editingRoutineDays, startTime, durationMin, pinnedSince };
+  }));
   closeRoutineEditModal();
   renderRoutines();
   showToast('✅ 수정됐어요!');
@@ -4121,7 +4150,7 @@ function renderBooks() {
                 <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px" id="editPlannedCatSel-${b.id}">
                   ${CAT_DEFS_HTML_PLANNED(b.id, b.category)}
                 </div>
-                <textarea id="editPlannedNote-${b.id}" rows="2" placeholder="메모 (도서관 책 여부, 구입 방법 등)" style="width:100%;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:12px;resize:none;font-family:inherit;margin-bottom:6px;background:white">${escHtml(b.plannedNote||'')}</textarea>
+                <textarea lang="ko" id="editPlannedNote-${b.id}" rows="2" placeholder="메모 (도서관 책 여부, 구입 방법 등)" style="width:100%;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:12px;resize:none;font-family:inherit;margin-bottom:6px;background:white">${escHtml(b.plannedNote||'')}</textarea>
                 <div style="display:flex;gap:6px">
                   <button class="btn btn-primary btn-sm" style="flex:1" onclick="savePlannedEdit(${b.id})">저장</button>
                   <button class="btn btn-gray btn-sm" style="flex:1" onclick="cancelPlannedEdit()">취소</button>
@@ -4676,7 +4705,7 @@ function renderMemos() {
     if (m.id === editingMemoId) {
       return `
       <div class="memo-item">
-        <textarea id="memoEditInput-${m.id}" rows="3" style="width:100%;padding:8px;border:1.5px solid #667eea;border-radius:8px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.5">${escHtml(m.text)}</textarea>
+        <textarea lang="ko" id="memoEditInput-${m.id}" rows="3" style="width:100%;padding:8px;border:1.5px solid #667eea;border-radius:8px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.5">${escHtml(m.text)}</textarea>
         <div style="display:flex;gap:6px;margin-top:6px">
           <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveEditMemo(${m.id})">저장</button>
           <button class="btn btn-gray btn-sm" style="flex:1" onclick="cancelEditMemo()">취소</button>
@@ -4956,7 +4985,7 @@ function renderGratitude() {
       </div>`;
       return `<div class="card" style="margin-bottom:10px">
         <div style="font-size:12px;color:#aaa;margin-bottom:8px">📅 ${fullDate}</div>
-        <textarea id="gratitudeEditInput-${g.id}" rows="5" style="width:100%;padding:10px;border:1.5px solid #667eea;border-radius:8px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.7;box-sizing:border-box">${escHtml(g.text)}</textarea>
+        <textarea lang="ko" id="gratitudeEditInput-${g.id}" rows="5" style="width:100%;padding:10px;border:1.5px solid #667eea;border-radius:8px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.7;box-sizing:border-box">${escHtml(g.text)}</textarea>
         ${editEmotionPickerHtml}
         <div id="gratitudeEditPhotoGrid">${editPhotoGridHtml}</div>
         <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:#f5f5f7;border:1.5px dashed #ccc;border-radius:10px;padding:7px 12px;font-size:13px;color:#666;margin-top:8px">
@@ -5376,7 +5405,7 @@ function renderMovies() {
       const editStarsHtml = [1,2,3,4,5].map(i =>
         `<span onclick="pickEditMovieStar(${i})" style="font-size:22px;cursor:pointer">${i<=editingMovieStar?'★':'☆'}</span>`
       ).join('');
-      const inp = (id,val,ph) => `<input id="${id}" type="text" value="${escHtml(val||'')}" placeholder="${ph}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:8px">`;
+      const inp = (id,val,ph) => `<input id="${id}" type="text" lang="ko" value="${escHtml(val||'')}" placeholder="${ph}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:8px">`;
       return `<div class="card" style="margin-bottom:8px">
         <div style="font-size:13px;font-weight:600;color:#667eea;margin-bottom:10px">✏️ 영화 수정</div>
         ${inp('editMovieTitle', m.title, '영화 제목')}
@@ -5385,7 +5414,7 @@ function renderMovies() {
         ${inp('editMovieDirector', m.director, '감독')}
         ${inp('editMovieActors', m.actors, '주요 배우')}
         <div id="editMovieStarPicker" style="margin-bottom:8px">${editStarsHtml}</div>
-        <textarea id="editMovieReview" rows="3" placeholder="감상" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:none;margin-bottom:8px">${escHtml(m.review||'')}</textarea>
+        <textarea lang="ko" id="editMovieReview" rows="3" placeholder="감상" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:none;margin-bottom:8px">${escHtml(m.review||'')}</textarea>
         <div style="margin-bottom:8px">
           <div style="font-size:12px;color:#888;margin-bottom:4px">가로 사진 (16:9)</div>
           <div id="editMoviePhotoPreview" style="margin-bottom:6px">
@@ -5710,12 +5739,12 @@ function renderStories() {
       ).join('');
       return `<div class="card" style="margin-bottom:8px">
         <div style="font-size:13px;font-weight:600;color:#667eea;margin-bottom:10px">✏️ 단편소설 수정</div>
-        <input id="editStoryTitle" type="text" value="${escHtml(s.title)}" placeholder="소설 제목" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
-        <input id="editStoryAuthor" type="text" value="${escHtml(s.author||'')}" placeholder="작가" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
-        <input id="editStoryBook" type="text" value="${escHtml(s.book||'')}" placeholder="수록집 (선택)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
+        <input id="editStoryTitle" type="text" lang="ko" value="${escHtml(s.title)}" placeholder="소설 제목" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
+        <input id="editStoryAuthor" type="text" lang="ko" value="${escHtml(s.author||'')}" placeholder="작가" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
+        <input id="editStoryBook" type="text" lang="ko" value="${escHtml(s.book||'')}" placeholder="수록집 (선택)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
         <input id="editStoryDate" type="date" value="${s.date||''}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
         <div id="editStoryStarPicker" style="margin-bottom:8px">${editStarsHtml}</div>
-        <textarea id="editStoryReview" rows="3" placeholder="감상" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:none;margin-bottom:8px">${escHtml(s.review||'')}</textarea>
+        <textarea lang="ko" id="editStoryReview" rows="3" placeholder="감상" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:none;margin-bottom:8px">${escHtml(s.review||'')}</textarea>
         <input id="editStoryUrl" type="url" value="${escHtml(s.docUrl||'')}" placeholder="Google Docs 링크 (선택)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:8px;box-sizing:border-box">
         <div style="display:flex;gap:8px">
           <button onclick="saveEditStory(${s.id})" style="flex:1;padding:8px;background:#667eea;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600">저장</button>
@@ -6689,12 +6718,12 @@ function renderOrtList() {
               <div style="position:absolute;bottom:4px;right:4px;font-size:11px;background:rgba(0,0,0,0.4);padding:2px 4px;border-radius:4px">📷</div>
             </div>
             <div style="padding:4px 4px 0;text-align:center">
-              <input type="text" value="${escHtml(dispNum)}" placeholder="1-1"
+              <input type="text" lang="ko" value="${escHtml(dispNum)}" placeholder="1-1"
                 onblur="saveOrtNum('${bookId}', this.value); renderOrtList()" onclick="this.select()"
                 style="width:100%;font-size:13px;font-weight:800;color:${lv.color};border:none;padding:2px 2px;text-align:center;background:transparent;box-sizing:border-box;outline:none">
             </div>
             <div style="padding:2px 4px">
-              <input type="text" value="${escHtml(dispTitle)}" placeholder="제목"
+              <input type="text" lang="ko" value="${escHtml(dispTitle)}" placeholder="제목"
                 onblur="saveOrtTitle('${bookId}', this.value)"
                 style="width:100%;font-size:8.5px;color:#555;border:none;padding:1px 2px;text-align:center;background:transparent;box-sizing:border-box;outline:none">
             </div>
@@ -6834,7 +6863,7 @@ function renderCustomSeries(id) {
   el.innerHTML = `
     <div class="card" style="margin-bottom:8px">
       <div style="display:flex;gap:8px">
-        <input id="newCustomBookInput-${id}" type="text" placeholder="책 제목 입력" style="flex:1;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;outline:none"
+        <input id="newCustomBookInput-${id}" type="text" lang="ko" placeholder="책 제목 입력" style="flex:1;padding:8px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;outline:none"
           onkeydown="if(event.key==='Enter')addCustomBook(${id})">
         <button onclick="addCustomBook(${id})" class="btn btn-primary" style="padding:8px 14px;flex-shrink:0">+ 책 추가</button>
       </div>
@@ -7012,8 +7041,8 @@ function renderDrafts() {
         <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">💬 합평 · 코멘트 ${d.comments?.length ? `<span style="color:#667eea">(${d.comments.length})</span>` : ''}</div>
         ${commentsHtml}
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
-          <input type="text" id="dcFrom-${d.id}" placeholder="코멘트 출처 (예: 합평, 선생님, 본인 등)" style="width:100%;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box">
-          <textarea id="dcText-${d.id}" rows="2" placeholder="코멘트 내용을 입력해주세요..." style="width:100%;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:12px;font-family:inherit;resize:none;line-height:1.5;box-sizing:border-box"></textarea>
+          <input type="text" lang="ko" id="dcFrom-${d.id}" placeholder="코멘트 출처 (예: 합평, 선생님, 본인 등)" style="width:100%;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box">
+          <textarea lang="ko" id="dcText-${d.id}" rows="2" placeholder="코멘트 내용을 입력해주세요..." style="width:100%;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:12px;font-family:inherit;resize:none;line-height:1.5;box-sizing:border-box"></textarea>
           <button onclick="addDraftComment(${d.id})" style="padding:7px;background:#f0f1fe;color:#667eea;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">+ 코멘트 추가</button>
         </div>
       </div>
@@ -9194,7 +9223,7 @@ function showRoutineLogModal(routineId, name, category, logId) {
           ${getRoutines().filter(r=>!r.paused).map(r=>`<option value="${r.id}|${r.text.replace(/"/g,'&quot;')}|${r.category||'self'}">${r.text}</option>`).join('')}
           <option value="0|직접입력|self">직접 입력...</option>
         </select>
-        <input type="text" id="rlogCustomName" placeholder="루틴 이름 직접 입력" style="display:none;width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-top:6px">
+        <input type="text" lang="ko" id="rlogCustomName" placeholder="루틴 이름 직접 입력" style="display:none;width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-top:6px">
         <select id="rlogCustomCat" style="display:none;width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;margin-top:6px">
           <option value="self">자기계발</option>
           <option value="writer">소설가</option>
@@ -10333,7 +10362,7 @@ function renderEcho() {
             <div style="display:flex;align-items:center;gap:8px">
               <input type="checkbox" ${small.awDone[awIdx]?'checked':''} onchange="toggleEchoAWDone(${bIdx},${sIdx},${awIdx})"
                 style="width:16px;height:16px;accent-color:${bColor};flex-shrink:0;cursor:pointer">
-              <input type="text" value="${escHtml(aw||'')}" placeholder="Action Wave ${awIdx+1}" maxlength="30"
+              <input type="text" lang="ko" value="${escHtml(aw||'')}" placeholder="Action Wave ${awIdx+1}" maxlength="30"
                 style="flex:1;border:none;outline:none;font-size:13px;font-family:inherit;background:transparent;${small.awDone[awIdx]?'text-decoration:line-through;color:#aaa;':''}"
                 onblur="saveEchoAW(${bIdx},${sIdx},${awIdx},this.value)">
             </div>
@@ -10343,7 +10372,7 @@ function renderEcho() {
       return `<div style="margin-left:12px;border-left:3px solid ${bColor}40;padding-left:10px;margin-top:6px">
         <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;background:white;border-radius:10px;border:1.5px solid ${isOpenS?bColor:'#f0f0f0'}" onclick="toggleEchoSmall(${bIdx},${sIdx})">
           <div style="width:24px;height:24px;border-radius:50%;background:${bColor}25;color:${bColor};font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">S${sIdx+1}</div>
-          <input type="text" value="${escHtml(small.text||'')}" placeholder="Small Echo ${bIdx+1}-${sIdx+1}" maxlength="30"
+          <input type="text" lang="ko" value="${escHtml(small.text||'')}" placeholder="Small Echo ${bIdx+1}-${sIdx+1}" maxlength="30"
             style="flex:1;border:none;outline:none;font-size:13px;font-weight:600;font-family:inherit;background:transparent;color:#444"
             onclick="event.stopPropagation()" onblur="saveEchoSmall(${bIdx},${sIdx},this.value)">
           <span style="font-size:11px;color:${bColor};font-weight:700;flex-shrink:0">${sDone}/4</span>
@@ -10356,7 +10385,7 @@ function renderEcho() {
     return `<div class="card" style="border-left:4px solid ${bColor};padding:14px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleEchoBig(${bIdx})">
         <div style="width:32px;height:32px;border-radius:50%;background:${bColor};color:white;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">B${bIdx+1}</div>
-        <input type="text" value="${escHtml(big.text||'')}" placeholder="Big Echo ${bIdx+1} (큰 방향)" maxlength="30"
+        <input type="text" lang="ko" value="${escHtml(big.text||'')}" placeholder="Big Echo ${bIdx+1} (큰 방향)" maxlength="30"
           style="flex:1;border:none;outline:none;font-size:15px;font-weight:700;font-family:inherit;background:transparent;color:#333"
           onclick="event.stopPropagation()" onblur="saveEchoBig(${bIdx},this.value)">
         <span style="font-size:12px;color:${bColor};font-weight:700;flex-shrink:0">${bigDone}/12</span>
@@ -10444,7 +10473,7 @@ function renderQuarter() {
     bigEl.innerHTML = (s.bigEchos || ['','','']).map((be, i) => `
       <div style="display:flex;align-items:center;gap:8px">
         <div style="width:28px;height:28px;border-radius:50%;background:${colors[i]};color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <input type="text" value="${escHtml(be||'')}" placeholder="Big Echo ${i+1} (이번 시즌 큰 방향)" maxlength="30"
+        <input type="text" lang="ko" value="${escHtml(be||'')}" placeholder="Big Echo ${i+1} (이번 시즌 큰 방향)" maxlength="30"
           style="flex:1;padding:8px 12px;border:1.5px solid ${colors[i]}40;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"
           onfocus="this.style.borderColor='${colors[i]}'" onblur="saveQuarterBigEcho(${i},this.value);this.style.borderColor='${colors[i]}40'">
       </div>
@@ -10460,7 +10489,7 @@ function renderQuarter() {
       <div style="display:flex;align-items:center;gap:8px">
         <div style="font-size:20px;width:32px;text-align:center">${icon}</div>
         <span style="width:42px;font-size:12px;font-weight:600;color:#555">${k}</span>
-        <input type="text" value="${escHtml((s.priorities||{})[k]||'')}" placeholder="${k} 목표" maxlength="25"
+        <input type="text" lang="ko" value="${escHtml((s.priorities||{})[k]||'')}" placeholder="${k} 목표" maxlength="25"
           style="flex:1;padding:7px 10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box"
           onfocus="this.style.borderColor='#667eea'" onblur="saveQuarterPriority('${k}',this.value);this.style.borderColor='#e5e5e5'">
       </div>
@@ -10491,13 +10520,13 @@ function renderQuarterHabits(s) {
         <div style="flex:1">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
             <span style="font-size:11px;color:#ef4444;font-weight:600;background:#ef444415;padding:2px 6px;border-radius:4px">나쁜습관</span>
-            <input type="text" value="${escHtml(h.bad||'')}" placeholder="고칠 습관" maxlength="25"
+            <input type="text" lang="ko" value="${escHtml(h.bad||'')}" placeholder="고칠 습관" maxlength="25"
               style="flex:1;border:none;outline:none;font-size:13px;font-family:inherit;background:transparent"
               onblur="saveQuarterHabit(${i},'bad',this.value)">
           </div>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:11px;color:#10b981;font-weight:600;background:#10b98115;padding:2px 6px;border-radius:4px">→ 대체행동</span>
-            <input type="text" value="${escHtml(h.replace||'')}" placeholder="대신 할 작은 행동" maxlength="25"
+            <input type="text" lang="ko" value="${escHtml(h.replace||'')}" placeholder="대신 할 작은 행동" maxlength="25"
               style="flex:1;border:none;outline:none;font-size:13px;font-family:inherit;background:transparent"
               onblur="saveQuarterHabit(${i},'replace',this.value)">
           </div>
@@ -10535,9 +10564,9 @@ function renderQuarterReview(s) {
   el.innerHTML = missed.map((m, i) => `
     <div style="background:#fff3f3;border-radius:10px;padding:10px">
       <div style="font-size:11px;color:#ef4444;font-weight:600;margin-bottom:6px">못 이룬 목표 ${i+1}</div>
-      <input type="text" value="${escHtml(m||'')}" placeholder="못 이룬 목표" maxlength="30" id="qMissed${i}"
+      <input type="text" lang="ko" value="${escHtml(m||'')}" placeholder="못 이룬 목표" maxlength="30" id="qMissed${i}"
         style="width:100%;padding:7px 10px;border:1.5px solid #f0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:6px">
-      <input type="text" value="${escHtml(reasons[i]||'')}" placeholder="왜 못 이뤘을까?" maxlength="40" id="qReason${i}"
+      <input type="text" lang="ko" value="${escHtml(reasons[i]||'')}" placeholder="왜 못 이뤘을까?" maxlength="40" id="qReason${i}"
         style="width:100%;padding:7px 10px;border:1.5px solid #f0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
     </div>
   `).join('');
