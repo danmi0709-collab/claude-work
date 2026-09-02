@@ -1,0 +1,4 @@
+{
+  "buildCommand": "rm -rf deploy && mkdir -p deploy && cp app.html planner.html deploy/ && cp -r ort-covers deploy/ort-covers",
+  "outputDirectory": "deploy"
+}
