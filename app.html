@@ -1010,10 +1010,10 @@
         </div>
         <!-- 반성 -->
         <div style="margin-bottom:14px">
-          <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:6px">🌙 오늘의 반성</div>
-          <input type="text" lang="ko" id="schedReflGood" placeholder="✅ 잘한 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'">
-          <input type="text" lang="ko" id="schedReflRegret" placeholder="😔 아쉬운 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'">
-          <input type="text" lang="ko" id="schedReflTomorrow" placeholder="🌅 내일 할 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
+          <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:6px">🌱 오늘의 배움</div>
+          <input type="text" lang="ko" id="schedReflGood" placeholder="💡 오늘 배운 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'">
+          <input type="text" lang="ko" id="schedReflRegret" placeholder="🔄 생각이 바뀐 게 있다면 (없으면 비워도 돼요)" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'">
+          <input type="text" lang="ko" id="schedReflTomorrow" placeholder="🎯 그래서 다음엔 이렇게 해본다" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
         </div>
         <button onclick="saveDailyRecord()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">💾 오늘 기록 저장</button>
         <div id="dailyRecordStatus" style="font-size:12px;color:#aaa;text-align:center;margin-top:8px"></div>
@@ -1720,19 +1720,19 @@
   <!-- 반성 3줄 섹션 -->
   <div class="section" id="section-reflection">
     <div class="card">
-      <div class="card-title">🌙 오늘의 반성 3줄</div>
+      <div class="card-title">🌱 오늘의 배움</div>
       <div id="reflectionDateNav" style="display:flex;align-items:center;justify-content:center;gap:0;background:#f8f9ff;border-radius:14px;padding:6px 12px;margin-bottom:12px"></div>
       <div style="margin-bottom:10px">
-        <div style="font-size:12px;color:#6bcb77;font-weight:700;margin-bottom:5px">✅ 잘한 것</div>
-        <textarea lang="ko" id="reflectionGood" rows="2" placeholder="오늘 잘한 일..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <div style="font-size:12px;color:#6bcb77;font-weight:700;margin-bottom:5px">💡 오늘 배운 것</div>
+        <textarea lang="ko" id="reflectionGood" rows="2" placeholder="오늘 새로 알게 된 것, 배운 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <div style="margin-bottom:10px">
-        <div style="font-size:12px;color:#f59e0b;font-weight:700;margin-bottom:5px">😔 아쉬운 것</div>
-        <textarea lang="ko" id="reflectionRegret" rows="2" placeholder="아쉬웠던 점..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <div style="font-size:12px;color:#f59e0b;font-weight:700;margin-bottom:5px">🔄 전엔 이렇게 생각했는데, 지금은 다르게 생각해요</div>
+        <textarea lang="ko" id="reflectionRegret" rows="2" placeholder="없으면 비워도 돼요" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <div style="margin-bottom:14px">
-        <div style="font-size:12px;color:#667eea;font-weight:700;margin-bottom:5px">🌅 내일 할 것</div>
-        <textarea lang="ko" id="reflectionTomorrow" rows="2" placeholder="내일 꼭 할 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+        <div style="font-size:12px;color:#667eea;font-weight:700;margin-bottom:5px">🎯 그래서 다음엔 이렇게 해본다</div>
+        <textarea lang="ko" id="reflectionTomorrow" rows="2" placeholder="오늘 배운 것에서 나온 다음 행동..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       </div>
       <button class="btn btn-primary" onclick="saveReflection()" style="width:100%">저장</button>
     </div>
@@ -1741,7 +1741,7 @@
       <div class="card-title">📅 이번 주 회고</div>
       <div id="weeklyDotBar" style="display:flex;gap:4px;justify-content:center;margin-bottom:14px"></div>
       <div style="font-size:12px;color:#888;margin-bottom:6px">이번 주 한 줄 소감</div>
-      <textarea lang="ko" id="weeklyInsightInput" rows="2" placeholder="이번 주 어땠어? 잘한 것, 아쉬운 것, 느낀 것..." style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+      <textarea lang="ko" id="weeklyInsightInput" rows="2" placeholder="이번 주 뭘 배웠고, 생각이 어떻게 바뀌었어?" style="width:100%;padding:10px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
       <button onclick="saveWeeklyInsight()" style="width:100%;padding:10px;background:#667eea;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">저장</button>
     </div>
     <div id="reflectionList"></div>
@@ -8183,10 +8183,10 @@ async function askFutureMe() {
       }).filter(Boolean).join(' / ')
     : '없음';
 
-  // 최근 반성일기 (3개)
+  // 최근 배움 기록 (3개)
   const reflections = getReflections();
   const recentRefl = reflections.slice(0, 3).map(r =>
-    `[${r.date}] 잘한것: ${(r.good||'').substring(0,50)} / 아쉬운것: ${(r.regret||'').substring(0,50)} / 내일: ${(r.tomorrow||'').substring(0,50)}`
+    `[${r.date}] 배운것: ${(r.good||'').substring(0,50)} / 생각변화: ${(r.regret||'').substring(0,50)} / 다음행동: ${(r.tomorrow||'').substring(0,50)}`
   ).join('\n  ');
 
   // 체중 추이 (최근 7일)
@@ -9404,12 +9404,12 @@ function renderTodayScheduleUI(items) {
 
   const tl = document.getElementById('scheduleTimeline');
 
-  // 전날 반성의 "내일 할 것" 표시
+  // 전날 배움의 "다음엔 이렇게" 표시
   const tomorrowNote = (typeof getYesterdayReflectionTomorrow === 'function') ? getYesterdayReflectionTomorrow(scheduleViewDate) : null;
   const tomorrowCard = tomorrowNote ? `<div style="background:#fff8e1;border:1.5px solid #ffd54f;border-radius:12px;padding:12px 14px;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start">
-  <span style="font-size:18px;flex-shrink:0">🌙</span>
+  <span style="font-size:18px;flex-shrink:0">🌱</span>
   <div>
-    <div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:3px">어제 반성 — 오늘 할 것</div>
+    <div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:3px">어제 배움 — 오늘 해볼 것</div>
     <div style="font-size:13px;color:#555;line-height:1.6;white-space:pre-wrap">${escHtml(tomorrowNote)}</div>
   </div>
 </div>` : '';
@@ -10037,7 +10037,7 @@ function saveReflection() {
   document.getElementById('reflectionTomorrow').value = '';
   renderReflection();
   renderReflectionDateNav();
-  showToast('반성 저장됐어요 🌙');
+  showToast('배움 기록됐어요 🌱');
 }
 
 function deleteReflection(id) {
@@ -10061,7 +10061,7 @@ function renderReflection() {
   const el = document.getElementById('reflectionList');
   if (!el) return;
   if (list.length === 0) {
-    el.innerHTML = '<div class="card"><div class="empty-state"><span class="emoji">🌙</span>첫 번째 반성을 기록해봐요!</div></div>';
+    el.innerHTML = '<div class="card"><div class="empty-state"><span class="emoji">🌱</span>오늘 배운 것부터 기록해봐요!</div></div>';
     return;
   }
   const DAY = ['일','월','화','수','목','금','토'];
@@ -10073,9 +10073,9 @@ function renderReflection() {
         <div style="font-size:12px;color:#aaa">🌙 ${dateLabel}</div>
         <button onclick="deleteReflection(${r.id})" style="background:none;border:none;cursor:pointer;font-size:15px;color:#ccc">✕</button>
       </div>
-      ${r.good ? `<div style="margin-bottom:8px"><div style="font-size:11px;color:#6bcb77;font-weight:700;margin-bottom:3px">✅ 잘한 것</div><div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap">${escHtml(r.good)}</div></div>` : ''}
-      ${r.regret ? `<div style="margin-bottom:8px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:3px">😔 아쉬운 것</div><div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap">${escHtml(r.regret)}</div></div>` : ''}
-      ${r.tomorrow ? `<div><div style="font-size:11px;color:#667eea;font-weight:700;margin-bottom:3px">🌅 내일 할 것</div><div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap">${escHtml(r.tomorrow)}</div></div>` : ''}
+      ${r.good ? `<div style="margin-bottom:8px"><div style="font-size:11px;color:#6bcb77;font-weight:700;margin-bottom:3px">💡 오늘 배운 것</div><div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap">${escHtml(r.good)}</div></div>` : ''}
+      ${r.regret ? `<div style="margin-bottom:8px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:3px">🔄 생각이 바뀐 것</div><div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap">${escHtml(r.regret)}</div></div>` : ''}
+      ${r.tomorrow ? `<div><div style="font-size:11px;color:#667eea;font-weight:700;margin-bottom:3px">🎯 다음엔 이렇게</div><div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap">${escHtml(r.tomorrow)}</div></div>` : ''}
     </div>`;
   }).join('');
 }
