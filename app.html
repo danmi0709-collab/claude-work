@@ -1301,8 +1301,10 @@
           <p>1. <strong>console.cloud.google.com</strong> 접속<br>
           2. 새 프로젝트 생성 → Google Calendar API 활성화<br>
           3. 사용자 인증 정보 → OAuth 클라이언트 ID 생성<br>
-          &nbsp;&nbsp;&nbsp;(웹 애플리케이션 선택, 승인된 출처에 <code>null</code> 또는 <code>file://</code> 추가)<br>
+          &nbsp;&nbsp;&nbsp;(웹 애플리케이션 선택, 승인된 자바스크립트 원본에<br>
+          &nbsp;&nbsp;&nbsp;<code>https://bissa-peach.vercel.app</code> 추가 — 지금 쓰는 주소를 정확히 넣어야 해요)<br>
           4. 클라이언트 ID 복사 후 아래 붙여넣기</p>
+          <p style="font-size:12px;color:#c0392b;margin-top:6px">⚠️ "OAuth client was not found / invalid_client" 오류가 뜨면 클라이언트 ID가 잘못 붙여넣어졌거나, 구글 클라우드 콘솔에서 그 클라이언트가 삭제된 거예요. 콘솔에서 클라이언트 ID를 다시 확인하고, 승인된 원본에 위 주소가 정확히 등록돼 있는지 확인해주세요.</p>
           <p style="font-size:12px;color:#888;margin-top:6px">☁️ 캘린더 읽기 권한과 함께 Drive 자동 저장 권한도 요청됩니다.</p>
           <label>Google OAuth Client ID</label>
           <input type="text" lang="ko" id="gcalClientId" placeholder="xxxxx.apps.googleusercontent.com">
