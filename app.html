@@ -954,20 +954,20 @@
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <div style="flex:1">
               <div style="font-size:11px;color:#888;margin-bottom:3px">🌙 전날 취침</div>
-              <input type="time" id="drSleepBed" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
+              <input type="time" id="drSleepBed" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
             </div>
             <div style="flex:1">
               <div style="font-size:11px;color:#888;margin-bottom:3px">🌅 기상</div>
-              <input type="time" id="drSleepWake" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
+              <input type="time" id="drSleepWake" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
             </div>
             <div style="flex:1">
               <div style="font-size:11px;color:#888;margin-bottom:3px">⚖️ 체중(kg)</div>
-              <input type="number" id="drWeight" placeholder="52.3" step="0.1" min="30" max="200" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none">
+              <input type="number" id="drWeight" placeholder="52.3" step="0.1" min="30" max="200" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none">
             </div>
           </div>
           <div style="margin-bottom:8px">
             <div style="font-size:11px;color:#888;margin-bottom:3px">📱 어제 폰 사용시간 (예: 0320)</div>
-            <input type="text" lang="ko" id="drPhone" placeholder="0320 → 3시간 20분" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
+            <input type="text" lang="ko" id="drPhone" placeholder="0320 → 3시간 20분" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:7px 8px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box">
           </div>
           <div style="font-size:11px;color:#888;margin-bottom:5px">기분</div>
           <div style="display:flex;gap:6px;justify-content:space-around;margin-bottom:8px" id="drMoodBtns">
@@ -995,7 +995,7 @@
         <!-- 감사일기 (사진+표정 포함) -->
         <div style="margin-bottom:14px">
           <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:6px">🙏 오늘 감사한 일</div>
-          <textarea lang="ko" id="schedGratitudeInput" rows="2" placeholder="오늘 감사한 일을 적어요..." style="width:100%;padding:9px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="schedGratitudeInput" rows="2" placeholder="오늘 감사한 일을 적어요..." oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:9px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
           <div style="margin-top:8px">
             <div style="font-size:11px;color:#888;margin-bottom:5px">표정 태그 (선택)</div>
             <div id="drGratitudeEmotionPicker" style="display:flex;flex-wrap:wrap;gap:5px"></div>
@@ -1011,9 +1011,9 @@
         <!-- 반성 -->
         <div style="margin-bottom:14px">
           <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:6px">🌱 오늘의 배움</div>
-          <input type="text" lang="ko" id="schedReflGood" placeholder="💡 오늘 배운 것" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'">
-          <input type="text" lang="ko" id="schedReflRegret" placeholder="🔄 생각이 바뀐 게 있다면 (없으면 비워도 돼요)" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'">
-          <input type="text" lang="ko" id="schedReflTomorrow" placeholder="🎯 그래서 다음엔 이렇게 해본다" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'">
+          <textarea lang="ko" id="schedReflGood" rows="2" placeholder="💡 오늘 배운 것" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px;resize:vertical" onfocus="this.style.borderColor='#6bcb77'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="schedReflRegret" rows="2" placeholder="🔄 생각이 바뀐 게 있다면 (없으면 비워도 돼요)" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:5px;resize:vertical" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
+          <textarea lang="ko" id="schedReflTomorrow" rows="2" placeholder="🎯 그래서 다음엔 이렇게 해본다" oninput="scheduleDailyRecordAutoSave()" style="width:100%;padding:8px 10px;border:1.5px solid #e5e5e5;border-radius:9px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;resize:vertical" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e5e5'"></textarea>
         </div>
         <button onclick="saveDailyRecord()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">💾 오늘 기록 저장</button>
         <div id="dailyRecordStatus" style="font-size:12px;color:#aaa;text-align:center;margin-top:8px"></div>
@@ -11418,6 +11418,7 @@ function selectDrMood(emoji) {
   document.querySelectorAll('#drMoodBtns span').forEach(s => {
     s.style.opacity = s.dataset.mood === emoji ? '1' : '0.35';
   });
+  scheduleDailyRecordAutoSave();
 }
 
 function selectDrEnergy(level) {
@@ -11426,6 +11427,14 @@ function selectDrEnergy(level) {
     const b = document.getElementById('drEnergy-' + l);
     if (b) { b.style.background = l === level ? '#667eea' : 'white'; b.style.color = l === level ? 'white' : '#555'; b.style.borderColor = l === level ? '#667eea' : '#e5e5e5'; }
   });
+  scheduleDailyRecordAutoSave();
+}
+
+// 오늘기록 자동저장 (입력 멈춘 뒤 900ms 후 조용히 저장)
+let dailyRecordAutoSaveTimer = null;
+function scheduleDailyRecordAutoSave() {
+  clearTimeout(dailyRecordAutoSaveTimer);
+  dailyRecordAutoSaveTimer = setTimeout(() => saveDailyRecord(true), 900);
 }
 
 // ── 오늘의 기록 - 식단 사진 ──
@@ -11509,7 +11518,7 @@ function renderDrGratitudeEmotionPicker() {
   }).join('');
 }
 
-function saveDailyRecord() {
+function saveDailyRecord(silent) {
   const t = (typeof scheduleViewDate !== 'undefined' && scheduleViewDate) ? scheduleViewDate : today();
   let saved = [];
   // 감사일기 저장 (사진·표정 포함)
@@ -11560,9 +11569,14 @@ function saveDailyRecord() {
     saveMealLog(mealLog);
     saved.push('식단');
   }
-  if (saved.length === 0) { showToast('기록할 내용을 입력해주세요'); return; }
-  showToast(`${saved.join(' · ')} 저장됐어요 💾`);
-  loadDailyRecord();
+  if (saved.length === 0) { if (!silent) showToast('기록할 내용을 입력해주세요'); return; }
+  const status = document.getElementById('dailyRecordStatus');
+  if (silent) {
+    if (status) status.textContent = `${saved.join(' · ')} 자동 저장됨 ✓ (${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`;
+  } else {
+    showToast(`${saved.join(' · ')} 저장됐어요 💾`);
+    loadDailyRecord();
+  }
   // 관련 탭 즉시 동기화 (현재 열려있으면 바로 반영)
   if (typeof renderGratitude === 'function') renderGratitude();
   if (typeof renderReflection === 'function') { renderReflection(); renderReflectionDateNav(); }

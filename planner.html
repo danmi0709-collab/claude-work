@@ -392,13 +392,13 @@
     <div class="card" style="border-left:4px solid #667eea">
       <div class="card-title">📝 오늘기록</div>
       <div class="rec-grid3">
-        <div><div class="rec-lbl">🌙 전날 취침</div><input type="time" id="recBed" class="rec-input"></div>
-        <div><div class="rec-lbl">🌅 기상</div><input type="time" id="recWake" class="rec-input"></div>
-        <div><div class="rec-lbl">⚖️ 체중(kg)</div><input type="number" id="recWeight" step="0.1" min="30" max="200" placeholder="52.3" class="rec-input"></div>
+        <div><div class="rec-lbl">🌙 전날 취침</div><input type="time" id="recBed" class="rec-input" oninput="scheduleRecordAutoSave()"></div>
+        <div><div class="rec-lbl">🌅 기상</div><input type="time" id="recWake" class="rec-input" oninput="scheduleRecordAutoSave()"></div>
+        <div><div class="rec-lbl">⚖️ 체중(kg)</div><input type="number" id="recWeight" step="0.1" min="30" max="200" placeholder="52.3" class="rec-input" oninput="scheduleRecordAutoSave()"></div>
       </div>
       <div style="margin-bottom:9px">
         <div class="rec-lbl">📱 어제 폰 사용시간 (예: 0320)</div>
-        <input type="text" lang="ko" id="recPhone" placeholder="0320 → 3시간 20분" class="rec-input">
+        <input type="text" lang="ko" id="recPhone" placeholder="0320 → 3시간 20분" class="rec-input" oninput="scheduleRecordAutoSave()">
       </div>
       <div class="rec-lbl">기분</div>
       <div class="mood-row" id="moodRow">
@@ -414,11 +414,11 @@
         <button data-e="low" onclick="pickEnergy('low')">😴 낮음</button>
       </div>
       <div class="rec-lbl">🙏 오늘 감사한 일</div>
-      <textarea lang="ko" id="recGratitude" class="rec-input" rows="2" style="resize:none;margin-bottom:9px" placeholder="오늘 감사한 일을 적어요..."></textarea>
+      <textarea lang="ko" id="recGratitude" class="rec-input" rows="2" style="resize:none;margin-bottom:9px" placeholder="오늘 감사한 일을 적어요..." oninput="scheduleRecordAutoSave()"></textarea>
       <div class="rec-lbl">🌱 오늘의 배움</div>
-      <input type="text" lang="ko" id="recGood" class="rec-input" placeholder="💡 오늘 배운 것" style="margin-bottom:5px">
-      <input type="text" lang="ko" id="recRegret" class="rec-input" placeholder="🔄 생각이 바뀐 게 있다면 (없으면 비워도 돼요)" style="margin-bottom:5px">
-      <input type="text" lang="ko" id="recTomorrow" class="rec-input" placeholder="🎯 그래서 다음엔 이렇게 해본다" style="margin-bottom:10px">
+      <textarea lang="ko" id="recGood" class="rec-input" rows="2" placeholder="💡 오늘 배운 것" style="margin-bottom:5px;resize:vertical" oninput="scheduleRecordAutoSave()"></textarea>
+      <textarea lang="ko" id="recRegret" class="rec-input" rows="2" placeholder="🔄 생각이 바뀐 게 있다면 (없으면 비워도 돼요)" style="margin-bottom:5px;resize:vertical" oninput="scheduleRecordAutoSave()"></textarea>
+      <textarea lang="ko" id="recTomorrow" class="rec-input" rows="2" placeholder="🎯 그래서 다음엔 이렇게 해본다" style="margin-bottom:10px;resize:vertical" oninput="scheduleRecordAutoSave()"></textarea>
       <button class="save-btn" onclick="saveRecord()">💾 오늘 기록 저장</button>
       <div id="recStatus"></div>
     </div>
@@ -1405,10 +1405,19 @@ let selMood = '', selEnergy = '';
 function pickMood(m) {
   selMood = selMood === m ? '' : m;
   document.querySelectorAll('#moodRow span').forEach(s => s.classList.toggle('sel', s.dataset.m === selMood));
+  scheduleRecordAutoSave();
 }
 function pickEnergy(e) {
   selEnergy = selEnergy === e ? '' : e;
   document.querySelectorAll('#energyRow button').forEach(b => b.classList.toggle('sel', b.dataset.e === selEnergy));
+  scheduleRecordAutoSave();
+}
+
+// 오늘기록 자동저장 (입력 멈춘 뒤 900ms 후 조용히 저장)
+let recordAutoSaveTimer = null;
+function scheduleRecordAutoSave() {
+  clearTimeout(recordAutoSaveTimer);
+  recordAutoSaveTimer = setTimeout(() => saveRecord(true), 900);
 }
 function loadRecord() {
   const t = viewDate;
@@ -1429,7 +1438,7 @@ function loadRecord() {
   document.getElementById('recTomorrow').value = refl.tomorrow || '';
   document.getElementById('recStatus').textContent = '';
 }
-function saveRecord() {
+function saveRecord(silent) {
   const t = viewDate;
   const saved = [];
   const bed = document.getElementById('recBed').value;
@@ -1466,9 +1475,13 @@ function saveRecord() {
     save('reflections', list);
     saved.push('반성');
   }
-  if (!saved.length) { showToast('기록할 내용을 입력해주세요'); return; }
-  document.getElementById('recStatus').textContent = `${saved.join(' · ')} 저장됐어요 💾`;
-  showToast('저장 완료 💾');
+  if (!saved.length) { if (!silent) showToast('기록할 내용을 입력해주세요'); return; }
+  if (silent) {
+    document.getElementById('recStatus').textContent = `${saved.join(' · ')} 자동 저장됨 ✓ (${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`;
+  } else {
+    document.getElementById('recStatus').textContent = `${saved.join(' · ')} 저장됐어요 💾`;
+    showToast('저장 완료 💾');
+  }
 }
 
 // ============================================================
