@@ -1,0 +1,5 @@
+# MarkItDown (Microsoft) - PDF/Word/PPT/Excel 등을 .md로 변환하는 도구
+# 설치: pip install -r requirements-markitdown.txt
+# 확인: markitdown --version
+markitdown[all]==0.1.7
+cffi
