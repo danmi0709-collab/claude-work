@@ -40,3 +40,4 @@
 - 작업이 끝나면 Claude가 직접 git add, commit, push까지 실행해줘. 사용자한테 명령어 알려주지 말고 직접 해줘.
 - git push 경로: C:\Users\한나\OneDrive\강성업무용\바탕 화면\문서\CLAUDE
 - push 시 네트워크 오류가 나면 `git pushretry`로 재시도해줘 (최대 3회 자동 재시도)
+- 실제 배포되는 브랜치는 master야. 세션이 별도 작업 브랜치(feature branch)에서 커밋했다면, 끝날 때 반드시 master까지 merge하고 push해줘. master에 안 들어가면 사이트(Netlify/Vercel)에 반영이 안 돼
