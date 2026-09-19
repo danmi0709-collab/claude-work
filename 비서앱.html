@@ -505,6 +505,41 @@
   }
   .edit-icon-btn:hover { color: #667eea; }
 
+  /* 드래그 정렬 */
+  .routine-drag-handle {
+    flex-shrink: 0;
+    cursor: grab;
+    color: #ccc;
+    font-size: 16px;
+    padding: 4px 2px;
+    touch-action: none;
+    user-select: none;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .routine-drag-handle:active { cursor: grabbing; }
+  .cat-routine-item {
+    position: relative;
+  }
+  .cat-routine-item.rt-dragging {
+    opacity: 0.9;
+    background: #f0f0ff;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    position: relative;
+    z-index: 50;
+  }
+  .cat-routine-item.rt-placeholder {
+    opacity: 0.35;
+    background: #f5f5f7;
+    border-radius: 10px;
+    border: 1.5px dashed #c8c8d8;
+  }
+  body.rt-drag-active {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   /* 달성률 통계 */
   .stat-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
   .stat-tab {
@@ -1872,6 +1907,109 @@ function renderRoutineStats() {
   }
 }
 
+// ── 루틴 드래그 정렬 (마우스/터치 기반, HTML5 DnD 미사용) ──────────────────────────────
+let rtDrag = null; // { id, category, el, container, startY }
+
+function routineDragMouseDown(e, routineId, category) {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  startRoutineDrag(e.clientY, routineId, category);
+  document.addEventListener('mousemove', onRoutineDragMouseMove);
+  document.addEventListener('mouseup', onRoutineDragEnd);
+}
+
+function routineDragTouchStart(e, routineId, category) {
+  const touch = e.touches[0];
+  startRoutineDrag(touch.clientY, routineId, category);
+  document.addEventListener('touchmove', onRoutineDragTouchMove, { passive: false });
+  document.addEventListener('touchend', onRoutineDragEnd);
+  document.addEventListener('touchcancel', onRoutineDragEnd);
+}
+
+function startRoutineDrag(clientY, routineId, category) {
+  const el = document.querySelector(`.cat-routine-item[data-routine-id="${routineId}"]`);
+  if (!el) return;
+  const container = el.parentElement; // .cat-body
+  rtDrag = { id: routineId, category, el, container, startY: clientY };
+  el.classList.add('rt-dragging');
+  el.style.zIndex = '50';
+  document.body.classList.add('rt-drag-active');
+}
+
+function onRoutineDragMouseMove(e) {
+  if (!rtDrag) return;
+  e.preventDefault();
+  moveRoutineDrag(e.clientY);
+}
+
+function onRoutineDragTouchMove(e) {
+  if (!rtDrag) return;
+  e.preventDefault();
+  moveRoutineDrag(e.touches[0].clientY);
+}
+
+function moveRoutineDrag(clientY) {
+  const { el, container } = rtDrag;
+  const deltaY = clientY - rtDrag.startY;
+  el.style.transform = `translateY(${deltaY}px)`;
+
+  const siblings = Array.from(container.querySelectorAll('.cat-routine-item')).filter(it => it !== el);
+  for (const sib of siblings) {
+    const rect = sib.getBoundingClientRect();
+    const sibCenter = rect.top + rect.height / 2;
+    if (clientY < sibCenter) {
+      if (sib.previousElementSibling !== el) {
+        container.insertBefore(el, sib);
+        el.style.transform = 'translateY(0px)';
+        rtDrag.startY = clientY;
+      }
+      return;
+    }
+  }
+  // 마우스가 모든 형제 아이템보다 아래에 있으면 맨 뒤로
+  if (el !== container.lastElementChild) {
+    container.appendChild(el);
+    el.style.transform = 'translateY(0px)';
+    rtDrag.startY = clientY;
+  }
+}
+
+function onRoutineDragEnd() {
+  if (!rtDrag) return;
+  const { el, container, category } = rtDrag;
+
+  el.style.transform = '';
+  el.style.zIndex = '';
+  el.classList.remove('rt-dragging');
+  document.body.classList.remove('rt-drag-active');
+
+  document.removeEventListener('mousemove', onRoutineDragMouseMove);
+  document.removeEventListener('mouseup', onRoutineDragEnd);
+  document.removeEventListener('touchmove', onRoutineDragTouchMove);
+  document.removeEventListener('touchend', onRoutineDragEnd);
+  document.removeEventListener('touchcancel', onRoutineDragEnd);
+
+  // 최종 DOM 순서를 기반으로 저장
+  const newOrderIds = Array.from(container.querySelectorAll('.cat-routine-item'))
+    .map(it => Number(it.dataset.routineId));
+
+  const routines = getRoutines();
+  const categoryRoutines = newOrderIds.map(id => routines.find(r => r.id === id)).filter(Boolean);
+  const otherRoutines = routines.filter(r => r.category !== category);
+
+  const orderedByCategory = [];
+  CAT_DEFS.forEach(c => {
+    if (c.key === category) {
+      orderedByCategory.push(...categoryRoutines);
+    } else {
+      orderedByCategory.push(...otherRoutines.filter(r => r.category === c.key));
+    }
+  });
+
+  saveRoutines(orderedByCategory);
+  rtDrag = null;
+  renderRoutines();
+}
 
 function renderRoutines() {
   migrateRoutines();
@@ -1902,7 +2040,8 @@ function renderRoutines() {
               const isDone = (r.doneDates||[]).includes(td);
               const badge = r.days.includes('매일') ? '매일' : r.days.join('·');
               return `
-              <div class="cat-routine-item">
+              <div class="cat-routine-item" data-routine-id="${r.id}" data-category="${c.key}">
+                <span class="routine-drag-handle" onmousedown="routineDragMouseDown(event, ${r.id}, '${c.key}')" ontouchstart="routineDragTouchStart(event, ${r.id}, '${c.key}')" title="드래그해서 순서 변경">⠿</span>
                 <input type="checkbox" ${isDone?'checked':''} onchange="toggleRoutine(${r.id})"
                   style="width:18px;height:18px;accent-color:${c.color};flex-shrink:0;cursor:pointer">
                 <span style="font-size:20px;flex-shrink:0;cursor:pointer;padding:2px 4px;border-radius:6px" onclick="openRoutineEmojiPicker(${r.id})" title="이모지 변경">${r.emoji||getRoutineEmoji(r.text)}</span>

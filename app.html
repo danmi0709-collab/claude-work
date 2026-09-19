@@ -552,6 +552,33 @@
   }
   .edit-icon-btn:hover { color: #667eea; }
 
+  /* 루틴 드래그 정렬 */
+  .routine-drag-handle {
+    flex-shrink: 0;
+    cursor: grab;
+    color: #ccc;
+    font-size: 17px;
+    padding: 6px 4px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .routine-drag-handle:active { cursor: grabbing; }
+  .cat-routine-item.rt-dragging {
+    opacity: 0.9;
+    background: #f0f0ff;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    position: relative;
+    z-index: 50;
+  }
+  body.rt-drag-active {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   /* 달성률 통계 */
   .stat-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
   .stat-tab {
@@ -3450,6 +3477,107 @@ function moveRoutine(id, dir) {
   renderRoutines();
 }
 
+// ── 루틴 드래그 정렬 (마우스/터치 기반) ──────────────────────────────
+let rtDrag = null; // { id, category, el, container, startY }
+
+function routineDragMouseDown(e, routineId, category) {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  startRoutineDrag(e.clientY, routineId, category);
+  document.addEventListener('mousemove', onRoutineDragMouseMove);
+  document.addEventListener('mouseup', onRoutineDragEnd);
+}
+
+function routineDragTouchStart(e, routineId, category) {
+  const touch = e.touches[0];
+  startRoutineDrag(touch.clientY, routineId, category);
+  document.addEventListener('touchmove', onRoutineDragTouchMove, { passive: false });
+  document.addEventListener('touchend', onRoutineDragEnd);
+  document.addEventListener('touchcancel', onRoutineDragEnd);
+}
+
+function startRoutineDrag(clientY, routineId, category) {
+  const el = document.querySelector(`.cat-routine-item[data-routine-id="${routineId}"]`);
+  if (!el) return;
+  const container = el.parentElement; // .cat-body
+  rtDrag = { id: routineId, category, el, container, startY: clientY };
+  el.classList.add('rt-dragging');
+  document.body.classList.add('rt-drag-active');
+}
+
+function onRoutineDragMouseMove(e) {
+  if (!rtDrag) return;
+  e.preventDefault();
+  moveRoutineDrag(e.clientY);
+}
+
+function onRoutineDragTouchMove(e) {
+  if (!rtDrag) return;
+  e.preventDefault();
+  moveRoutineDrag(e.touches[0].clientY);
+}
+
+function moveRoutineDrag(clientY) {
+  const { el, container } = rtDrag;
+  const deltaY = clientY - rtDrag.startY;
+  el.style.transform = `translateY(${deltaY}px)`;
+
+  const siblings = Array.from(container.querySelectorAll('.cat-routine-item')).filter(it => it !== el);
+  for (const sib of siblings) {
+    const rect = sib.getBoundingClientRect();
+    const sibCenter = rect.top + rect.height / 2;
+    if (clientY < sibCenter) {
+      if (sib.previousElementSibling !== el) {
+        container.insertBefore(el, sib);
+        el.style.transform = 'translateY(0px)';
+        rtDrag.startY = clientY;
+      }
+      return;
+    }
+  }
+  if (el !== container.lastElementChild) {
+    container.appendChild(el);
+    el.style.transform = 'translateY(0px)';
+    rtDrag.startY = clientY;
+  }
+}
+
+function onRoutineDragEnd() {
+  if (!rtDrag) return;
+  const { el, container, category } = rtDrag;
+
+  el.style.transform = '';
+  el.classList.remove('rt-dragging');
+  document.body.classList.remove('rt-drag-active');
+
+  document.removeEventListener('mousemove', onRoutineDragMouseMove);
+  document.removeEventListener('mouseup', onRoutineDragEnd);
+  document.removeEventListener('touchmove', onRoutineDragTouchMove);
+  document.removeEventListener('touchend', onRoutineDragEnd);
+  document.removeEventListener('touchcancel', onRoutineDragEnd);
+
+  // 최종 DOM 순서를 기반으로 저장 (카테고리 내 전체 순서)
+  const newOrderIds = Array.from(container.querySelectorAll('.cat-routine-item'))
+    .map(it => Number(it.dataset.routineId));
+
+  const routines = getRoutines();
+  const categoryRoutines = newOrderIds.map(id => routines.find(r => r.id === id)).filter(Boolean);
+  const otherRoutines = routines.filter(r => r.category !== category);
+
+  const orderedByCategory = [];
+  CAT_DEFS.forEach(c => {
+    if (c.key === category) {
+      orderedByCategory.push(...categoryRoutines);
+    } else {
+      orderedByCategory.push(...otherRoutines.filter(r => r.category === c.key));
+    }
+  });
+
+  saveRoutines(orderedByCategory);
+  rtDrag = null;
+  renderRoutines();
+}
+
 function renderRoutines() {
   migrateRoutines();
   const all = getRoutines();
@@ -3490,7 +3618,8 @@ function renderRoutines() {
               else if (isSkipped) itemStyle = 'opacity:0.55;background:#f5f5f5;';
               else if (!isToday) itemStyle = 'opacity:0.45;';
               return `
-              <div class="cat-routine-item" style="${itemStyle}">
+              <div class="cat-routine-item" style="${itemStyle}" data-routine-id="${r.id}" data-category="${c.key}">
+                <span class="routine-drag-handle" onmousedown="routineDragMouseDown(event, ${r.id}, '${c.key}')" ontouchstart="routineDragTouchStart(event, ${r.id}, '${c.key}')" title="드래그해서 순서 변경">⠿</span>
                 ${isSkipped
                   ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#e0e0e0;color:#888;flex-shrink:0">패스</span>`
                   : `<input type="checkbox" ${isDone?'checked':''} onchange="toggleRoutine(${r.id})"
@@ -3501,10 +3630,7 @@ function renderRoutines() {
                 <span class="routine-badge" style="background:${c.light};color:${c.color}">${badge}</span>
                 ${isSkipped && isToday
                   ? `<button onclick="cancelPassRoutine(${r.id})" title="패스 취소" style="background:none;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-size:11px;color:#aaa;padding:2px 7px;flex-shrink:0">↩취소</button>`
-                  : `<div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0">
-                      <button onclick="moveRoutine(${r.id},'up')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#bbb;padding:0 2px;line-height:1" ${i===0?'disabled':''}>▲</button>
-                      <button onclick="moveRoutine(${r.id},'down')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#bbb;padding:0 2px;line-height:1" ${i===allCatItems.length-1?'disabled':''}>▼</button>
-                    </div>`
+                  : ''
                 }
                 ${!isSkipped ? `<button onclick="toggleOneThing(${r.id})" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 3px;line-height:1;flex-shrink:0">${oneThingRoutineIds.includes(r.id) ? '⭐' : '☆'}</button>` : ''}
                 ${!isSkipped ? `<button onclick="toggleRoutinePause(${r.id})" title="${isPaused?'재개':'잠시 쉬기'}" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 3px;line-height:1;flex-shrink:0">${isPaused?'▶️':'⏸️'}</button>` : ''}
