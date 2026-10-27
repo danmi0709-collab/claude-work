@@ -1,0 +1,266 @@
+<title>한나의 성공일기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=Gowun+Dodum&display=swap">
+<style>
+/* 레이아웃: 한 손으로 쓰는 세로 한 줄 노트. 노션의 세 칸 색(분홍·주황·초록)을 그대로 가져온 카드 3장 + 하단 고정 저장 버튼 */
+:root{
+  --bg:#f3f5f1; --paper:#ffffff; --ink:#1f2a24; --muted:#66736b; --line:#dfe5dd;
+  --done:#c2416b; --done-bg:#fbe9ef;
+  --learn:#b8641c; --learn-bg:#fcefe1;
+  --thanks:#2f7d55; --thanks-bg:#e4f3ea;
+  --btn:#1f2a24; --btn-ink:#ffffff; --ok:#2f7d55; --err:#b3261e;
+  --f-display:"Hahmlet","Nanum Myeongjo",serif;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a16; --paper:#1c241f; --ink:#e7ede8; --muted:#9aa89f; --line:#2c3730;
+  --done:#f08aaa; --done-bg:#3a1f29; --learn:#f0a868; --learn-bg:#3a2a1a; --thanks:#7fd1a2; --thanks-bg:#1b3326;
+  --btn:#e7ede8; --btn-ink:#141a16; --ok:#7fd1a2; --err:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a16; --paper:#1c241f; --ink:#e7ede8; --muted:#9aa89f; --line:#2c3730;
+  --done:#f08aaa; --done-bg:#3a1f29; --learn:#f0a868; --learn-bg:#3a2a1a; --thanks:#7fd1a2; --thanks-bg:#1b3326;
+  --btn:#e7ede8; --btn-ink:#141a16; --ok:#7fd1a2; --err:#ff8a80; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 120px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:6px}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.75rem;line-height:1.25;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.92rem;margin:0}
+.daterow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{font-family:var(--f-display);font-weight:500;font-size:1.05rem;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 14px}
+.daterow label{color:var(--muted);font-size:.85rem;display:flex;align-items:center;gap:6px}
+input[type=date]{font:inherit;font-size:.9rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card h2{margin:0;font-family:var(--f-display);font-weight:700;font-size:1.05rem;padding:10px 14px;display:flex;justify-content:space-between;align-items:baseline}
+.card h2 small{font-family:var(--f-body);font-weight:400;font-size:.8rem;opacity:.8}
+.done h2{background:var(--done-bg);color:var(--done)}
+.learn h2{background:var(--learn-bg);color:var(--learn)}
+.thanks h2{background:var(--thanks-bg);color:var(--thanks)}
+textarea{display:block;width:100%;box-sizing:border-box;border:0;background:transparent;color:var(--ink);font:inherit;line-height:1.7;padding:12px 14px;min-height:96px;resize:vertical}
+textarea::placeholder{color:var(--muted);opacity:.75}
+textarea:focus{outline:2px solid var(--line);outline-offset:-2px}
+.last{border-top:1px dashed var(--line);padding:8px 14px 10px;font-size:.82rem;color:var(--muted);white-space:pre-line}
+.last b{font-weight:400;color:var(--ink)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+button{font:inherit}
+#save{width:100%;border:0;border-radius:12px;padding:14px;background:var(--btn);color:var(--btn-ink);font-family:var(--f-display);font-weight:700;font-size:1.05rem;cursor:pointer}
+#save:disabled{opacity:.45;cursor:default}
+#save:focus-visible,.link:focus-visible{outline:3px solid var(--thanks);outline-offset:2px}
+#status{font-size:.88rem;min-height:1.3em;text-align:center;color:var(--muted)}
+#status.ok{color:var(--ok)} #status.err{color:var(--err)}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font-size:.85rem}
+.help{font-size:.82rem;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:no-preference){#save{transition:opacity .2s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>오늘도 해냈습니다</h1>
+    <p class="sub">쓰고 저장하면 노션 「성공 일기」 세 칸에 바로 들어가요.</p>
+    <div class="daterow">
+      <span class="tag" id="tag">@--------</span>
+      <label for="date">날짜 바꾸기 <input type="date" id="date"></label>
+    </div>
+  </header>
+
+  <section class="card done">
+    <h2>해냈습니다! <small>한 줄에 하나씩</small></h2>
+    <textarea id="t-done" placeholder="예) 아침 6:20 기상&#10;예) 퇴고 2장 끝냄"></textarea>
+    <div class="last" id="l-done">노션에서 최근 기록을 불러오는 중…</div>
+  </section>
+
+  <section class="card learn">
+    <h2>배웠습니다! <small>한 줄에 하나씩</small></h2>
+    <textarea id="t-learn" placeholder="예) 하루를 어떻게 시작하느냐가 사람을 바꾼다"></textarea>
+    <div class="last" id="l-learn">노션에서 최근 기록을 불러오는 중…</div>
+  </section>
+
+  <section class="card thanks">
+    <h2>감사합니다. <small>한 줄에 하나씩</small></h2>
+    <textarea id="t-thanks" placeholder="예) 함께해 준 남편에게 감사합니다"></textarea>
+    <div class="last" id="l-thanks">노션에서 최근 기록을 불러오는 중…</div>
+  </section>
+
+  <p class="help">쓰던 내용은 이 폰에 임시 저장돼요. 같은 날짜에 또 저장하면 그날 기록 밑에 번호가 이어서 붙어요.</p>
+</div>
+
+<div class="bar"><div class="bar-in">
+  <button id="save" type="button">노션에 저장</button>
+  <div id="status" role="status" aria-live="polite"></div>
+</div></div>
+
+<script>
+(function(){
+  var PAGE_ID = "4017777c03e9800d89a1fcb6b0838e8d";
+  var SERVER = "Notion";
+  var DAYS = ["일","월","화","수","목","금","토"];
+  var SECTIONS = [
+    {key:"done",   head:"해냈", ta:"t-done",   last:"l-done"},
+    {key:"learn",  head:"배웠", ta:"t-learn",  last:"l-learn"},
+    {key:"thanks", head:"감사", ta:"t-thanks", last:"l-thanks"}
+  ];
+  var $ = function(id){return document.getElementById(id)};
+  var mcp = null, busy = false;
+
+  // ---------- 날짜 ----------
+  function pad(n){return (n<10?"0":"")+n}
+  function todayISO(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+  function tagFor(iso){
+    var p=iso.split("-"), d=new Date(+p[0],+p[1]-1,+p[2]);
+    return "@"+p[0]+p[1]+p[2]+DAYS[d.getDay()];
+  }
+  function curTag(){return tagFor($("date").value||todayISO())}
+  $("date").value = todayISO();
+  function showTag(){$("tag").textContent = curTag()}
+  $("date").addEventListener("change", showTag); showTag();
+
+  // ---------- 임시 저장 ----------
+  function loadDraft(){try{var d=JSON.parse(localStorage.getItem("sd-draft")||"{}");SECTIONS.forEach(function(s){if(d[s.key])$(s.ta).value=d[s.key]})}catch(e){}}
+  function saveDraft(){try{var d={};SECTIONS.forEach(function(s){d[s.key]=$(s.ta).value});localStorage.setItem("sd-draft",JSON.stringify(d))}catch(e){}}
+  function clearDraft(){try{localStorage.removeItem("sd-draft")}catch(e){}}
+  loadDraft();
+  SECTIONS.forEach(function(s){$(s.ta).addEventListener("input",saveDraft)});
+
+  // ---------- 상태 표시 ----------
+  function status(msg, kind){var el=$("status");el.textContent=msg||"";el.className=kind||""}
+
+  // ---------- 노션 글 변환 ----------
+  function esc(t){
+    return t.replace(/\\/g,"\\\\").replace(/([*_`~$\[\]])/g,"\\$1").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function items(key){
+    return $(SECTIONS.filter(function(s){return s.key===key})[0].ta).value.split(/\n+/)
+      .map(function(l){return l.replace(/^\s*(\d+\s*[.)]|[-•·])\s*/,"").trim()}).filter(Boolean);
+  }
+  function plain(body){
+    return body.replace(/<br\s*\/?>/g,"\n").replace(/<[^>]+>/g,"").replace(/\\([\\*_`~$\[\]])/g,"$1")
+      .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&").trim();
+  }
+  function pageText(result){
+    var p = result && result.payload;
+    var t = typeof p==="string" ? p : (p && typeof p.text==="string" ? p.text : "");
+    if(!t && result && result.content){result.content.forEach(function(c){if(c.type==="text")t+=c.text})}
+    var m = t.match(/<content>([\s\S]*)<\/content>/);
+    return m ? m[1] : t;
+  }
+  function parseColumns(content){
+    var cols = {}, re=/<column[^>]*>([\s\S]*?)<\/column>/g, m;
+    while((m=re.exec(content))){
+      var inner=m[1];
+      var hm = inner.match(/<p color="[a-z]+_bg">\n([^\n]*)\n<\/p>/);
+      if(!hm) continue;
+      var sec = SECTIONS.filter(function(s){return hm[1].indexOf(s.head)>-1})[0];
+      if(!sec) continue;
+      var paras=[], pr=/<p color="gray_bg">\n([\s\S]*?)\n<\/p>/g, pm;
+      while((pm=pr.exec(inner))) paras.push({full:pm[0], body:pm[1]});
+      cols[sec.key] = {header:hm[0], paras:paras};
+    }
+    return cols;
+  }
+  function countOf(hay, needle){var n=0,i=0;while((i=hay.indexOf(needle,i))>-1){n++;i+=needle.length}return n}
+
+  function buildUpdates(content, tag){
+    var cols = parseColumns(content), ups=[], problems=[];
+    SECTIONS.forEach(function(s){
+      var list = items(s.key); if(!list.length) return;
+      var col = cols[s.key];
+      if(!col){problems.push(s.head+" 칸을 노션에서 못 찾았어요");return}
+      var same = col.paras.filter(function(p){return p.body.indexOf("<b>"+tag)===0});
+      if(same.length){
+        var p = same[same.length-1], body = p.body.replace(/(<br \/>\s*)+$/,"");
+        var max=0, nr=/(?:<\/b>|<br \/>)\s*(\d+)\s*\./g, nm;
+        while((nm=nr.exec(body))) max=Math.max(max,+nm[1]);
+        var add = list.map(function(t,i){return (max+i+1)+". "+esc(t)});
+        var joined = /<\/b>$/.test(body) ? body+add.join("<br />") : body+"<br />"+add.join("<br />");
+        if(countOf(content,p.full)!==1){problems.push(s.head+" 칸의 같은 날짜 기록이 겹쳐서 위치를 못 정했어요");return}
+        ups.push({old_str:p.full, new_str:'<p color="gray_bg">\n'+joined+'\n</p>'});
+      }else{
+        var anchor = col.paras.length ? col.paras[col.paras.length-1].full : col.header;
+        if(countOf(content,anchor)!==1) anchor = col.header;
+        if(countOf(content,anchor)!==1){problems.push(s.head+" 칸 위치를 못 정했어요");return}
+        var np = '<p color="gray_bg">\n<b>'+tag+'<br /></b>'+list.map(function(t,i){return (i+1)+". "+esc(t)}).join("<br />")+'\n</p>';
+        ups.push({old_str:anchor, new_str:anchor+"\n\n"+np});
+      }
+    });
+    return {ups:ups, problems:problems};
+  }
+
+  // ---------- 최근 기록 표시 ----------
+  function showLatest(content){
+    var cols = parseColumns(content);
+    SECTIONS.forEach(function(s){
+      var el=$(s.last), col=cols[s.key];
+      if(!col || !col.paras.length){el.textContent="노션에 아직 기록이 없어요.";return}
+      var t = plain(col.paras[col.paras.length-1].body);
+      var lines=t.split("\n"); el.textContent="";
+      var b=document.createElement("b"); b.textContent="최근 "+lines.shift();
+      el.appendChild(b); el.appendChild(document.createTextNode("\n"+lines.join("\n")));
+    });
+  }
+  function setLastAll(msg){SECTIONS.forEach(function(s){$(s.last).textContent=msg})}
+
+  // ---------- 오류 문구 ----------
+  function errMsg(e){
+    var c = e && e.code;
+    if(c==="server_not_connected") return "claude.ai 설정 → 커넥터에서 Notion을 연결해 주세요.";
+    if(c==="needs_reauth") return "Notion 연결이 끊겼어요. claude.ai 설정 → 커넥터에서 다시 연결해 주세요.";
+    if(c==="selection_required") return "Notion 연결이 여러 개예요. 화면에 뜨는 선택창에서 하나를 골라 주세요.";
+    if(c==="not_in_manifest"||c==="approval_required"||c==="consent_required") return "이 앱이 노션을 쓰도록 허용해 주세요. 위쪽 권한 메뉴에서 바꿀 수 있어요.";
+    if(c==="blocked_by_policy") return "조직 설정 때문에 노션 사용이 막혀 있어요.";
+    if(c==="tool_error") return "노션이 거절했어요: "+String(e.message||"").slice(0,120);
+    if(c==="not_granted"||c==="capability_disabled"||c==="capability_removed") return "이 화면에서는 노션 연결을 쓸 수 없어요. claude.ai에서 열어 주세요.";
+    return "노션 연결이 잠깐 불안정해요. 잠시 뒤 다시 눌러 주세요.";
+  }
+
+  function fetchPage(){
+    return mcp.callTool(SERVER,"notion-fetch",{id:PAGE_ID},{cache:false}).then(pageText);
+  }
+
+  // ---------- 저장 ----------
+  function save(){
+    if(busy) return;
+    if(!mcp){status("이 화면에서는 노션 연결을 쓸 수 없어요. claude.ai에서 열어 주세요.","err");return}
+    var tag = curTag();
+    var total = SECTIONS.reduce(function(n,s){return n+items(s.key).length},0);
+    if(!total){status("세 칸 중 한 곳 이상 써 주세요.","err");return}
+    busy=true; $("save").disabled=true; status("노션 페이지 확인 중…");
+    var plan;
+    fetchPage().then(function(content){
+      plan = buildUpdates(content, tag);
+      if(plan.problems.length && !plan.ups.length) throw {code:"local", message:plan.problems.join(" / ")};
+      status("노션에 쓰는 중…");
+      return mcp.callTool(SERVER,"notion-update-page",{page_id:PAGE_ID,command:"update_content",content_updates:plan.ups,allow_async:false},{cache:false});
+    }).then(function(){
+      SECTIONS.forEach(function(s){$(s.ta).value=""}); clearDraft();
+      status(tag+" 기록 "+total+"줄을 노션에 저장했어요."+(plan.problems.length?" (일부 실패: "+plan.problems.join(", ")+")":""),"ok");
+      return fetchPage().then(showLatest).catch(function(){});
+    }).catch(function(e){
+      if(e && e.code==="local"){status(e.message,"err");return}
+      // 쓰기 실패가 애매할 수 있어서, 실제로 들어갔는지 다시 확인
+      var first = plan && plan.ups[0];
+      if(first && (e.code==="server_unavailable"||e.code==="upstream_error"||e.code==="cancelled")){
+        status("저장됐는지 확인 중…");
+        return fetchPage().then(function(c){
+          if(c.indexOf(first.new_str)>-1){SECTIONS.forEach(function(s){$(s.ta).value=""});clearDraft();showLatest(c);status(tag+" 기록을 노션에 저장했어요.","ok")}
+          else status(errMsg(e)+" 쓴 내용은 그대로 남아 있어요.","err");
+        }).catch(function(){status(errMsg(e)+" 노션에서 직접 한 번 확인해 주세요.","err")});
+      }
+      status(errMsg(e)+" 쓴 내용은 그대로 남아 있어요.","err");
+    }).then(function(){busy=false;$("save").disabled=false});
+  }
+  $("save").addEventListener("click", save);
+
+  // ---------- 시작 ----------
+  if(!(window.claude && window.claude.use)){setLastAll("claude.ai에서 열면 노션 기록이 보여요.");return}
+  window.claude.use("mcp").then(function(m){
+    mcp = m;
+    if(!mcp){setLastAll("이 화면에서는 노션 연결을 쓸 수 없어요.");return}
+    fetchPage().then(showLatest).catch(function(e){setLastAll(errMsg(e))});
+  });
+})();
+</script>
