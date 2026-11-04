@@ -1,13 +1,5 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="하리 작품">
-<meta name="theme-color" content="#fbf6ee">
 <title>하리 작품 앨범</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
@@ -15,29 +7,28 @@
 /* 스케치북 느낌: 크림색 종이 + 크레용 색 종류 칩. 사진이 주인공이라 바탕은 조용하게 */
 :root{
   --bg:#fbf6ee; --paper:#ffffff; --ink:#2b2622; --muted:#7a6f66; --line:#eadfd1;
-  --accent:#e2574c; --accent-ink:#ffffff; --soft:#fde8e4;
+  --accent:#e2574c; --accent-ink:#ffffff; --danger:#c0392b; --shade:rgba(0,0,0,.45);
   --f-display:"Jua","Gowun Dodum",sans-serif;
   --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#1c1916; --paper:#26221e; --ink:#f1ebe4; --muted:#a99d92; --line:#3a332d;
-  --accent:#ff7a6e; --accent-ink:#1c1916; --soft:#3b2622; color-scheme:dark}}
+  --accent:#ff7a6e; --accent-ink:#1c1916; --danger:#ff8a80; --shade:rgba(0,0,0,.6); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1c1916; --paper:#26221e; --ink:#f1ebe4; --muted:#a99d92; --line:#3a332d;
-  --accent:#ff7a6e; --accent-ink:#1c1916; --soft:#3b2622; color-scheme:dark}
+  --accent:#ff7a6e; --accent-ink:#1c1916; --danger:#ff8a80; --shade:rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg)}
-body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
-  padding:16px max(16px,env(safe-area-inset-right)) 120px max(16px,env(safe-area-inset-left));
-  padding-top:max(16px,env(safe-area-inset-top))}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 120px}
 .wrap{max-width:720px;margin:0 auto}
-button,input,select,textarea{font:inherit;color:inherit}
+button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
-h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-height:1.1}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-height:1.1;text-wrap:balance}
 .count{color:var(--muted);font-size:.9rem;margin-top:4px}
-.icon-btn{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 12px;font-size:.9rem}
+.icon-btn{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 12px;font-size:.9rem;flex:none}
 .tabs{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
 .tabs button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px;font-family:var(--f-display);font-size:1.05rem;color:var(--muted)}
 .tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
@@ -54,23 +45,22 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
 .kindhead .bar{flex:1;height:3px;border-radius:2px;background:var(--c);opacity:.5}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 @media (min-width:560px){.grid{grid-template-columns:repeat(4,1fr)}}
-.tile{position:relative;aspect-ratio:1;border:0;padding:0;border-radius:10px;overflow:hidden;background:var(--line)}
+.tile{position:relative;aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:10px;overflow:hidden;background:var(--line)}
 .tile img{width:100%;height:100%;object-fit:cover;display:block}
 .tile .k{position:absolute;left:5px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--c);border:2px solid #fff}
-.tile .d{position:absolute;left:0;right:0;bottom:0;padding:12px 6px 4px;font-size:.72rem;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));text-align:left}
+.tile .d{position:absolute;left:0;right:0;bottom:0;padding:12px 6px 4px;font-size:.72rem;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .empty{text-align:center;color:var(--muted);padding:60px 10px}
 .empty .big{font-family:var(--f-display);font-size:1.4rem;color:var(--ink);margin-bottom:6px}
-.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:10;
   border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-family:var(--f-display);font-size:1.25rem;
-  padding:15px 30px;box-shadow:0 6px 18px rgba(0,0,0,.18);display:flex;align-items:center;gap:8px;white-space:nowrap}
-.fab small{font-family:var(--f-body);font-size:.8rem;opacity:.85}
-.hidden{display:none!important}
+  padding:15px 30px;box-shadow:0 6px 18px rgba(0,0,0,.18);white-space:nowrap}
+.fab:disabled{opacity:.5}
 /* 아래에서 올라오는 시트 */
-.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:fixed;inset:0;background:var(--shade);z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;
-  padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .sheet h2{font-family:var(--f-display);font-weight:400;font-size:1.4rem;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
-.preview{width:100%;max-height:42vh;object-fit:contain;border-radius:12px;background:var(--paper);display:block;margin-bottom:12px}
+.preview{width:100%;max-height:40vh;object-fit:contain;border-radius:12px;background:var(--paper);display:block;margin-bottom:12px}
 .field{margin-bottom:12px}
 .field>label,.field>.lab{display:block;font-size:.88rem;color:var(--muted);margin-bottom:5px}
 .field input,.field textarea{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 12px}
@@ -82,86 +72,93 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
 .primary{border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);padding:14px;font-family:var(--f-display);font-size:1.15rem;width:100%}
 .primary:disabled{opacity:.5}
 .ghost{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:12px}
-.danger{color:#c0392b}
+.danger-btn{border:0;border-radius:12px;background:var(--danger);color:#fff;padding:12px}
 .x{border:0;background:none;font-size:1.6rem;line-height:1;padding:4px 8px;color:var(--muted)}
+.note{font-size:.85rem;color:var(--muted);margin:4px 0 14px}
 /* 크게 보기 */
 .viewer{position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column;color:#fff}
-.viewer .top{display:flex;justify-content:space-between;align-items:center;padding:max(10px,env(safe-area-inset-top)) 12px 6px}
-.viewer .top button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:8px 12px}
+.viewer .top{display:flex;justify-content:space-between;align-items:center;padding:max(10px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px))}
+.viewer .top button{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:10px;padding:8px 12px}
 .viewer .pic{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;touch-action:pan-y}
 .viewer .pic img{max-width:100%;max-height:100%;object-fit:contain}
-.viewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:0;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.4rem}
+.viewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.16);border:0;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.4rem}
 .viewer .prev{left:8px}.viewer .next{right:8px}
-.viewer .info{padding:12px 16px calc(16px + env(safe-area-inset-bottom));background:#111}
+.viewer .info{padding:12px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:#111}
 .viewer .info .t{font-family:var(--f-display);font-size:1.3rem}
 .viewer .info .m{color:#ccc;font-size:.9rem;margin-top:2px}
 .viewer .info .memo{margin-top:6px;white-space:pre-wrap}
-.menu a,.menu button{display:block;width:100%;text-align:left;margin-bottom:8px}
-.note{font-size:.85rem;color:var(--muted);margin:4px 0 14px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);
-  padding:10px 16px;border-radius:10px;z-index:50;font-size:.92rem}
+.menu .ghost{display:block;width:100%;text-align:left;margin-bottom:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:10px;z-index:50;font-size:.92rem;max-width:calc(100% - 32px);text-align:center}
 </style>
-</head>
-<body>
+
 <div class="wrap">
   <header>
     <div>
       <h1>하리 작품 앨범</h1>
-      <div class="count" id="count"></div>
+      <div class="count" id="count">불러오는 중…</div>
     </div>
-    <button class="icon-btn" id="menuBtn" aria-label="설정과 백업">⚙︎ 백업</button>
+    <button class="icon-btn" id="menuBtn" type="button">⚙︎ 설정</button>
   </header>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tabDate" aria-selected="true">날짜별</button>
-    <button role="tab" id="tabKind" aria-selected="false">종류별</button>
+    <button role="tab" id="tabDate" type="button" aria-selected="true">날짜별</button>
+    <button role="tab" id="tabKind" type="button" aria-selected="false">종류별</button>
   </div>
   <div class="chips" id="filter"></div>
   <main id="list"></main>
 </div>
 
-<button class="fab" id="shoot">📷 작품 찍기</button>
-<input type="file" id="camera" accept="image/*" capture="environment" class="hidden">
-<input type="file" id="gallery" accept="image/*" multiple class="hidden">
-<input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+<button class="fab" id="shoot" type="button" hidden>📷 작품 찍기</button>
+<input type="file" id="camera" accept="image/*" capture="environment" hidden>
+<input type="file" id="gallery" accept="image/*" multiple hidden>
 
 <!-- 저장/수정 시트 -->
-<div class="sheet-bg hidden" id="editBg">
+<div class="sheet-bg" id="editBg" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
-    <h2><span id="editTitle">작품 저장</span><button class="x" id="editClose" aria-label="닫기">×</button></h2>
+    <h2><span id="editTitle">작품 저장</span><button class="x" id="editClose" type="button" aria-label="닫기">×</button></h2>
     <img class="preview" id="editPreview" alt="">
     <div class="field"><span class="lab">어떤 작품이에요?</span><div class="kinds" id="editKinds"></div></div>
     <div class="field"><label for="editName">제목 (안 써도 돼요)</label><input id="editName" placeholder="예: 우리 가족, 공룡 친구"></div>
     <div class="field"><label for="editDate">만든 날</label><input type="date" id="editDate"></div>
     <div class="field"><label for="editMemo">하리가 한 말 / 메모</label><textarea id="editMemo" placeholder="예: 엄마가 웃는 모습이래요"></textarea></div>
-    <button class="primary" id="editSave">저장하기</button>
+    <button class="primary" id="editSave" type="button">저장하기</button>
     <div id="editMore" class="note"></div>
   </div>
 </div>
 
 <!-- 메뉴 시트 -->
-<div class="sheet-bg hidden" id="menuBg">
-  <div class="sheet menu" role="dialog" aria-modal="true">
-    <h2>설정·백업<button class="x" id="menuClose" aria-label="닫기">×</button></h2>
-    <button class="ghost" id="pickGallery">🖼️ 앨범에서 사진 여러 장 가져오기</button>
-    <button class="ghost" id="backup">💾 백업 파일 내려받기</button>
-    <button class="ghost" id="restore">📂 백업 파일 불러오기</button>
-    <p class="note">사진은 이 폰의 이 브라우저 안에만 저장돼요. 브라우저 기록을 지우거나 폰을 바꾸면 사라지니, 한 달에 한 번쯤 백업 파일을 내려받아 구글 드라이브나 카톡 '나와의 채팅'에 올려두세요.</p>
-    <button class="ghost" id="addKind">➕ 작품 종류 추가</button>
-    <div id="kindList" class="note"></div>
+<div class="sheet-bg" id="menuBg" hidden>
+  <div class="sheet menu" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+    <h2><span id="menuTitle">설정</span><button class="x" id="menuClose" type="button" aria-label="닫기">×</button></h2>
+    <button class="ghost" id="pickGallery" type="button">🖼️ 앨범에서 사진 여러 장 가져오기</button>
+    <p class="note">앨범에서 가져오면 사진 파일의 날짜가 '만든 날'로 자동으로 들어가요.</p>
+    <div class="field"><label for="newKind">작품 종류 추가 (예: 점토, 블록)</label>
+      <div class="row"><input id="newKind" maxlength="12"><button class="ghost" id="addKind" type="button" style="flex:none">추가</button></div></div>
+    <p class="note" id="kindList"></p>
+    <p class="note" id="usage"></p>
+  </div>
+</div>
+
+<!-- 지우기 확인 -->
+<div class="sheet-bg" id="askBg" hidden>
+  <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="askText">
+    <h2 id="askText">이 작품을 지울까요?</h2>
+    <p class="note">지우면 되돌릴 수 없어요.</p>
+    <div class="row"><button class="ghost" id="askNo" type="button">그대로 두기</button><button class="danger-btn" id="askYes" type="button">지우기</button></div>
   </div>
 </div>
 
 <!-- 크게 보기 -->
-<div class="viewer hidden" id="viewer" role="dialog" aria-modal="true">
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" hidden>
   <div class="top">
-    <button id="vClose">← 닫기</button>
-    <div style="display:flex;gap:6px"><button id="vEdit">수정</button><button id="vDel">삭제</button></div>
+    <button id="vClose" type="button">← 닫기</button>
+    <div style="display:flex;gap:6px" id="vTools"><button id="vEdit" type="button">수정</button><button id="vDel" type="button">삭제</button></div>
   </div>
   <div class="pic" id="vPic">
     <img id="vImg" alt="">
-    <button class="nav prev" id="vPrev" aria-label="이전">‹</button>
-    <button class="nav next" id="vNext" aria-label="다음">›</button>
+    <button class="nav prev" id="vPrev" type="button" aria-label="이전">‹</button>
+    <button class="nav next" id="vNext" type="button" aria-label="다음">›</button>
   </div>
   <div class="info"><div class="t" id="vTitle"></div><div class="m" id="vMeta"></div><div class="memo" id="vMemo"></div></div>
 </div>
@@ -180,67 +177,45 @@ const DEFAULT_KINDS = [
 ];
 const EXTRA_COLORS = ['#d6457f','#1fa3a3','#b07a2a','#5b6bd6','#6aa13a','#c25b2e'];
 
-/* ---------- 저장소(IndexedDB): 폰 브라우저 안에 사진을 넣어두는 곳 ---------- */
-let db;
-function openDB(){
-  return new Promise((res, rej) => {
-    const r = indexedDB.open('hari-art', 1);
-    r.onupgradeneeded = () => {
-      const d = r.result;
-      d.createObjectStore('works', {keyPath:'id'});
-      d.createObjectStore('meta', {keyPath:'key'});
-    };
-    r.onsuccess = () => { db = r.result; res(); };
-    r.onerror = () => rej(r.error);
-  });
-}
-function tx(store, mode, fn){
-  return new Promise((res, rej) => {
-    const t = db.transaction(store, mode); const s = t.objectStore(store);
-    const out = fn(s);
-    t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
-    t.onerror = () => rej(t.error);
-  });
-}
-const getAll = s => tx(s, 'readonly', st => st.getAll());
-const put = (s, v) => tx(s, 'readwrite', st => { st.put(v); });
-const del = (s, k) => tx(s, 'readwrite', st => { st.delete(k); });
-
-/* ---------- 상태 ---------- */
-let works = [];     // {id, kind, name, date:'YYYY-MM-DD', memo, img:Blob, thumb:Blob, created}
+/* 저장 위치: 기록은 db, 사진 파일은 assets (둘 다 claude.ai 쪽에 보관돼서 폰을 바꿔도 남음) */
+let db = null, assets = null;
+let works = [];        // {id, kind, name, date, memo, imgId, thumbId, created}
 let kinds = DEFAULT_KINDS.slice();
-let view = 'date';
-let filterKind = null;
-let shown = [];     // 지금 화면 순서 (크게 보기에서 넘길 때 사용)
-const urls = new Map();
-function thumbURL(w){ if(!urls.has(w.id)) urls.set(w.id, URL.createObjectURL(w.thumb)); return urls.get(w.id); }
-function dropURL(id){ if(urls.has(id)){ URL.revokeObjectURL(urls.get(id)); urls.delete(id);} }
+let view = 'date', filterKind = null, shown = [];
+let canWrite = false;
+
+const blobUrl = id => '/_blob/' + id;
 const kindOf = id => kinds.find(k => k.id === id) || {id, name:'기타', color:'#8a7f75'};
-
-function today(){ const d=new Date(); return ymd(d); }
 function ymd(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+const today = () => ymd(new Date());
 const WD = ['일','월','화','수','목','금','토'];
-function dayLabel(s){ const [y,m,d]=s.split('-').map(Number); const w=new Date(y,m-1,d).getDay(); return `${m}월 ${d}일 (${WD[w]})`; }
+function dayLabel(s){ const [y,m,d]=s.split('-').map(Number); return `${m}월 ${d}일 (${WD[new Date(y,m-1,d).getDay()]})`; }
 function monthLabel(s){ const [y,m]=s.split('-'); return `${y}년 ${Number(m)}월`; }
-function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2200); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg, ms){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms||2400); }
+function memo(key, val){ try{ if(val===undefined) return localStorage.getItem(key); localStorage.setItem(key,val); }catch(e){ return null; } }
+function errMsg(e){
+  const c = e && e.code;
+  if (c==='quota_or_state' || c==='quota_exceeded') return '저장 공간이 가득 찼어요. 오래된 작품을 몇 개 지운 뒤 다시 해주세요.';
+  if (c==='not_granted') return '저장 권한을 허용해야 해요. 다시 눌러서 허용해주세요.';
+  if (c==='rate_limited' || c==='resource_exhausted') return '잠깐 너무 빨랐어요. 몇 초 뒤 다시 해주세요.';
+  return '저장하지 못했어요. 인터넷 연결을 확인하고 다시 해주세요.';
+}
 
-/* ---------- 사진 줄이기: 원본 그대로 두면 폰 용량을 많이 먹어서 적당한 크기로 ---------- */
+/* ---------- 사진 줄이기: 원본은 너무 커서 보기 좋은 크기로 ---------- */
 async function loadBitmap(file){
-  if ('createImageBitmap' in window){
-    try { return await createImageBitmap(file, {imageOrientation:'from-image'}); } catch(e){}
-  }
+  if ('createImageBitmap' in window){ try { return await createImageBitmap(file, {imageOrientation:'from-image'}); } catch(e){} }
   return new Promise((res, rej) => { const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(file); });
 }
 function shrink(bmp, max, q){
-  const w = bmp.width, h = bmp.height, r = Math.min(1, max/Math.max(w,h));
-  const c = document.createElement('canvas'); c.width = Math.round(w*r); c.height = Math.round(h*r);
-  const g = c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(bmp,0,0,c.width,c.height);
+  const w=bmp.width, h=bmp.height, r=Math.min(1, max/Math.max(w,h));
+  const c=document.createElement('canvas'); c.width=Math.round(w*r); c.height=Math.round(h*r);
+  const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(bmp,0,0,c.width,c.height);
   return new Promise(res => c.toBlob(res, 'image/jpeg', q));
 }
 async function processFile(file){
   const bmp = await loadBitmap(file);
-  const img = await shrink(bmp, 1800, .85);
-  const thumb = await shrink(bmp, 420, .78);
+  const img = await shrink(bmp, 1600, .82), thumb = await shrink(bmp, 420, .75);
   if (bmp.close) bmp.close();
   return {img, thumb};
 }
@@ -252,220 +227,191 @@ function render(){
   $('tabDate').setAttribute('aria-selected', view==='date');
   $('tabKind').setAttribute('aria-selected', view==='kind');
 
-  // 종류 필터 칩 (날짜별 보기에서만)
-  const f = $('filter'); f.innerHTML='';
-  f.classList.toggle('hidden', view!=='date' || !total);
+  const f=$('filter'); f.innerHTML=''; f.hidden = view!=='date' || !total;
   if (view==='date'){
-    const used = kinds.filter(k => works.some(w=>w.kind===k.id));
-    const all = chip('전체', null, filterKind===null); all.onclick=()=>{filterKind=null;render();}; f.appendChild(all);
-    used.forEach(k => { const c=chip(k.name, k.color, filterKind===k.id, true); c.onclick=()=>{filterKind=filterKind===k.id?null:k.id;render();}; f.appendChild(c); });
+    const all=chip('전체', null, filterKind===null); all.onclick=()=>{filterKind=null;render();}; f.appendChild(all);
+    kinds.filter(k=>works.some(w=>w.kind===k.id)).forEach(k=>{
+      const c=chip(k.name,k.color,filterKind===k.id,true); c.onclick=()=>{filterKind=filterKind===k.id?null:k.id;render();}; f.appendChild(c); });
   }
-
-  const list = $('list'); list.innerHTML=''; shown=[];
+  const list=$('list'); list.innerHTML=''; shown=[];
   if (!total){
-    list.innerHTML = `<div class="empty"><div class="big">아직 작품이 없어요</div>아래 <b>📷 작품 찍기</b>를 눌러<br>하리의 첫 작품을 담아보세요.</div>`;
+    list.innerHTML = canWrite
+      ? `<div class="empty"><div class="big">아직 작품이 없어요</div>아래 <b>📷 작품 찍기</b>를 눌러<br>하리의 첫 작품을 담아보세요.</div>`
+      : `<div class="empty"><div class="big">아직 작품이 없어요</div></div>`;
     return;
   }
   const sorted = works.slice().sort((a,b)=> b.date.localeCompare(a.date) || b.created-a.created);
-
   if (view==='date'){
     const items = filterKind ? sorted.filter(w=>w.kind===filterKind) : sorted;
     let m=null, d=null, grid=null;
-    items.forEach(w => {
-      const mm = w.date.slice(0,7);
-      if (mm!==m){ m=mm; d=null; const h=document.createElement('div'); h.className='month'; h.textContent=monthLabel(w.date); list.appendChild(h); }
-      if (w.date!==d){
-        d=w.date; const cnt = items.filter(x=>x.date===d).length;
-        const h=document.createElement('div'); h.className='day'; h.innerHTML=`<b>${dayLabel(d)}</b>${cnt}개`; list.appendChild(h);
-        grid=document.createElement('div'); grid.className='grid'; list.appendChild(grid);
-      }
-      grid.appendChild(tile(w, false));
+    items.forEach(w=>{
+      if (w.date.slice(0,7)!==m){ m=w.date.slice(0,7); d=null; add(list,'div','month',monthLabel(w.date)); }
+      if (w.date!==d){ d=w.date; const h=add(list,'div','day'); h.innerHTML=`<b>${dayLabel(d)}</b>${items.filter(x=>x.date===d).length}개`; grid=add(list,'div','grid'); }
+      grid.appendChild(tile(w,false));
     });
   } else {
-    kinds.forEach(k => {
-      const items = sorted.filter(w=>w.kind===k.id);
-      if (!items.length) return;
-      const h=document.createElement('div'); h.className='kindhead'; h.style.setProperty('--c',k.color);
-      h.innerHTML=`<span class="dot"></span>${esc(k.name)} <span class="n">${items.length}개</span><span class="bar"></span>`;
-      list.appendChild(h);
-      const grid=document.createElement('div'); grid.className='grid'; list.appendChild(grid);
-      items.forEach(w => grid.appendChild(tile(w, true)));
-    });
-    // 지워진 종류에 속한 작품
+    const groups = kinds.map(k=>({k, items:sorted.filter(w=>w.kind===k.id)}));
     const orphan = sorted.filter(w=>!kinds.some(k=>k.id===w.kind));
-    if (orphan.length){ const h=document.createElement('div'); h.className='kindhead'; h.textContent='분류 없음'; list.appendChild(h);
-      const grid=document.createElement('div'); grid.className='grid'; list.appendChild(grid); orphan.forEach(w=>grid.appendChild(tile(w,true))); }
+    if (orphan.length) groups.push({k:{name:'분류 없음',color:'#8a7f75'}, items:orphan});
+    groups.forEach(({k,items})=>{
+      if (!items.length) return;
+      const h=add(list,'div','kindhead'); h.style.setProperty('--c',k.color);
+      h.innerHTML=`<span class="dot"></span>${esc(k.name)} <span class="n">${items.length}개</span><span class="bar"></span>`;
+      const grid=add(list,'div','grid'); items.forEach(w=>grid.appendChild(tile(w,true)));
+    });
   }
 }
+function add(parent, tag, cls, text){ const e=document.createElement(tag); e.className=cls; if(text) e.textContent=text; parent.appendChild(e); return e; }
 function chip(text, color, pressed, dot){
   const b=document.createElement('button'); b.className='chip'; b.type='button';
   b.setAttribute('aria-pressed', pressed); if (color) b.style.setProperty('--c', color);
-  b.innerHTML = (dot && !pressed ? '<span class="dot"></span>' : '') + esc(text); return b;
+  b.innerHTML=(dot && !pressed ? '<span class="dot"></span>' : '')+esc(text); return b;
 }
 function tile(w, showDate){
-  const k = kindOf(w.kind); const idx = shown.push(w)-1;
-  const b=document.createElement('button'); b.className='tile'; b.style.setProperty('--c',k.color);
+  const k=kindOf(w.kind), idx=shown.push(w)-1;
+  const b=document.createElement('button'); b.className='tile'; b.type='button'; b.style.setProperty('--c',k.color);
   b.setAttribute('aria-label', `${k.name} ${w.name||''} ${dayLabel(w.date)}`);
-  b.innerHTML = `<img loading="lazy" alt="" src="${thumbURL(w)}"><span class="k"></span>` +
-    (showDate || w.name ? `<span class="d">${esc(w.name || '')}${showDate ? (w.name?' · ':'')+w.date.slice(2).replace(/-/g,'.') : ''}</span>` : '');
-  b.onclick = () => openViewer(idx);
+  const label = (w.name||'') + (showDate ? (w.name?' · ':'')+w.date.slice(2).replace(/-/g,'.') : '');
+  b.innerHTML=`<img loading="lazy" alt="" src="${blobUrl(w.thumbId)}"><span class="k"></span>`+(label?`<span class="d">${esc(label)}</span>`:'');
+  b.onclick=()=>openViewer(idx);
   return b;
 }
-function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ---------- 저장/수정 시트 ---------- */
-let queue = [];       // 여러 장 가져올 때 차례로 처리
-let editing = null;   // {work 또는 새 데이터}
-let lastKind = 'draw';
+let queue=[], editing=null, previewUrl=null;
+let lastKind = memo('hari-lastKind') || 'draw';
 function openEdit(item, isNew){
-  editing = {item, isNew, kind: item.kind || lastKind};
+  editing={item, isNew, kind:item.kind || lastKind};
   $('editTitle').textContent = isNew ? '작품 저장' : '작품 수정';
-  $('editPreview').src = URL.createObjectURL(item.img);
-  $('editName').value = item.name || '';
-  $('editDate').value = item.date || today();
-  $('editMemo').value = item.memo || '';
+  if (previewUrl){ URL.revokeObjectURL(previewUrl); previewUrl=null; }
+  if (isNew){ previewUrl=URL.createObjectURL(item.img); $('editPreview').src=previewUrl; } else $('editPreview').src=blobUrl(item.imgId);
+  $('editName').value=item.name||''; $('editDate').value=item.date||today(); $('editMemo').value=item.memo||'';
   $('editMore').textContent = queue.length ? `이 다음에 ${queue.length}장 더 있어요` : '';
-  drawKinds();
-  $('editBg').classList.remove('hidden');
+  drawKinds(); $('editBg').hidden=false;
 }
 function drawKinds(){
   const box=$('editKinds'); box.innerHTML='';
-  kinds.forEach(k => { const c=chip(k.name,k.color,editing.kind===k.id,true); c.onclick=()=>{editing.kind=k.id;drawKinds();}; box.appendChild(c); });
+  kinds.forEach(k=>{ const c=chip(k.name,k.color,editing.kind===k.id,true); c.onclick=()=>{editing.kind=k.id;drawKinds();}; box.appendChild(c); });
 }
-function closeEdit(){ URL.revokeObjectURL($('editPreview').src); $('editBg').classList.add('hidden'); editing=null; }
-$('editClose').onclick = () => { queue=[]; closeEdit(); };
-$('editSave').onclick = async () => {
+function closeEdit(){ if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;} $('editBg').hidden=true; editing=null; }
+$('editClose').onclick=()=>{ queue=[]; closeEdit(); };
+$('editSave').onclick=async()=>{
   if (!editing) return;
-  const btn=$('editSave'); btn.disabled=true;
+  const btn=$('editSave'); btn.disabled=true; btn.textContent='저장하는 중…';
   try{
-    const it = editing.item;
-    const w = Object.assign({}, it, {
-      kind: editing.kind, name: $('editName').value.trim(),
-      date: $('editDate').value || today(), memo: $('editMemo').value.trim(),
-    });
-    if (editing.isNew){ w.id = (crypto.randomUUID ? crypto.randomUUID() : Date.now()+'-'+Math.random()); w.created = Date.now(); }
-    await put('works', w);
-    lastKind = w.kind; put('meta', {key:'lastKind', value:lastKind});
-    const i = works.findIndex(x=>x.id===w.id);
-    if (i>=0){ works[i]=w; dropURL(w.id); } else works.push(w);
-    const wasNew = editing.isNew;
+    const fields={kind:editing.kind, name:$('editName').value.trim(), date:$('editDate').value||today(), memo:$('editMemo').value.trim()};
+    if (editing.isNew){
+      const im=await assets.upload(editing.item.img, {type:'image/jpeg'});
+      const th=await assets.upload(editing.item.thumb, {type:'image/jpeg'});
+      const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2));
+      const row={...fields, imgId:im.id, thumbId:th.id, created:Date.now()};
+      await db.collection('works').doc(id).set(row);
+      upsert({id,...row}); toast('저장했어요');
+    } else {
+      await db.collection('works').doc(editing.item.id).update(fields);
+      upsert({...editing.item, ...fields}); toast('고쳤어요');
+    }
+    lastKind=fields.kind; memo('hari-lastKind', lastKind);
+    const savedId = editing.isNew ? null : editing.item.id;
     closeEdit(); render();
-    if (!$('viewer').classList.contains('hidden')) { const j = shown.findIndex(x=>x.id===w.id); if (j>=0) showAt(j); }
-    if (wasNew) toast('저장했어요');
+    if (savedId && !$('viewer').hidden){ const j=shown.findIndex(x=>x.id===savedId); if (j>=0) showAt(j); }
     nextInQueue();
-  } catch(e){ alert('저장하지 못했어요: ' + e.message); }
-  finally{ btn.disabled=false; }
+  } catch(e){ toast(errMsg(e), 4000); }
+  finally{ btn.disabled=false; btn.textContent='저장하기'; }
 };
-async function takeFiles(files, dateFromFile){
-  queue = Array.from(files).map(f => ({f, dateFromFile}));
-  nextInQueue();
-}
+function upsert(w){ const i=works.findIndex(x=>x.id===w.id); if(i>=0) works[i]=w; else works.push(w); }
+function takeFiles(files, fromAlbum){ queue=Array.from(files).map(f=>({f, fromAlbum})); nextInQueue(); }
 async function nextInQueue(){
-  const next = queue.shift(); if (!next) return;
+  const next=queue.shift(); if (!next) return;
   try{
-    const {img, thumb} = await processFile(next.f);
-    const date = next.dateFromFile && next.f.lastModified ? ymd(new Date(next.f.lastModified)) : today();
+    const {img, thumb}=await processFile(next.f);
+    const date = next.fromAlbum && next.f.lastModified ? ymd(new Date(next.f.lastModified)) : today();
     openEdit({img, thumb, date}, true);
-  } catch(e){ alert('사진을 읽지 못했어요. 다른 사진으로 해볼까요?'); nextInQueue(); }
+  } catch(e){ toast('사진을 읽지 못했어요. 다른 사진으로 해볼까요?'); nextInQueue(); }
 }
-$('shoot').onclick = () => $('camera').click();
-$('camera').onchange = e => { if (e.target.files.length) takeFiles(e.target.files, false); e.target.value=''; };
-$('gallery').onchange = e => { if (e.target.files.length) takeFiles(e.target.files, true); e.target.value=''; };
+$('shoot').onclick=()=>$('camera').click();
+$('camera').onchange=e=>{ if(e.target.files.length) takeFiles(e.target.files,false); e.target.value=''; };
+$('gallery').onchange=e=>{ if(e.target.files.length) takeFiles(e.target.files,true); e.target.value=''; };
 
 /* ---------- 크게 보기 ---------- */
-let vIdx = 0, vURL = null;
-function openViewer(i){ $('viewer').classList.remove('hidden'); showAt(i); }
+let vIdx=0;
+function openViewer(i){ $('viewer').hidden=false; showAt(i); }
 function showAt(i){
-  if (!shown.length){ closeViewer(); return; }
-  vIdx = (i + shown.length) % shown.length; const w = shown[vIdx]; const k = kindOf(w.kind);
-  if (vURL) URL.revokeObjectURL(vURL); vURL = URL.createObjectURL(w.img); $('vImg').src = vURL;
-  $('vTitle').textContent = w.name || k.name;
-  $('vMeta').textContent = `${k.name} · ${w.date.slice(0,4)}년 ${dayLabel(w.date)} · ${vIdx+1}/${shown.length}`;
-  $('vMemo').textContent = w.memo || '';
-  $('vPrev').classList.toggle('hidden', shown.length<2); $('vNext').classList.toggle('hidden', shown.length<2);
+  if (!shown.length){ $('viewer').hidden=true; return; }
+  vIdx=(i+shown.length)%shown.length; const w=shown[vIdx], k=kindOf(w.kind);
+  $('vImg').src=blobUrl(w.imgId);
+  $('vTitle').textContent=w.name||k.name;
+  $('vMeta').textContent=`${k.name} · ${w.date.slice(0,4)}년 ${dayLabel(w.date)} · ${vIdx+1}/${shown.length}`;
+  $('vMemo').textContent=w.memo||'';
+  $('vPrev').hidden=$('vNext').hidden=shown.length<2;
 }
-function closeViewer(){ $('viewer').classList.add('hidden'); if (vURL){ URL.revokeObjectURL(vURL); vURL=null; } }
-$('vClose').onclick = closeViewer;
-$('vPrev').onclick = () => showAt(vIdx-1);
-$('vNext').onclick = () => showAt(vIdx+1);
-$('vEdit').onclick = () => openEdit(shown[vIdx], false);
-$('vDel').onclick = async () => {
-  const w = shown[vIdx];
-  if (!confirm('이 작품을 지울까요? 지우면 되돌릴 수 없어요.')) return;
-  await del('works', w.id); dropURL(w.id);
-  works = works.filter(x=>x.id!==w.id); render();
-  if (shown.length) showAt(Math.min(vIdx, shown.length-1)); else closeViewer();
+$('vClose').onclick=()=>{ $('viewer').hidden=true; };
+$('vPrev').onclick=()=>showAt(vIdx-1);
+$('vNext').onclick=()=>showAt(vIdx+1);
+$('vEdit').onclick=()=>openEdit(shown[vIdx], false);
+$('vDel').onclick=()=>{ $('askBg').hidden=false; };
+$('askNo').onclick=()=>{ $('askBg').hidden=true; };
+$('askYes').onclick=async()=>{
+  const w=shown[vIdx]; $('askBg').hidden=true;
+  try{
+    await db.collection('works').doc(w.id).delete();
+    assets.delete(w.imgId).catch(()=>{}); assets.delete(w.thumbId).catch(()=>{});
+    works=works.filter(x=>x.id!==w.id); render(); toast('지웠어요');
+    if (shown.length) showAt(Math.min(vIdx, shown.length-1)); else $('viewer').hidden=true;
+  } catch(e){ toast(errMsg(e), 4000); }
 };
 let sx=null;
 $('vPic').addEventListener('touchstart', e=>{ sx=e.touches[0].clientX; }, {passive:true});
-$('vPic').addEventListener('touchend', e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)>50) showAt(vIdx + (dx<0?1:-1)); });
+$('vPic').addEventListener('touchend', e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)>50) showAt(vIdx+(dx<0?1:-1)); });
 document.addEventListener('keydown', e=>{
-  if ($('viewer').classList.contains('hidden') || !$('editBg').classList.contains('hidden')) return;
-  if (e.key==='ArrowLeft') showAt(vIdx-1); else if (e.key==='ArrowRight') showAt(vIdx+1); else if (e.key==='Escape') closeViewer();
+  if ($('viewer').hidden || !$('editBg').hidden || !$('askBg').hidden) return;
+  if (e.key==='ArrowLeft') showAt(vIdx-1); else if (e.key==='ArrowRight') showAt(vIdx+1); else if (e.key==='Escape') $('viewer').hidden=true;
 });
 
-/* ---------- 탭 ---------- */
-$('tabDate').onclick = () => { view='date'; render(); };
-$('tabKind').onclick = () => { view='kind'; render(); };
-
-/* ---------- 메뉴: 백업·복원·종류 추가 ---------- */
-$('menuBtn').onclick = () => { drawKindList(); $('menuBg').classList.remove('hidden'); };
-$('menuClose').onclick = () => $('menuBg').classList.add('hidden');
-[$('menuBg'), $('editBg')].forEach(bg => bg.addEventListener('click', e => { if (e.target===bg){ if(bg.id==='editBg'){queue=[];closeEdit();} else bg.classList.add('hidden'); } }));
-$('pickGallery').onclick = () => { $('menuBg').classList.add('hidden'); $('gallery').click(); };
-function drawKindList(){ $('kindList').textContent = '지금 종류: ' + kinds.map(k=>k.name).join(', '); }
-$('addKind').onclick = async () => {
-  const name = (prompt('새 작품 종류 이름 (예: 점토, 블록)') || '').trim(); if (!name) return;
-  if (kinds.some(k=>k.name===name)) { toast('이미 있는 종류예요'); return; }
-  kinds.push({id:'k'+Date.now(), name, color: EXTRA_COLORS[(kinds.length-DEFAULT_KINDS.length) % EXTRA_COLORS.length]});
-  await put('meta', {key:'kinds', value:kinds}); drawKindList(); render(); toast(`'${name}' 추가했어요`);
+/* ---------- 탭·메뉴 ---------- */
+$('tabDate').onclick=()=>{ view='date'; render(); };
+$('tabKind').onclick=()=>{ view='kind'; render(); };
+$('menuBtn').onclick=async()=>{
+  $('kindList').textContent='지금 종류: '+kinds.map(k=>k.name).join(', ');
+  $('menuBg').hidden=false; $('usage').textContent='';
+  if (assets){ try{ const u=(await assets.list()).usage; if(u && u.maxBytes) $('usage').textContent=`저장 공간 ${Math.round(u.bytes/u.maxBytes*100)}% 사용 중 (사진 ${u.files}개 파일 / 최대 ${u.maxFiles}개)`; }catch(e){} }
 };
-const b64 = blob => new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
-const unb64 = async s => (await fetch(s)).blob();
-$('backup').onclick = async () => {
-  if (!works.length){ toast('아직 백업할 작품이 없어요'); return; }
-  toast('백업 파일 만드는 중…');
-  const out = {app:'hari-art', version:1, exported:new Date().toISOString(), kinds, works:[]};
-  for (const w of works) out.works.push({...w, img: await b64(w.img), thumb: await b64(w.thumb)});
-  const blob = new Blob([JSON.stringify(out)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `하리작품백업_${today().replace(/-/g,'')}.json`; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
-};
-$('restore').onclick = () => $('restoreFile').click();
-$('restoreFile').onchange = async e => {
-  const f = e.target.files[0]; e.target.value=''; if (!f) return;
-  try{
-    const data = JSON.parse(await f.text());
-    if (data.app!=='hari-art') throw new Error('하리 작품 앨범 백업 파일이 아니에요');
-    let added = 0;
-    for (const k of data.kinds||[]) if (!kinds.some(x=>x.id===k.id)) kinds.push(k);
-    await put('meta', {key:'kinds', value:kinds});
-    for (const w of data.works||[]){
-      if (works.some(x=>x.id===w.id)) continue;   // 이미 있는 건 건너뜀 (덮어쓰지 않음)
-      const nw = {...w, img: await unb64(w.img), thumb: await unb64(w.thumb)};
-      await put('works', nw); works.push(nw); added++;
-    }
-    render(); $('menuBg').classList.add('hidden'); toast(`작품 ${added}개를 불러왔어요`);
-  } catch(err){ alert('불러오지 못했어요: ' + err.message); }
+$('menuClose').onclick=()=>{ $('menuBg').hidden=true; };
+['menuBg','editBg','askBg'].forEach(id=>$(id).addEventListener('click', e=>{ if(e.target.id!==id) return; if(id==='editBg'){queue=[];closeEdit();} else $(id).hidden=true; }));
+$('pickGallery').onclick=()=>{ $('menuBg').hidden=true; $('gallery').click(); };
+$('addKind').onclick=async()=>{
+  const name=$('newKind').value.trim(); if(!name) return;
+  if (kinds.some(k=>k.name===name)){ toast('이미 있는 종류예요'); return; }
+  const next=kinds.concat({id:'k'+Date.now(), name, color:EXTRA_COLORS[(kinds.length-DEFAULT_KINDS.length)%EXTRA_COLORS.length]});
+  try{ await db.doc('settings/kinds').set({list:next}); kinds=next; $('newKind').value='';
+    $('kindList').textContent='지금 종류: '+kinds.map(k=>k.name).join(', '); render(); toast(`'${name}' 추가했어요`); }
+  catch(e){ toast(errMsg(e), 4000); }
 };
 
 /* ---------- 시작 ---------- */
-(async () => {
-  try{
-    await openDB();
-    works = await getAll('works');
-    const meta = await getAll('meta');
-    const mk = meta.find(m=>m.key==='kinds'); if (mk) kinds = mk.value;
-    const ml = meta.find(m=>m.key==='lastKind'); if (ml) lastKind = ml.value;
-    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-  } catch(e){
-    $('list').innerHTML = `<div class="empty"><div class="big">사진을 저장할 수 없는 환경이에요</div>시크릿 모드라면 일반 창에서 열어주세요.</div>`;
-    $('shoot').disabled = true; return;
+function setWritable(on){
+  canWrite=on; $('shoot').hidden=!on; $('vTools').hidden=!on; $('pickGallery').hidden=!on;
+  $('addKind').closest('.field').hidden=!on;
+}
+setWritable(false); render(); $('count').textContent='불러오는 중…';
+(async()=>{
+  const use = window.claude && window.claude.use;
+  [db, assets] = use ? await Promise.all([window.claude.use('db'), window.claude.use('assets')]) : [null, null];
+  if (!db){
+    $('count').textContent='';
+    $('list').innerHTML='<div class="empty"><div class="big">앨범을 열 수 없어요</div>claude.ai에 로그인한 상태에서 이 링크를 열어주세요.</div>';
+    return;
   }
-  render();
+  setWritable(!!assets);
+  let first=true;
+  const timer=setTimeout(()=>{ if(first){ $('count').textContent='연결이 느려요. 잠시만 기다려 주세요…'; } }, 10000);
+  db.collection('works').onSnapshot(snap=>{
+    clearTimeout(timer); first=false;
+    works=snap.docs.map(d=>({id:d.id, ...d.data()})).filter(w=>w.thumbId && w.date);
+    render();
+    if (!$('viewer').hidden){ if (vIdx>=shown.length) $('viewer').hidden=true; else showAt(vIdx); }
+  }, ()=>{ clearTimeout(timer); $('count').textContent='앨범을 불러오지 못했어요. 새로고침 해주세요.'; });
+  db.doc('settings/kinds').onSnapshot(s=>{ const v=s.exists && s.data(); if (v && Array.isArray(v.list) && v.list.length){ kinds=v.list; render(); } }, ()=>{});
 })();
 })();
 </script>
-</body>
-</html>
