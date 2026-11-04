@@ -53,10 +53,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--dawn);outline-o
 .stars.static button{cursor:default}
 .star-label{font-size:1.15rem;color:var(--ink);min-height:1.4em;margin-top:2px}
 .star-label:empty::before,.star-label.hint{color:var(--muted);font-size:.9rem}
+.has-face{display:flex;align-items:center;gap:6px}
+.has-face img{width:30px;height:30px;flex:none}
+.mk-card{align-self:flex-start;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 14px;font-size:.9rem}
+.panel img.card{width:100%;height:auto;border-radius:12px;display:block}
 
 /* 주간 */
 .weeks{display:flex;flex-direction:column;gap:14px}
 .weeks>h2{margin:0;font-size:1.05rem;font-weight:400}
+#weekList{display:flex;flex-direction:column;gap:14px}
 .week{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .week-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
 .week-range{font-size:.9rem;color:var(--muted)}
@@ -145,6 +150,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--dawn);outline-o
   </div>
 </div>
 
+<!-- 주간 기상 카드 -->
+<div class="sheet" id="cardBg" hidden>
+  <div class="panel" role="dialog" aria-label="주간 기상 카드">
+    <img class="card" id="cardImg" alt="주간 기상 카드">
+    <p class="msg" id="cardMsg"></p>
+    <div class="btns"><button class="ghost" id="closeCard">닫기</button><button class="primary" id="saveCard">폰에 저장</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -196,7 +210,51 @@ function drawStars(box, label, value, onPick){
     if (onPick) b.onclick=()=>onPick(i); else b.tabIndex=-1;
     box.appendChild(b);
   }
-  if (label){ label.textContent = value ? STAR_TEXT[value] : (onPick ? '별을 눌러 골라주세요' : ''); label.classList.toggle('hint', !value); }
+  if (label){
+    label.textContent=''; label.classList.toggle('hint', !value); label.classList.toggle('has-face', !!value);
+    if (value){
+      const im=document.createElement('img'); im.src=faceUrl(value); im.alt='';
+      const s=document.createElement('span'); s.textContent=STAR_TEXT[value];
+      label.append(im, s);
+    } else label.textContent = onPick ? '별을 눌러 골라주세요' : '';
+  }
+}
+
+/* ---------- 별점별 해 표정 (1 웃는 해 → 5 졸린 해) ---------- */
+function sunFace(g, cx, cy, r, lv){
+  g.save(); g.translate(cx, cy); g.shadowBlur=0; g.lineCap='round'; g.lineJoin='round';
+  g.strokeStyle='#ffab2e'; g.lineWidth=r*0.17;
+  for (let i=0;i<8;i++){ const a=i*Math.PI/4+Math.PI/8; g.beginPath(); g.moveTo(Math.cos(a)*r*1.08, Math.sin(a)*r*1.08); g.lineTo(Math.cos(a)*r*1.34, Math.sin(a)*r*1.34); g.stroke(); }
+  g.beginPath(); g.arc(0,0,r*0.95,0,Math.PI*2); g.fillStyle='#ffcf3f'; g.fill();
+  g.lineWidth=r*0.06; g.strokeStyle='#ff9f1c'; g.stroke();
+  const ink='#5a321e', ex=r*0.34, ey=-r*0.12;
+  g.strokeStyle=ink; g.fillStyle=ink; g.lineWidth=r*0.09;
+  const blush=()=>{ g.fillStyle='rgba(255,120,110,.55)'; for (const s of [-1,1]){ g.beginPath(); g.ellipse(s*r*0.55, r*0.18, r*0.15, r*0.09, 0, 0, Math.PI*2); g.fill(); } g.fillStyle=ink; };
+  const dots=()=>{ for (const s of [-1,1]){ g.beginPath(); g.arc(s*ex, ey, r*0.085, 0, Math.PI*2); g.fill(); } };
+  if (lv===1){        // 웃는 해: ^ ^ 눈 + 활짝 웃는 입
+    for (const s of [-1,1]){ g.beginPath(); g.arc(s*ex, ey+r*0.07, r*0.14, Math.PI*1.15, Math.PI*1.85); g.stroke(); }
+    g.beginPath(); g.arc(0, r*0.12, r*0.3, 0.1*Math.PI, 0.9*Math.PI); g.closePath(); g.fill(); blush();
+  } else if (lv===2){ // 미소
+    dots(); g.beginPath(); g.arc(0, r*0.1, r*0.26, 0.22*Math.PI, 0.78*Math.PI); g.stroke(); blush();
+  } else if (lv===3){ // 무표정
+    dots(); g.beginPath(); g.moveTo(-r*0.2, r*0.32); g.lineTo(r*0.2, r*0.32); g.stroke();
+  } else if (lv===4){ // 힘든 해: 처진 눈 + 시무룩 입 + 땀방울
+    for (const s of [-1,1]){ g.beginPath(); g.moveTo(s*ex-r*0.14, ey-s*r*0.0); g.lineTo(s*ex+r*0.14, ey+r*0.0); g.stroke(); }
+    g.beginPath(); g.arc(0, r*0.52, r*0.22, 1.22*Math.PI, 1.78*Math.PI); g.stroke();
+    g.fillStyle='#6cb8ff'; g.beginPath(); g.moveTo(r*0.68, -r*0.52); g.quadraticCurveTo(r*0.86, -r*0.2, r*0.68, -r*0.16); g.quadraticCurveTo(r*0.5, -r*0.2, r*0.68, -r*0.52); g.fill();
+  } else {            // 졸린 해: 감은 눈 + 하품 + Zz
+    for (const s of [-1,1]){ g.beginPath(); g.arc(s*ex, ey-r*0.04, r*0.14, 0.15*Math.PI, 0.85*Math.PI); g.stroke(); }
+    g.beginPath(); g.ellipse(0, r*0.36, r*0.11, r*0.14, 0, 0, Math.PI*2); g.fill();
+    g.fillStyle='#7a6cf0'; g.textAlign='center'; g.textBaseline='middle';
+    g.font=Math.round(r*0.55)+'px "Black Han Sans",sans-serif'; g.fillText('Z', r*0.78, -r*0.86);
+    g.font=Math.round(r*0.38)+'px "Black Han Sans",sans-serif'; g.fillText('z', r*1.15, -r*1.2);
+  }
+  g.restore();
+}
+const faceCache={};
+function faceUrl(lv){
+  if (!faceCache[lv]){ const c=document.createElement('canvas'); c.width=c.height=96; sunFace(c.getContext('2d'), 48, 50, 32, lv); faceCache[lv]=c.toDataURL('image/png'); }
+  return faceCache[lv];
 }
 
 /* ---------- 사진에 기상시간 찍기 ---------- */
@@ -204,13 +262,12 @@ async function loadBitmap(file){
   if ('createImageBitmap' in window){ try { return await createImageBitmap(file, {imageOrientation:'from-image'}); } catch(e){} }
   return new Promise((res, rej) => { const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(file); });
 }
-let fontReady=null;
+// 글씨체가 글자 묶음별로 나뉘어 있어서, 그림에 쓰는 글자를 모두 알려줘야 다 불러와요
+const FONT_CHARS = STAR_TEXT.join('')+DN.join('')+'0123456789:.()·–★ Zz기상아침카드년월일평균기록평일주말난이도매일한장이번주';
 function ensureFont(){
-  if (!fontReady) fontReady = Promise.race([
-    // 글씨체가 글자 묶음별로 나뉘어 있어서, 사진에 쓰는 글자를 모두 알려줘야 다 불러와요
-    document.fonts ? document.fonts.load('100px "Black Han Sans"', STAR_TEXT.join('')+DN.join('')+'0123456789:.() 기상').catch(()=>{}) : Promise.resolve(),
+  return Promise.race([
+    document.fonts ? document.fonts.load('100px "Black Han Sans"', FONT_CHARS).catch(()=>{}) : Promise.resolve(),
     new Promise(r=>setTimeout(r,2500))]);
-  return fontReady;
 }
 function drawBase(canvas, bmp, max){
   const w=bmp.width, h=bmp.height, r=Math.min(1, max/Math.max(w,h));
@@ -233,7 +290,7 @@ function stampStars(g, W, S, stars){
   const fs=Math.round(S*0.052), R=fs*0.55, gapS=R*2.3, pad=fs*0.6, m=S*0.04;
   g.font=fs+'px "Black Han Sans","Apple SD Gothic Neo",sans-serif';
   const text=STAR_TEXT[stars], tw=g.measureText(text).width, sw=gapS*4+R*2;
-  const bw=Math.max(tw, sw)+pad*2, bh=R*2+fs*1.15+pad*2.1, x=W-m-bw, y=m;
+  const faceD=R*2+fs*1.15, bh=faceD+pad*2.1, bw=faceD+pad*0.8+Math.max(tw, sw)+pad*2, x=W-m-bw, y=m;
   g.shadowBlur=0; g.fillStyle='rgba(0,0,0,.42)';
   g.beginPath(); if (g.roundRect) g.roundRect(x,y,bw,bh,fs*0.5); else g.rect(x,y,bw,bh); g.fill();
   const right=x+bw-pad;
@@ -243,6 +300,7 @@ function stampStars(g, W, S, stars){
   }
   g.textAlign='right'; g.textBaseline='alphabetic'; g.fillStyle='#ffffff';
   g.fillText(text, right, y+pad+R*2+fs*1.05);
+  sunFace(g, x+pad+faceD/2, y+bh/2, faceD/2/1.4, stars);
 }
 function stamp(canvas, bmp, max, min, date, stars){
   const g=drawBase(canvas, bmp, max), W=canvas.width, H=canvas.height;
@@ -444,17 +502,105 @@ function renderWeeks(){
       const t=document.createElement('span'); t.className='t'; t.textContent = r ? hm(r.min) : '';
       c.append(dn, ph, t); grid.append(c);
     }
-    w.append(top); if (recs.length) w.append(sub); w.append(grid); list.append(w);
+    w.append(top); if (recs.length) w.append(sub); w.append(grid);
+    if (recs.length){
+      const mk=document.createElement('button'); mk.className='mk-card'; mk.type='button';
+      mk.textContent = sun<today ? '주간 기상 카드 만들기' : '지금까지로 주간 카드 만들기';
+      const m0=new Date(mon); mk.onclick=()=>openCard(m0);
+      w.append(mk);
+    }
+    list.append(w);
   }
 }
 function render(){ renderToday(); renderWeeks(); }
+
+/* ---------- 주간 기상 카드: 7장 사진 + 평균을 한 장으로 ---------- */
+let downloads=null, cardBlob=null, cardName='', cardUrl=null;
+function rrect(g,x,y,w,h,r){ g.beginPath(); if (g.roundRect) g.roundRect(x,y,w,h,r); else g.rect(x,y,w,h); }
+function fitText(g, text, size, maxW){
+  let s=size; do { g.font=s+'px "Black Han Sans","Apple SD Gothic Neo",sans-serif'; s-=2; } while (g.measureText(text).width>maxW && s>14);
+}
+async function drawWeekCard(mon){
+  await ensureFont();
+  const W=1080, H=1350, M=64, c=document.createElement('canvas'); c.width=W; c.height=H;
+  const g=c.getContext('2d'), INK='#18213a', SOFT='#9a5a2c';
+  const bg=g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#fff0d6'); bg.addColorStop(1,'#ffc79c');
+  g.fillStyle=bg; g.fillRect(0,0,W,H);
+  const recs=[], cells=[];
+  for (let i=0;i<7;i++){ const d=addDays(mon,i), k=ymd(d), r=days[k]; cells.push({d,k,r}); if (r) recs.push({d,...r}); }
+  const mean=a=>a.reduce((s,x)=>s+x,0)/a.length, sun=addDays(mon,6);
+  // 위쪽 글자
+  g.textAlign='left'; g.textBaseline='alphabetic';
+  g.fillStyle=SOFT; g.font='38px "Black Han Sans",sans-serif'; g.fillText('아침 기상 카드', M, 112);
+  const rangeT=mon.getFullYear()+'년 '+(mon.getMonth()+1)+'월 '+mon.getDate()+'일 – '+(sun.getMonth()+1)+'월 '+sun.getDate()+'일';
+  g.fillStyle=INK; fitText(g, rangeT, 54, 760); g.fillText(rangeT, M, 182);
+  const avgStars = recs.length ? mean(recs.map(r=>r.stars)) : 3;
+  sunFace(g, W-M-92, 160, 72, Math.min(5, Math.max(1, Math.round(avgStars))));
+  g.fillStyle=SOFT; g.font='36px "Black Han Sans",sans-serif'; g.fillText('평균 기상', M, 272);
+  g.fillStyle=INK; g.font='200px "Black Han Sans",sans-serif'; g.fillText(recs.length ? hm2(mean(recs.map(r=>r.min))) : '--:--', M-6, 450);
+  const wd=recs.filter(r=>!isWeekend(r.d)), we=recs.filter(r=>isWeekend(r.d));
+  const parts=['기록 '+recs.length+'일'];
+  if (wd.length) parts.push('평일 '+hm(mean(wd.map(r=>r.min))));
+  if (we.length) parts.push('주말 '+hm(mean(we.map(r=>r.min))));
+  if (recs.length) parts.push('난이도 ★'+avgStars.toFixed(1));
+  g.fillStyle=SOFT; fitText(g, parts.join(' · '), 36, W-M*2); g.fillText(parts.join(' · '), M, 515);
+  // 사진 4칸 × 2줄 (8번째 칸은 요약)
+  const gap=16, cw=(W-M*2-gap*3)/4, ch=cw*4/3, top=570;
+  const bmps = await Promise.all(cells.map(async x=>{
+    if (!x.r) return null;
+    try { return await loadBitmap(await (await fetch(blobUrl(x.r.photoId))).blob()); } catch(e){ return null; }
+  }));
+  cells.forEach((x,i)=>{
+    const cx=M+(i%4)*(cw+gap), cy=top+Math.floor(i/4)*(ch+gap), b=bmps[i];
+    g.save(); rrect(g,cx,cy,cw,ch,18); g.clip();
+    if (b){ const s=Math.max(cw/b.width, ch/b.height), w=b.width*s, h=b.height*s; g.drawImage(b, cx+(cw-w)/2, cy+(ch-h)/2, w, h); if (b.close) b.close(); }
+    else { g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(cx,cy,cw,ch); g.fillStyle='rgba(24,33,58,.35)'; g.font='56px "Black Han Sans",sans-serif'; g.textAlign='center'; g.fillText(x.k<START ? '' : '–', cx+cw/2, cy+ch/2+18); g.textAlign='left'; }
+    g.restore();
+    // 요일 표시
+    const lab=DN[x.d.getDay()]+' '+x.d.getDate();
+    g.font='26px "Black Han Sans",sans-serif'; const lw=g.measureText(lab).width+24;
+    rrect(g, cx+10, cy+10, lw, 40, 20); g.fillStyle = b ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.8)'; g.fill();
+    g.fillStyle = b ? '#ffffff' : (isWeekend(x.d) ? '#c8641e' : INK); g.fillText(lab, cx+22, cy+39);
+  });
+  // 8번째 칸: 이번 주 한마디
+  const sx=M+3*(cw+gap), sy=top+ch+gap;
+  rrect(g,sx,sy,cw,ch,18); g.fillStyle='rgba(255,255,255,.6)'; g.fill();
+  sunFace(g, sx+cw/2, sy+ch*0.4, cw*0.26, Math.min(5, Math.max(1, Math.round(avgStars))));
+  g.textAlign='center'; g.fillStyle=INK; g.font='30px "Black Han Sans",sans-serif';
+  g.fillText('기록 '+recs.length+'일', sx+cw/2, sy+ch*0.78);
+  g.fillStyle=SOFT; g.font='24px "Black Han Sans",sans-serif'; g.fillText('매일 아침 한 장', sx+cw/2, sy+ch*0.9);
+  return c;
+}
+async function openCard(mon){
+  $('cardMsg').className='msg'; $('cardMsg').textContent='카드를 만드는 중이에요…';
+  $('cardImg').removeAttribute('src'); $('saveCard').hidden=true; $('cardBg').hidden=false;
+  try{
+    const c=await drawWeekCard(mon);
+    cardBlob=await toBlob(c, .9); cardName='기상카드_'+ymd(mon)+'.jpg';
+    if (cardUrl) URL.revokeObjectURL(cardUrl);
+    cardUrl=URL.createObjectURL(cardBlob); $('cardImg').src=cardUrl;
+    $('saveCard').hidden=!downloads;
+    $('cardMsg').textContent = downloads ? '' : '여기서는 바로 저장이 안 돼요. 화면을 캡처해 주세요.';
+  }catch(e){ $('cardMsg').className='msg err'; $('cardMsg').textContent='카드를 만들지 못했어요. 다시 해 주세요.'; }
+}
+$('closeCard').onclick=()=>{ $('cardBg').hidden=true; };
+$('cardBg').addEventListener('click', e=>{ if (e.target.id==='cardBg') $('cardBg').hidden=true; });
+$('saveCard').onclick=async()=>{
+  if (!downloads || !cardBlob) return;
+  try{ await downloads.save({filename:cardName, data:cardBlob}); $('cardMsg').className='msg'; $('cardMsg').textContent='저장했어요.'; }
+  catch(e){
+    const c=e && e.code; $('cardMsg').className='msg';
+    $('cardMsg').textContent = c==='declined' ? '저장을 취소했어요.' : c==='rate_limited' ? '잠시 뒤 다시 눌러 주세요.' : '여기서는 저장이 안 돼요. 화면을 캡처해 주세요.';
+    if (c==='unavailable' || c==='not_granted') $('saveCard').hidden=true;
+  }
+};
 
 /* ---------- 시작 ---------- */
 render();
 setInterval(()=>{ if ($('editBg').hidden && $('viewBg').hidden) render(); }, 60000); // 자정 넘으면 날짜 바뀜 반영
 (async()=>{
   const use = window.claude && window.claude.use;
-  [db, assets] = use ? await Promise.all([window.claude.use('db'), window.claude.use('assets')]) : [null, null];
+  [db, assets, downloads] = use ? await Promise.all([window.claude.use('db'), window.claude.use('assets'), window.claude.use('downloads')]) : [null, null, null];
   canWrite = !!(db && assets);
   render();
   if (!db) return;
