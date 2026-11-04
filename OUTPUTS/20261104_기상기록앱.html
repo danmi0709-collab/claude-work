@@ -1,0 +1,411 @@
+<title>아침 기상 기록</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
+<style>
+/* 레이아웃: 한 손으로 쓰는 세로 한 줄. 위 = 오늘 한 세트(사진+난이도), 아래 = 주 단위 평균 기상시간과 7칸 줄 */
+:root{
+  --bg:#eef1f6; --paper:#ffffff; --ink:#18213a; --muted:#5f6b85; --line:#d9dfea;
+  --dawn:#e8892b; --dawn-soft:#fde9d3; --star:#f0a019; --btn:#18213a; --btn-ink:#ffffff; --err:#b3261e;
+  --f-num:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1424; --paper:#1a2136; --ink:#e7ebf5; --muted:#9aa5bf; --line:#2a3350;
+  --dawn:#ffa95a; --dawn-soft:#3b2a19; --star:#ffbe3d; --btn:#e7ebf5; --btn-ink:#0f1424; --err:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1424; --paper:#1a2136; --ink:#e7ebf5; --muted:#9aa5bf; --line:#2a3350;
+  --dawn:#ffa95a; --dawn-soft:#3b2a19; --star:#ffbe3d; --btn:#e7ebf5; --btn-ink:#0f1424; --err:#ff8a80; color-scheme:dark}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:2px}
+.eyebrow{font-size:.8rem;letter-spacing:.06em;color:var(--dawn);margin:0}
+h1{font-family:var(--f-num);font-weight:400;font-size:2rem;line-height:1.15;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.9rem;margin:0}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--dawn);outline-offset:2px}
+
+/* 오늘 카드 */
+.today{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.today h2{margin:0;font-size:1rem;font-weight:400;color:var(--muted)}
+.base{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.base .num{font-size:2.6rem;line-height:1}
+.base span{color:var(--muted);font-size:.9rem}
+.notice{background:var(--dawn-soft);border-radius:12px;padding:12px 14px;font-size:.95rem}
+.big-btn{width:100%;border:0;border-radius:14px;background:var(--btn);color:var(--btn-ink);padding:16px;font-size:1.1rem}
+.link-btn{border:0;background:none;color:var(--muted);text-decoration:underline;padding:4px;font-size:.9rem;align-self:center}
+.done{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center}
+.done img{width:96px;height:128px;object-fit:cover;border-radius:10px;cursor:pointer;background:var(--line)}
+.done .num{font-size:2.4rem;line-height:1}
+.done .meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.diff{color:var(--muted);font-size:.9rem}
+
+/* 별 */
+.stars{display:flex;gap:4px}
+.stars button{border:0;background:none;padding:2px;font-size:2rem;line-height:1;color:var(--line)}
+.stars button.on{color:var(--star)}
+.stars.small button{font-size:1.25rem;padding:0 1px}
+.stars.static button{cursor:default}
+.star-label{font-size:.85rem;color:var(--muted);min-height:1.3em}
+
+/* 주간 */
+.weeks{display:flex;flex-direction:column;gap:14px}
+.weeks>h2{margin:0;font-size:1.05rem;font-weight:400}
+.week{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.week-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.week-range{font-size:.9rem;color:var(--muted)}
+.avg{display:flex;align-items:baseline;gap:6px}
+.avg .num{font-size:2.2rem;line-height:1}
+.avg small{color:var(--muted);font-size:.8rem}
+.week-sub{font-size:.85rem;color:var(--muted);margin:0}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.day{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;border:0;background:none;padding:0;color:inherit}
+.day .dn{font-size:.75rem;color:var(--muted)}
+.day .dn.we{color:var(--dawn)}
+.day .ph{width:100%;aspect-ratio:3/4;border-radius:8px;background:var(--bg);border:1px dashed var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.75rem}
+.day .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.day.has .ph{border:0}
+.day.off{opacity:.35}
+.day .t{font-size:.8rem;font-variant-numeric:tabular-nums;min-height:1.2em}
+.empty{color:var(--muted);font-size:.9rem;text-align:center;padding:10px}
+
+/* 사진 확인 / 크게 보기 창 */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,14,26,.72);display:flex;align-items:flex-end;justify-content:center}
+.panel{background:var(--paper);color:var(--ink);width:100%;max-width:560px;max-height:100%;overflow-y:auto;border-radius:20px 20px 0 0;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
+.panel canvas,.panel img.full{width:100%;max-width:100%;height:auto;border-radius:12px;display:block;background:var(--line)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row label{font-size:.9rem;color:var(--muted)}
+.row input[type=time]{font:inherit;font-size:1.1rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.btns{display:flex;gap:8px}
+.btns button{flex:1;border-radius:12px;padding:13px;font-size:1rem}
+.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.primary{background:var(--btn);color:var(--btn-ink);border:0}
+.primary:disabled{opacity:.4;cursor:default}
+.msg{font-size:.9rem;color:var(--muted);min-height:1.2em;margin:0}
+.msg.err{color:var(--err)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--btn);color:var(--btn-ink);padding:10px 16px;border-radius:999px;font-size:.9rem;max-width:calc(100% - 40px)}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">매일 아침 한 장</p>
+    <h1>아침 기상 기록</h1>
+    <p class="sub" id="todayLine"></p>
+  </header>
+
+  <section class="today" id="todayCard" aria-live="polite">
+    <h2>오늘의 기준 시간</h2>
+    <div class="base"><b class="num" id="baseTime">6:00</b><span id="baseKind">평일</span></div>
+    <div id="todayBody"></div>
+  </section>
+
+  <section class="weeks">
+    <h2>주간 평균 기상시간</h2>
+    <div id="weekList"><p class="empty">11월 5일(목) 첫 기록부터 여기에 한 주씩 쌓여요.</p></div>
+  </section>
+</div>
+
+<input type="file" id="camera" accept="image/*" capture="user" hidden>
+<input type="file" id="gallery" accept="image/*" hidden>
+
+<!-- 찍은 사진 확인 + 난이도 -->
+<div class="sheet" id="editBg" hidden>
+  <div class="panel" role="dialog" aria-label="기상 사진 확인">
+    <canvas id="preview" aria-label="기상시간이 찍힌 사진 미리보기"></canvas>
+    <div class="row"><label for="timeIn">기상 시간</label><input type="time" id="timeIn" step="60"><span class="diff" id="editDate"></span></div>
+    <div>
+      <div class="row"><label>기상 난이도</label></div>
+      <div class="stars" id="editStars"></div>
+      <div class="star-label" id="editStarLabel">별을 눌러 골라주세요</div>
+    </div>
+    <p class="msg" id="editMsg"></p>
+    <div class="btns"><button class="ghost" id="cancelEdit">취소</button><button class="primary" id="saveEdit" disabled>저장</button></div>
+  </div>
+</div>
+
+<!-- 지난 기록 크게 보기 -->
+<div class="sheet" id="viewBg" hidden>
+  <div class="panel" role="dialog" aria-label="기상 기록 보기">
+    <img class="full" id="viewImg" alt="기상 사진">
+    <div class="row"><b class="num" id="viewTime" style="font-size:1.8rem"></b><span class="diff" id="viewDiff"></span></div>
+    <div>
+      <div class="row"><label>기상 난이도</label></div>
+      <div class="stars" id="viewStars"></div>
+      <div class="star-label" id="viewStarLabel"></div>
+    </div>
+    <div class="btns"><button class="ghost" id="retake">이 날 다시 찍기</button><button class="primary" id="closeView">닫기</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(()=>{
+const START = '2026-11-05';               // 기록 시작일
+const BASE = {weekday:6*60, weekend:7*60}; // 평일 6:00, 주말 7:00
+const STAR_TEXT = ['', '개운하게 일어났어요', '괜찮았어요', '보통이었어요', '힘들었어요', '정말 힘들었어요'];
+const DN = ['일','월','화','수','목','금','토'];
+const $ = id => document.getElementById(id);
+
+let db=null, assets=null, canWrite=false, days={};   // days: {'2026-11-05': {min, stars, photoId, thumbId}}
+let edit=null;   // 지금 확인 중인 사진 {bmp, date, min, stars}
+let viewing=null;
+
+/* ---------- 날짜·시간 도우미 ---------- */
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const isWeekend = d => d.getDay()===0 || d.getDay()===6;
+const baseOf = d => isWeekend(d) ? BASE.weekend : BASE.weekday;
+const hm = min => Math.floor(min/60)+':'+pad(Math.round(min)%60);
+const hm2 = min => pad(Math.floor(min/60))+':'+pad(Math.round(min)%60);
+const md = d => (d.getMonth()+1)+'월 '+d.getDate()+'일('+DN[d.getDay()]+')';
+const mondayOf = d => addDays(d, -((d.getDay()+6)%7));
+function diffText(min, d){
+  const b=baseOf(d), x=Math.round(min-b);
+  if (x===0) return '기준 '+hm(b)+' 그대로';
+  const a=Math.abs(x), t = a>=60 ? Math.floor(a/60)+'시간'+(a%60?' '+a%60+'분':'') : a+'분';
+  return '기준 '+hm(b)+'보다 '+t+' '+(x>0?'늦게':'일찍');
+}
+const blobUrl = id => '/_blob/'+id;
+
+function toast(t, ms=2400){ const el=$('toast'); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true, ms); }
+function errMsg(e){
+  const c=e && e.code;
+  if (c==='not_granted') return '저장 권한을 허용해야 해요. 다시 눌러서 허용해 주세요.';
+  if (c==='rate_limited' || c==='resource_exhausted') return '잠깐 너무 빨랐어요. 몇 초 뒤 다시 해 주세요.';
+  return '저장하지 못했어요. 인터넷 연결을 확인하고 다시 해 주세요.';
+}
+
+/* ---------- 별 ---------- */
+function drawStars(box, label, value, onPick){
+  box.innerHTML=''; box.classList.toggle('static', !onPick);
+  for (let i=1;i<=5;i++){
+    const b=document.createElement('button'); b.type='button'; b.textContent='★';
+    b.setAttribute('aria-label', '난이도 '+i+'점: '+STAR_TEXT[i]);
+    if (i<=value) b.classList.add('on');
+    if (onPick) b.onclick=()=>onPick(i); else b.tabIndex=-1;
+    box.appendChild(b);
+  }
+  if (label) label.textContent = value ? value+'점 · '+STAR_TEXT[value] : (onPick ? '별을 눌러 골라주세요' : '');
+}
+
+/* ---------- 사진에 기상시간 찍기 ---------- */
+async function loadBitmap(file){
+  if ('createImageBitmap' in window){ try { return await createImageBitmap(file, {imageOrientation:'from-image'}); } catch(e){} }
+  return new Promise((res, rej) => { const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(file); });
+}
+let fontReady=null;
+function ensureFont(){
+  if (!fontReady) fontReady = Promise.race([
+    document.fonts ? document.fonts.load('100px "Black Han Sans"').catch(()=>{}) : Promise.resolve(),
+    new Promise(r=>setTimeout(r,2500))]);
+  return fontReady;
+}
+function stamp(canvas, bmp, max, min, date){
+  const w=bmp.width, h=bmp.height, r=Math.min(1, max/Math.max(w,h));
+  const W=canvas.width=Math.round(w*r), H=canvas.height=Math.round(h*r);
+  const g=canvas.getContext('2d');
+  g.drawImage(bmp,0,0,W,H);
+  const S=Math.min(W,H);
+  const band=H*0.36, grad=g.createLinearGradient(0,H-band,0,H);
+  grad.addColorStop(0,'rgba(0,0,0,0)'); grad.addColorStop(.55,'rgba(0,0,0,.45)'); grad.addColorStop(1,'rgba(0,0,0,.72)');
+  g.fillStyle=grad; g.fillRect(0,H-band,W,band);
+  g.textAlign='center'; g.textBaseline='alphabetic';
+  g.shadowColor='rgba(0,0,0,.45)'; g.shadowBlur=S*0.02;
+  g.fillStyle='#ffffff';
+  g.font=Math.round(S*0.30)+'px "Black Han Sans","Apple SD Gothic Neo",sans-serif';
+  g.fillText(hm2(min), W/2, H - S*0.11);
+  g.font=Math.round(S*0.05)+'px "Black Han Sans","Apple SD Gothic Neo",sans-serif';
+  g.fillStyle='#ffd7a8';
+  g.fillText(date.getFullYear()+'. '+(date.getMonth()+1)+'. '+date.getDate()+' ('+DN[date.getDay()]+')  기상', W/2, H - S*0.045);
+  return canvas;
+}
+const toBlob = (c,q) => new Promise(res => c.toBlob(res,'image/jpeg',q));
+
+/* ---------- 사진 고른 뒤: 확인 창 ---------- */
+async function onFile(file){
+  if (!file) return;
+  let bmp;
+  try { bmp = await loadBitmap(file); } catch(e){ toast('사진을 열지 못했어요. 다른 사진으로 해 주세요.'); return; }
+  await ensureFont();
+  // 찍은 시각: 방금 찍은 사진이면 지금, 앨범 사진이면 사진의 저장 시각
+  const now=new Date(), lm = file.lastModified ? new Date(file.lastModified) : now;
+  const t = (now-lm) < 18*3600*1000 && lm<=now ? lm : now;
+  const date = edit && edit.forDate ? parse(edit.forDate) : new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  const prev = days[ymd(date)];
+  edit = {bmp, date, min: t.getHours()*60+t.getMinutes(), stars: prev ? prev.stars : 0};
+  $('timeIn').value = hm2(edit.min);
+  const key=ymd(date), practice = key < START || !canWrite;
+  $('editDate').textContent = md(date) + (practice ? ' · 연습' : '');
+  $('editMsg').className='msg';
+  $('editMsg').textContent = key < START ? '연습이에요. 기록은 11월 5일(목)부터 저장돼요.'
+    : !canWrite ? 'claude.ai에 로그인해야 저장돼요. 지금은 미리보기만 돼요.'
+    : prev ? '이 날 기록이 이미 있어요. 저장하면 새 사진으로 바뀌어요.' : '';
+  $('saveEdit').textContent = practice ? '연습 끝' : '저장';
+  renderEdit(); $('editBg').hidden=false;
+}
+function renderEdit(){
+  stamp($('preview'), edit.bmp, 1200, edit.min, edit.date);
+  drawStars($('editStars'), $('editStarLabel'), edit.stars, i=>{ edit.stars=i; renderEdit(); });
+  const practice = ymd(edit.date) < START || !canWrite;
+  $('saveEdit').disabled = !practice && !edit.stars;
+}
+$('timeIn').addEventListener('change', ()=>{
+  const v=$('timeIn').value; if (!/^\d\d:\d\d$/.test(v)) return;
+  const [h,m]=v.split(':').map(Number); edit.min=h*60+m; renderEdit();
+});
+function closeEdit(){ $('editBg').hidden=true; if (edit && edit.bmp && edit.bmp.close) edit.bmp.close(); edit=null; }
+$('cancelEdit').onclick=closeEdit;
+$('saveEdit').onclick=async()=>{
+  const key=ymd(edit.date);
+  if (key < START || !canWrite){ closeEdit(); toast(key<START ? '내일 아침 6시, 진짜 첫 기록이에요' : '로그인하면 저장할 수 있어요'); return; }
+  const btn=$('saveEdit'); btn.disabled=true; btn.textContent='저장 중…'; $('editMsg').textContent='';
+  try{
+    const full = await toBlob(stamp(document.createElement('canvas'), edit.bmp, 1600, edit.min, edit.date), .85);
+    const thumb = await toBlob(stamp(document.createElement('canvas'), edit.bmp, 480, edit.min, edit.date), .78);
+    const a = await assets.upload(full, {type:'image/jpeg'});
+    const b = await assets.upload(thumb, {type:'image/jpeg'});
+    const old = days[key];
+    await db.doc('days/'+key).set({date:key, min:edit.min, stars:edit.stars, photoId:a.id, thumbId:b.id, savedAt:Date.now()});
+    if (old){ for (const id of [old.photoId, old.thumbId]) { try{ await assets.delete(id); }catch(e){} } }
+    closeEdit(); toast('오늘 기록했어요');
+  }catch(e){
+    btn.disabled=false; btn.textContent='저장';
+    $('editMsg').className='msg err'; $('editMsg').textContent=errMsg(e);
+  }
+};
+
+/* ---------- 지난 기록 보기 ---------- */
+function openView(key){
+  const r=days[key]; if (!r) return; viewing=key; const d=parse(key);
+  $('viewImg').src=blobUrl(r.photoId);
+  $('viewTime').textContent=hm2(r.min);
+  $('viewDiff').textContent=md(d)+' · '+diffText(r.min, d);
+  drawStars($('viewStars'), $('viewStarLabel'), r.stars, canWrite ? async i=>{
+    try{ await db.doc('days/'+key).update({stars:i}); toast('난이도를 바꿨어요'); }catch(e){ toast(errMsg(e),4000); }
+  } : null);
+  $('retake').hidden=!canWrite;
+  $('viewBg').hidden=false;
+}
+$('closeView').onclick=()=>{ $('viewBg').hidden=true; viewing=null; };
+$('retake').onclick=()=>{ const k=viewing; $('viewBg').hidden=true; viewing=null; edit={forDate:k}; $('gallery').click(); };
+['editBg','viewBg'].forEach(id=>$(id).addEventListener('click', e=>{ if (e.target.id!==id) return; if (id==='editBg') closeEdit(); else { $(id).hidden=true; viewing=null; } }));
+
+$('camera').addEventListener('change', e=>{ const f=e.target.files[0]; e.target.value=''; if (!edit || !edit.forDate) edit=null; onFile(f); });
+$('gallery').addEventListener('change', e=>{ const f=e.target.files[0]; e.target.value=''; onFile(f); if (!f) edit=null; });
+
+/* ---------- 화면 그리기 ---------- */
+function renderToday(){
+  const now=new Date(), key=ymd(now);
+  $('todayLine').textContent = now.getFullYear()+'년 '+md(now);
+  $('baseTime').textContent = hm(baseOf(now));
+  $('baseKind').textContent = isWeekend(now) ? '주말 기준' : '평일 기준';
+  const body=$('todayBody'); body.innerHTML='';
+  const shootBtns = (label) => {
+    const b=document.createElement('button'); b.className='big-btn'; b.textContent=label;
+    b.onclick=()=>{ edit=null; $('camera').click(); };
+    const g=document.createElement('button'); g.className='link-btn'; g.textContent='앨범에서 고르기';
+    g.onclick=()=>{ edit=null; $('gallery').click(); };
+    const box=document.createElement('div'); box.style.cssText='display:flex;flex-direction:column;gap:6px';
+    box.append(b,g); return box;
+  };
+  if (key < START){
+    const n=document.createElement('div'); n.className='notice';
+    const s=parse(START);
+    n.textContent = md(s)+' 아침 '+hm(baseOf(s))+'부터 기록이 시작돼요. 지금은 연습만 할 수 있어요(저장 안 됨).';
+    body.append(n, shootBtns('연습으로 한 장 찍어보기'));
+    return;
+  }
+  const r=days[key];
+  if (!r){
+    if (!canWrite){ const n=document.createElement('div'); n.className='notice'; n.textContent=db ? '이 링크에서는 보기만 할 수 있어요.' : 'claude.ai에 로그인한 상태로 열면 기록을 저장할 수 있어요.'; body.append(n); }
+    body.append(shootBtns('기상 사진 찍기'));
+    return;
+  }
+  const d=document.createElement('div'); d.className='done';
+  const img=document.createElement('img'); img.src=blobUrl(r.thumbId); img.alt='오늘 기상 사진'; img.onclick=()=>openView(key);
+  const meta=document.createElement('div'); meta.className='meta';
+  const t=document.createElement('b'); t.className='num'; t.textContent=hm2(r.min);
+  const df=document.createElement('span'); df.className='diff'; df.textContent=diffText(r.min, now);
+  const st=document.createElement('div'); st.className='stars small';
+  const sl=document.createElement('span'); sl.className='diff';
+  drawStars(st, sl, r.stars, null);
+  meta.append(t, df, st, sl); d.append(img, meta); body.append(d);
+  const again=document.createElement('button'); again.className='link-btn'; again.textContent='오늘 사진 다시 찍기';
+  again.onclick=()=>{ edit=null; $('camera').click(); }; again.hidden=!canWrite;
+  body.append(again);
+}
+
+function renderWeeks(){
+  const list=$('weekList'), today=new Date(); today.setHours(0,0,0,0);
+  const start=parse(START);
+  const last = today<start ? start : today;
+  list.innerHTML='';
+  for (let mon=mondayOf(last); mon>=mondayOf(start); mon=addDays(mon,-7)){
+    const sun=addDays(mon,6), recs=[];
+    for (let i=0;i<7;i++){ const k=ymd(addDays(mon,i)); if (days[k]) recs.push({d:addDays(mon,i), ...days[k]}); }
+    const w=document.createElement('div'); w.className='week';
+    const top=document.createElement('div'); top.className='week-top';
+    const range=document.createElement('div'); range.className='week-range';
+    range.textContent=(mon.getMonth()+1)+'월 '+mon.getDate()+'일 – '+(sun.getMonth()+1)+'월 '+sun.getDate()+'일'+(ymd(mon)===ymd(mondayOf(today))?' · 이번 주':'');
+    const avg=document.createElement('div'); avg.className='avg';
+    const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
+    if (recs.length){
+      avg.innerHTML='<small>평균</small><b class="num"></b>';
+      avg.querySelector('b').textContent=hm2(mean(recs.map(r=>r.min)));
+    } else avg.innerHTML='<small>아직 기록 없음</small>';
+    top.append(range, avg);
+    const sub=document.createElement('p'); sub.className='week-sub';
+    if (recs.length){
+      const wd=recs.filter(r=>!isWeekend(r.d)), we=recs.filter(r=>isWeekend(r.d));
+      const parts=['기록 '+recs.length+'일'];
+      if (wd.length) parts.push('평일 평균 '+hm(mean(wd.map(r=>r.min))));
+      if (we.length) parts.push('주말 평균 '+hm(mean(we.map(r=>r.min))));
+      parts.push('난이도 평균 ★'+mean(recs.map(r=>r.stars)).toFixed(1));
+      sub.textContent=parts.join(' · ');
+    }
+    const grid=document.createElement('div'); grid.className='days';
+    for (let i=0;i<7;i++){
+      const d=addDays(mon,i), k=ymd(d), r=days[k];
+      const c=document.createElement(r?'button':'div'); c.className='day'+(r?' has':'')+((k<START||d>today)?' off':'');
+      const dn=document.createElement('span'); dn.className='dn'+(isWeekend(d)?' we':''); dn.textContent=DN[d.getDay()]+' '+d.getDate();
+      const ph=document.createElement('div'); ph.className='ph';
+      if (r){ const im=document.createElement('img'); im.src=blobUrl(r.thumbId); im.alt=md(d)+' 기상 사진'; im.loading='lazy'; ph.append(im); c.onclick=()=>openView(k); c.setAttribute('aria-label', md(d)+' '+hm2(r.min)+' 기상, 난이도 '+r.stars+'점'); }
+      else ph.textContent = (k<START||d>today) ? '' : '–';
+      const t=document.createElement('span'); t.className='t'; t.textContent = r ? hm(r.min) : '';
+      c.append(dn, ph, t); grid.append(c);
+    }
+    w.append(top); if (recs.length) w.append(sub); w.append(grid); list.append(w);
+  }
+}
+function render(){ renderToday(); renderWeeks(); }
+
+/* ---------- 시작 ---------- */
+render();
+setInterval(()=>{ if ($('editBg').hidden && $('viewBg').hidden) render(); }, 60000); // 자정 넘으면 날짜 바뀜 반영
+(async()=>{
+  const use = window.claude && window.claude.use;
+  [db, assets] = use ? await Promise.all([window.claude.use('db'), window.claude.use('assets')]) : [null, null];
+  canWrite = !!(db && assets);
+  render();
+  if (!db) return;
+  const timer=setTimeout(()=>toast('연결이 느려요. 잠시만 기다려 주세요…', 4000), 10000);
+  db.collection('days').onSnapshot(snap=>{
+    clearTimeout(timer);
+    const next={};
+    snap.docs.forEach(doc=>{ const v=doc.data(); if (v && v.photoId && typeof v.min==='number') next[doc.id]={...v}; });
+    days=next; render();
+    if (viewing){ if (days[viewing]) openView(viewing); else { $('viewBg').hidden=true; viewing=null; } }
+  }, ()=>{ clearTimeout(timer); toast('기록을 불러오지 못했어요. 새로고침 해 주세요.', 5000); });
+})();
+})();
+</script>
