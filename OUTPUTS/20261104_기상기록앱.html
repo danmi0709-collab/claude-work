@@ -51,7 +51,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--dawn);outline-o
 .stars button.on{color:var(--star)}
 .stars.small button{font-size:1.25rem;padding:0 1px}
 .stars.static button{cursor:default}
-.star-label{font-size:.85rem;color:var(--muted);min-height:1.3em}
+.star-label{font-size:1.15rem;color:var(--ink);min-height:1.4em;margin-top:2px}
+.star-label:empty::before,.star-label.hint{color:var(--muted);font-size:.9rem}
 
 /* 주간 */
 .weeks{display:flex;flex-direction:column;gap:14px}
@@ -195,7 +196,7 @@ function drawStars(box, label, value, onPick){
     if (onPick) b.onclick=()=>onPick(i); else b.tabIndex=-1;
     box.appendChild(b);
   }
-  if (label) label.textContent = value ? value+'점 · '+STAR_TEXT[value] : (onPick ? '별을 눌러 골라주세요' : '');
+  if (label){ label.textContent = value ? STAR_TEXT[value] : (onPick ? '별을 눌러 골라주세요' : ''); label.classList.toggle('hint', !value); }
 }
 
 /* ---------- 사진에 기상시간 찍기 ---------- */
@@ -206,16 +207,47 @@ async function loadBitmap(file){
 let fontReady=null;
 function ensureFont(){
   if (!fontReady) fontReady = Promise.race([
-    document.fonts ? document.fonts.load('100px "Black Han Sans"').catch(()=>{}) : Promise.resolve(),
+    // 글씨체가 글자 묶음별로 나뉘어 있어서, 사진에 쓰는 글자를 모두 알려줘야 다 불러와요
+    document.fonts ? document.fonts.load('100px "Black Han Sans"', STAR_TEXT.join('')+DN.join('')+'0123456789:.() 기상').catch(()=>{}) : Promise.resolve(),
     new Promise(r=>setTimeout(r,2500))]);
   return fontReady;
 }
-function stamp(canvas, bmp, max, min, date){
+function drawBase(canvas, bmp, max){
   const w=bmp.width, h=bmp.height, r=Math.min(1, max/Math.max(w,h));
-  const W=canvas.width=Math.round(w*r), H=canvas.height=Math.round(h*r);
+  canvas.width=Math.round(w*r); canvas.height=Math.round(h*r);
   const g=canvas.getContext('2d');
-  g.drawImage(bmp,0,0,W,H);
+  g.drawImage(bmp,0,0,canvas.width,canvas.height);
+  return g;
+}
+function starPath(g, cx, cy, R){
+  g.beginPath();
+  for (let i=0;i<10;i++){
+    const a=-Math.PI/2 + i*Math.PI/5, rr = i%2 ? R*0.45 : R;
+    g.lineTo(cx+rr*Math.cos(a), cy+rr*Math.sin(a));
+  }
+  g.closePath();
+}
+// 오른쪽 위: 별 + 난이도 문구
+function stampStars(g, W, S, stars){
+  if (!stars) return;
+  const fs=Math.round(S*0.052), R=fs*0.55, gapS=R*2.3, pad=fs*0.6, m=S*0.04;
+  g.font=fs+'px "Black Han Sans","Apple SD Gothic Neo",sans-serif';
+  const text=STAR_TEXT[stars], tw=g.measureText(text).width, sw=gapS*4+R*2;
+  const bw=Math.max(tw, sw)+pad*2, bh=R*2+fs*1.15+pad*2.1, x=W-m-bw, y=m;
+  g.shadowBlur=0; g.fillStyle='rgba(0,0,0,.42)';
+  g.beginPath(); if (g.roundRect) g.roundRect(x,y,bw,bh,fs*0.5); else g.rect(x,y,bw,bh); g.fill();
+  const right=x+bw-pad;
+  for (let i=0;i<5;i++){
+    starPath(g, right-R-(4-i)*gapS, y+pad+R, R);
+    g.fillStyle = i<stars ? '#ffc23d' : 'rgba(255,255,255,.35)'; g.fill();
+  }
+  g.textAlign='right'; g.textBaseline='alphabetic'; g.fillStyle='#ffffff';
+  g.fillText(text, right, y+pad+R*2+fs*1.05);
+}
+function stamp(canvas, bmp, max, min, date, stars){
+  const g=drawBase(canvas, bmp, max), W=canvas.width, H=canvas.height;
   const S=Math.min(W,H);
+  stampStars(g, W, S, stars);
   const band=H*0.36, grad=g.createLinearGradient(0,H-band,0,H);
   grad.addColorStop(0,'rgba(0,0,0,0)'); grad.addColorStop(.55,'rgba(0,0,0,.45)'); grad.addColorStop(1,'rgba(0,0,0,.72)');
   g.fillStyle=grad; g.fillRect(0,H-band,W,band);
@@ -230,6 +262,34 @@ function stamp(canvas, bmp, max, min, date){
   return canvas;
 }
 const toBlob = (c,q) => new Promise(res => c.toBlob(res,'image/jpeg',q));
+async function stampedPair(bmp, min, date, stars){
+  return {
+    full: await toBlob(stamp(document.createElement('canvas'), bmp, 1600, min, date, stars), .85),
+    thumb: await toBlob(stamp(document.createElement('canvas'), bmp, 480, min, date, stars), .78)
+  };
+}
+async function removeAssets(ids){ for (const id of ids) if (id) { try{ await assets.delete(id); }catch(e){} } }
+
+// 지난 기록의 별점 바꾸기: 원본 사진에 새 문구를 다시 찍어서 교체
+let busy=false;
+async function changeStars(key, stars){
+  const r=days[key]; if (!r || busy || r.stars===stars) return;
+  busy=true; drawStars($('viewStars'), $('viewStarLabel'), stars, null);
+  try{
+    if (!r.origId){ await db.doc('days/'+key).update({stars}); toast('난이도를 바꿨어요'); return; }
+    toast('사진 속 문구를 바꾸는 중…', 8000);
+    const blob = await (await fetch(blobUrl(r.origId))).blob();
+    const bmp = await loadBitmap(blob); await ensureFont();
+    const {full, thumb} = await stampedPair(bmp, r.min, parse(key), stars);
+    if (bmp.close) bmp.close();
+    const a = await assets.upload(full, {type:'image/jpeg'});
+    const b = await assets.upload(thumb, {type:'image/jpeg'});
+    await db.doc('days/'+key).update({stars, photoId:a.id, thumbId:b.id});
+    removeAssets([r.photoId, r.thumbId]);
+    toast('난이도와 사진 문구를 바꿨어요');
+  }catch(e){ toast(errMsg(e), 4000); if (viewing===key) openView(key); }
+  finally{ busy=false; }
+}
 
 /* ---------- 사진 고른 뒤: 확인 창 ---------- */
 async function onFile(file){
@@ -254,7 +314,7 @@ async function onFile(file){
   renderEdit(); $('editBg').hidden=false;
 }
 function renderEdit(){
-  stamp($('preview'), edit.bmp, 1200, edit.min, edit.date);
+  stamp($('preview'), edit.bmp, 1200, edit.min, edit.date, edit.stars);
   drawStars($('editStars'), $('editStarLabel'), edit.stars, i=>{ edit.stars=i; renderEdit(); });
   const practice = ymd(edit.date) < START || !canWrite;
   $('saveEdit').disabled = !practice && !edit.stars;
@@ -270,13 +330,15 @@ $('saveEdit').onclick=async()=>{
   if (key < START || !canWrite){ closeEdit(); toast(key<START ? '내일 아침 6시, 진짜 첫 기록이에요' : '로그인하면 저장할 수 있어요'); return; }
   const btn=$('saveEdit'); btn.disabled=true; btn.textContent='저장 중…'; $('editMsg').textContent='';
   try{
-    const full = await toBlob(stamp(document.createElement('canvas'), edit.bmp, 1600, edit.min, edit.date), .85);
-    const thumb = await toBlob(stamp(document.createElement('canvas'), edit.bmp, 480, edit.min, edit.date), .78);
+    const origC=document.createElement('canvas'); drawBase(origC, edit.bmp, 1600);
+    const orig = await toBlob(origC, .85);   // 글씨 없는 원본: 나중에 별점 바꾸면 다시 찍기용
+    const {full, thumb} = await stampedPair(edit.bmp, edit.min, edit.date, edit.stars);
+    const o = await assets.upload(orig, {type:'image/jpeg'});
     const a = await assets.upload(full, {type:'image/jpeg'});
     const b = await assets.upload(thumb, {type:'image/jpeg'});
     const old = days[key];
-    await db.doc('days/'+key).set({date:key, min:edit.min, stars:edit.stars, photoId:a.id, thumbId:b.id, savedAt:Date.now()});
-    if (old){ for (const id of [old.photoId, old.thumbId]) { try{ await assets.delete(id); }catch(e){} } }
+    await db.doc('days/'+key).set({date:key, min:edit.min, stars:edit.stars, origId:o.id, photoId:a.id, thumbId:b.id, savedAt:Date.now()});
+    if (old) removeAssets([old.origId, old.photoId, old.thumbId]);
     closeEdit(); toast('오늘 기록했어요');
   }catch(e){
     btn.disabled=false; btn.textContent='저장';
@@ -290,9 +352,7 @@ function openView(key){
   $('viewImg').src=blobUrl(r.photoId);
   $('viewTime').textContent=hm2(r.min);
   $('viewDiff').textContent=md(d)+' · '+diffText(r.min, d);
-  drawStars($('viewStars'), $('viewStarLabel'), r.stars, canWrite ? async i=>{
-    try{ await db.doc('days/'+key).update({stars:i}); toast('난이도를 바꿨어요'); }catch(e){ toast(errMsg(e),4000); }
-  } : null);
+  drawStars($('viewStars'), $('viewStarLabel'), r.stars, canWrite && !busy ? i=>changeStars(key, i) : null);
   $('retake').hidden=!canWrite;
   $('viewBg').hidden=false;
 }
