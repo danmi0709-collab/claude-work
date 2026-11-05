@@ -60,7 +60,9 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
 .sheet{background:var(--bg);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;
   padding:16px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .sheet h2{font-family:var(--f-display);font-weight:400;font-size:1.4rem;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
-.preview{width:100%;max-height:40vh;object-fit:contain;border-radius:12px;background:var(--paper);display:block;margin-bottom:12px}
+.preview{width:100%;max-height:40vh;object-fit:contain;border-radius:12px;background:var(--paper);display:block;margin-bottom:8px}
+.rotate{display:block;margin:0 auto 12px;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 18px;font-size:1rem}
+.rotate:disabled{opacity:.5}
 .field{margin-bottom:12px}
 .field>label,.field>.lab{display:block;font-size:.88rem;color:var(--muted);margin-bottom:5px}
 .field input,.field textarea{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 12px}
@@ -118,6 +120,7 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
     <h2><span id="editTitle">작품 저장</span><button class="x" id="editClose" type="button" aria-label="닫기">×</button></h2>
     <img class="preview" id="editPreview" alt="">
+    <button class="rotate" id="editRotate" type="button">↻ 오른쪽으로 돌리기</button>
     <div class="field"><span class="lab">어떤 작품이에요?</span><div class="kinds" id="editKinds"></div></div>
     <div class="field"><label for="editName">제목 (안 써도 돼요)</label><input id="editName" placeholder="예: 우리 가족, 공룡 친구"></div>
     <div class="field"><label for="editDate">만든 날</label><input type="date" id="editDate"></div>
@@ -153,7 +156,7 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" hidden>
   <div class="top">
     <button id="vClose" type="button">← 닫기</button>
-    <div style="display:flex;gap:6px" id="vTools"><button id="vEdit" type="button">수정</button><button id="vDel" type="button">삭제</button></div>
+    <div style="display:flex;gap:6px" id="vTools"><button id="vRot" type="button" aria-label="사진 돌리기">↻ 돌리기</button><button id="vEdit" type="button">수정</button><button id="vDel" type="button">삭제</button></div>
   </div>
   <div class="pic" id="vPic">
     <img id="vImg" alt="">
@@ -212,6 +215,15 @@ function shrink(bmp, max, q){
   const c=document.createElement('canvas'); c.width=Math.round(w*r); c.height=Math.round(h*r);
   const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(bmp,0,0,c.width,c.height);
   return new Promise(res => c.toBlob(res, 'image/jpeg', q));
+}
+/* 사진을 시계 방향 90도로 돌림. src는 Blob 또는 주소 */
+function loadImg(src){ return new Promise((res, rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src = typeof src==='string' ? src : URL.createObjectURL(src); }); }
+async function rotateBlob(src){
+  const im=await loadImg(src); const w=im.naturalWidth, h=im.naturalHeight;
+  const c=document.createElement('canvas'); c.width=h; c.height=w;
+  const g=c.getContext('2d'); g.translate(h,0); g.rotate(Math.PI/2); g.drawImage(im,0,0);
+  if (typeof src!=='string') URL.revokeObjectURL(im.src);
+  return new Promise(res=>c.toBlob(res,'image/jpeg',.85));
 }
 async function processFile(file){
   const bmp = await loadBitmap(file);
@@ -281,7 +293,7 @@ function tile(w, showDate){
 let queue=[], editing=null, previewUrl=null;
 let lastKind = memo('hari-lastKind') || 'draw';
 function openEdit(item, isNew){
-  editing={item, isNew, kind:item.kind || lastKind};
+  editing={item, isNew, kind:item.kind || lastKind, src: isNew ? item.img : null, rotated:false};
   $('editTitle').textContent = isNew ? '작품 저장' : '작품 수정';
   if (previewUrl){ URL.revokeObjectURL(previewUrl); previewUrl=null; }
   if (isNew){ previewUrl=URL.createObjectURL(item.img); $('editPreview').src=previewUrl; } else $('editPreview').src=blobUrl(item.imgId);
@@ -294,22 +306,41 @@ function drawKinds(){
   kinds.forEach(k=>{ const c=chip(k.name,k.color,editing.kind===k.id,true); c.onclick=()=>{editing.kind=k.id;drawKinds();}; box.appendChild(c); });
 }
 function closeEdit(){ if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;} $('editBg').hidden=true; editing=null; }
+async function rotateEditing(){
+  if (!editing) return; const btn=$('editRotate'); btn.disabled=true;
+  try{
+    const blob=await rotateBlob(editing.src || blobUrl(editing.item.imgId));
+    editing.src=blob; editing.rotated=true;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl=URL.createObjectURL(blob); $('editPreview').src=previewUrl;
+  } catch(e){ toast('사진을 돌리지 못했어요. 다시 눌러주세요.'); }
+  finally{ btn.disabled=false; }
+}
+$('editRotate').onclick=rotateEditing;
 $('editClose').onclick=()=>{ queue=[]; closeEdit(); };
 $('editSave').onclick=async()=>{
   if (!editing) return;
   const btn=$('editSave'); btn.disabled=true; btn.textContent='저장하는 중…';
   try{
     const fields={kind:editing.kind, name:$('editName').value.trim(), date:$('editDate').value||today(), memo:$('editMemo').value.trim()};
+    let newImg=null, newThumb=null;
+    if (editing.rotated){ newImg=editing.src; const bm=await loadBitmap(newImg); newThumb=await shrink(bm,420,.75); if(bm.close) bm.close(); }
     if (editing.isNew){
-      const im=await assets.upload(editing.item.img, {type:'image/jpeg'});
-      const th=await assets.upload(editing.item.thumb, {type:'image/jpeg'});
+      const im=await assets.upload(newImg || editing.item.img, {type:'image/jpeg'});
+      const th=await assets.upload(newThumb || editing.item.thumb, {type:'image/jpeg'});
       const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2));
       const row={...fields, imgId:im.id, thumbId:th.id, created:Date.now()};
       await db.collection('works').doc(id).set(row);
       upsert({id,...row}); toast('저장했어요');
     } else {
-      await db.collection('works').doc(editing.item.id).update(fields);
-      upsert({...editing.item, ...fields}); toast('고쳤어요');
+      const old=editing.item;
+      if (newImg){
+        const im=await assets.upload(newImg, {type:'image/jpeg'}), th=await assets.upload(newThumb, {type:'image/jpeg'});
+        fields.imgId=im.id; fields.thumbId=th.id;
+      }
+      await db.collection('works').doc(old.id).update(fields);
+      if (newImg){ assets.delete(old.imgId).catch(()=>{}); assets.delete(old.thumbId).catch(()=>{}); }
+      upsert({...old, ...fields}); toast('고쳤어요');
     }
     lastKind=fields.kind; memo('hari-lastKind', lastKind);
     const savedId = editing.isNew ? null : editing.item.id;
@@ -349,6 +380,7 @@ $('vClose').onclick=()=>{ $('viewer').hidden=true; };
 $('vPrev').onclick=()=>showAt(vIdx-1);
 $('vNext').onclick=()=>showAt(vIdx+1);
 $('vEdit').onclick=()=>openEdit(shown[vIdx], false);
+$('vRot').onclick=()=>{ openEdit(shown[vIdx], false); rotateEditing(); };
 $('vDel').onclick=()=>{ $('askBg').hidden=false; };
 $('askNo').onclick=()=>{ $('askBg').hidden=true; };
 $('askYes').onclick=async()=>{
