@@ -40,6 +40,9 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
 .month{font-family:var(--f-display);font-size:1.35rem;margin:22px 0 4px}
 .day{display:flex;align-items:baseline;gap:8px;color:var(--muted);font-size:.9rem;margin:12px 0 6px}
 .day b{color:var(--ink);font-weight:400;font-size:1rem}
+.age{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:0 9px;font-size:.8rem;color:var(--ink)}
+.hint{display:block;width:100%;text-align:left;border:1px dashed var(--line);background:var(--paper);border-radius:10px;padding:9px 12px;font-size:.88rem;color:var(--muted);margin-bottom:10px}
+.agenote{font-size:.85rem;color:var(--accent);margin-top:5px;min-height:1.2em}
 .kindhead{display:flex;align-items:center;gap:8px;margin:22px 0 8px;font-family:var(--f-display);font-size:1.3rem}
 .kindhead .n{font-family:var(--f-body);font-size:.85rem;color:var(--muted)}
 .kindhead .bar{flex:1;height:3px;border-radius:2px;background:var(--c);opacity:.5}
@@ -107,6 +110,7 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
     <button role="tab" id="tabDate" type="button" aria-selected="true">날짜별</button>
     <button role="tab" id="tabKind" type="button" aria-selected="false">종류별</button>
   </div>
+  <button class="hint" id="birthHint" type="button" hidden>🎂 하리 생일을 넣으면 작품마다 그때 나이가 보여요 →</button>
   <div class="chips" id="filter"></div>
   <main id="list"></main>
 </div>
@@ -123,7 +127,7 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
     <button class="rotate" id="editRotate" type="button">↻ 오른쪽으로 돌리기</button>
     <div class="field"><span class="lab">어떤 작품이에요?</span><div class="kinds" id="editKinds"></div></div>
     <div class="field"><label for="editName">제목 (안 써도 돼요)</label><input id="editName" placeholder="예: 우리 가족, 공룡 친구"></div>
-    <div class="field"><label for="editDate">만든 날</label><input type="date" id="editDate"></div>
+    <div class="field"><label for="editDate">만든 날</label><input type="date" id="editDate"><div class="agenote" id="editAge"></div></div>
     <div class="field"><label for="editMemo">하리가 한 말 / 메모</label><textarea id="editMemo" placeholder="예: 엄마가 웃는 모습이래요"></textarea></div>
     <button class="primary" id="editSave" type="button">저장하기</button>
     <div id="editMore" class="note"></div>
@@ -134,6 +138,8 @@ h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-h
 <div class="sheet-bg" id="menuBg" hidden>
   <div class="sheet menu" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
     <h2><span id="menuTitle">설정</span><button class="x" id="menuClose" type="button" aria-label="닫기">×</button></h2>
+    <div class="field" id="birthField"><label for="birth">🎂 하리 생일</label>
+      <div class="row"><input type="date" id="birth"><button class="ghost" id="saveBirth" type="button" style="flex:none">저장</button></div></div>
     <button class="ghost" id="pickGallery" type="button">🖼️ 앨범에서 사진 여러 장 가져오기</button>
     <p class="note">앨범에서 가져오면 사진 파일의 날짜가 '만든 날'로 자동으로 들어가요.</p>
     <div class="field"><label for="newKind">작품 종류 추가 (예: 점토, 블록)</label>
@@ -193,6 +199,15 @@ function ymd(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,
 const today = () => ymd(new Date());
 const WD = ['일','월','화','수','목','금','토'];
 function dayLabel(s){ const [y,m,d]=s.split('-').map(Number); return `${m}월 ${d}일 (${WD[new Date(y,m-1,d).getDay()]})`; }
+/* 만 나이: 작품 날짜 기준 '6살 3개월'. 돌 전이면 '8개월' */
+let birth = '';
+function ageLabel(s){
+  if (!birth || !s) return '';
+  const [by,bm,bd]=birth.split('-').map(Number), [y,m,d]=s.split('-').map(Number);
+  let yy=y-by, mm=m-bm; if (d<bd) mm--; if (mm<0){ yy--; mm+=12; }
+  if (yy<0) return '';
+  return yy ? `${yy}살${mm?' '+mm+'개월':''}` : `${mm}개월`;
+}
 function monthLabel(s){ const [y,m]=s.split('-'); return `${y}년 ${Number(m)}월`; }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function toast(msg, ms){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms||2400); }
@@ -238,6 +253,7 @@ function render(){
   $('count').textContent = total ? `작품 ${total}개 · ${new Set(works.map(w=>w.date)).size}일 동안` : '';
   $('tabDate').setAttribute('aria-selected', view==='date');
   $('tabKind').setAttribute('aria-selected', view==='kind');
+  $('birthHint').hidden = !!birth || !canWrite || !total;
 
   const f=$('filter'); f.innerHTML=''; f.hidden = view!=='date' || !total;
   if (view==='date'){
@@ -258,7 +274,7 @@ function render(){
     let m=null, d=null, grid=null;
     items.forEach(w=>{
       if (w.date.slice(0,7)!==m){ m=w.date.slice(0,7); d=null; add(list,'div','month',monthLabel(w.date)); }
-      if (w.date!==d){ d=w.date; const h=add(list,'div','day'); h.innerHTML=`<b>${dayLabel(d)}</b>${items.filter(x=>x.date===d).length}개`; grid=add(list,'div','grid'); }
+      if (w.date!==d){ d=w.date; const h=add(list,'div','day'); const ag=ageLabel(d); h.innerHTML=`<b>${dayLabel(d)}</b>${items.filter(x=>x.date===d).length}개${ag?` <span class="age">${ag}</span>`:''}`; grid=add(list,'div','grid'); }
       grid.appendChild(tile(w,false));
     });
   } else {
@@ -283,7 +299,7 @@ function tile(w, showDate){
   const k=kindOf(w.kind), idx=shown.push(w)-1;
   const b=document.createElement('button'); b.className='tile'; b.type='button'; b.style.setProperty('--c',k.color);
   b.setAttribute('aria-label', `${k.name} ${w.name||''} ${dayLabel(w.date)}`);
-  const label = (w.name||'') + (showDate ? (w.name?' · ':'')+w.date.slice(2).replace(/-/g,'.') : '');
+  const label = (w.name||'') + (showDate ? (w.name?' · ':'')+(ageLabel(w.date) || w.date.slice(2).replace(/-/g,'.')) : '');
   b.innerHTML=`<img loading="lazy" alt="" src="${blobUrl(w.thumbId)}"><span class="k"></span>`+(label?`<span class="d">${esc(label)}</span>`:'');
   b.onclick=()=>openViewer(idx);
   return b;
@@ -297,7 +313,7 @@ function openEdit(item, isNew){
   $('editTitle').textContent = isNew ? '작품 저장' : '작품 수정';
   if (previewUrl){ URL.revokeObjectURL(previewUrl); previewUrl=null; }
   if (isNew){ previewUrl=URL.createObjectURL(item.img); $('editPreview').src=previewUrl; } else $('editPreview').src=blobUrl(item.imgId);
-  $('editName').value=item.name||''; $('editDate').value=item.date||today(); $('editMemo').value=item.memo||'';
+  $('editName').value=item.name||''; $('editDate').value=item.date||today(); $('editMemo').value=item.memo||''; showEditAge();
   $('editMore').textContent = queue.length ? `이 다음에 ${queue.length}장 더 있어요` : '';
   drawKinds(); $('editBg').hidden=false;
 }
@@ -317,6 +333,8 @@ async function rotateEditing(){
   finally{ btn.disabled=false; }
 }
 $('editRotate').onclick=rotateEditing;
+function showEditAge(){ const a=ageLabel($('editDate').value); $('editAge').textContent = a ? `이날 하리는 ${a}` : ''; }
+$('editDate').addEventListener('input', showEditAge);
 $('editClose').onclick=()=>{ queue=[]; closeEdit(); };
 $('editSave').onclick=async()=>{
   if (!editing) return;
@@ -372,7 +390,8 @@ function showAt(i){
   vIdx=(i+shown.length)%shown.length; const w=shown[vIdx], k=kindOf(w.kind);
   $('vImg').src=blobUrl(w.imgId);
   $('vTitle').textContent=w.name||k.name;
-  $('vMeta').textContent=`${k.name} · ${w.date.slice(0,4)}년 ${dayLabel(w.date)} · ${vIdx+1}/${shown.length}`;
+  const ag=ageLabel(w.date);
+  $('vMeta').textContent=`${k.name} · ${w.date.slice(0,4)}년 ${dayLabel(w.date)}${ag?' · '+ag:''} · ${vIdx+1}/${shown.length}`;
   $('vMemo').textContent=w.memo||'';
   $('vPrev').hidden=$('vNext').hidden=shown.length<2;
 }
@@ -405,12 +424,18 @@ $('tabDate').onclick=()=>{ view='date'; render(); };
 $('tabKind').onclick=()=>{ view='kind'; render(); };
 $('menuBtn').onclick=async()=>{
   $('kindList').textContent='지금 종류: '+kinds.map(k=>k.name).join(', ');
-  $('menuBg').hidden=false; $('usage').textContent='';
+  $('birth').value=birth; $('menuBg').hidden=false; $('usage').textContent='';
   if (assets){ try{ const u=(await assets.list()).usage; if(u && u.maxBytes) $('usage').textContent=`저장 공간 ${Math.round(u.bytes/u.maxBytes*100)}% 사용 중 (사진 ${u.files}개 파일 / 최대 ${u.maxFiles}개)`; }catch(e){} }
 };
 $('menuClose').onclick=()=>{ $('menuBg').hidden=true; };
 ['menuBg','editBg','askBg'].forEach(id=>$(id).addEventListener('click', e=>{ if(e.target.id!==id) return; if(id==='editBg'){queue=[];closeEdit();} else $(id).hidden=true; }));
 $('pickGallery').onclick=()=>{ $('menuBg').hidden=true; $('gallery').click(); };
+$('birthHint').onclick=()=>$('menuBtn').click();
+$('saveBirth').onclick=async()=>{
+  const v=$('birth').value; if(!v){ toast('생일을 골라주세요'); return; }
+  try{ await db.doc('settings/profile').set({birth:v}); birth=v; render(); $('menuBg').hidden=true; toast('생일을 저장했어요. 이제 나이가 보여요'); }
+  catch(e){ toast(errMsg(e), 4000); }
+};
 $('addKind').onclick=async()=>{
   const name=$('newKind').value.trim(); if(!name) return;
   if (kinds.some(k=>k.name===name)){ toast('이미 있는 종류예요'); return; }
@@ -423,7 +448,7 @@ $('addKind').onclick=async()=>{
 /* ---------- 시작 ---------- */
 function setWritable(on){
   canWrite=on; $('shoot').hidden=!on; $('vTools').hidden=!on; $('pickGallery').hidden=!on;
-  $('addKind').closest('.field').hidden=!on;
+  $('addKind').closest('.field').hidden=!on; $('birthField').hidden=!on;
 }
 setWritable(false); render(); $('count').textContent='불러오는 중…';
 (async()=>{
@@ -443,6 +468,7 @@ setWritable(false); render(); $('count').textContent='불러오는 중…';
     render();
     if (!$('viewer').hidden){ if (vIdx>=shown.length) $('viewer').hidden=true; else showAt(vIdx); }
   }, ()=>{ clearTimeout(timer); $('count').textContent='앨범을 불러오지 못했어요. 새로고침 해주세요.'; });
+  db.doc('settings/profile').onSnapshot(s=>{ const v=s.exists && s.data(); birth=(v && v.birth) || ''; render(); if(!$('viewer').hidden && shown.length) showAt(vIdx); }, ()=>{});
   db.doc('settings/kinds').onSnapshot(s=>{ const v=s.exists && s.data(); if (v && Array.isArray(v.list) && v.list.length){ kinds=v.list; render(); } }, ()=>{});
 })();
 })();
