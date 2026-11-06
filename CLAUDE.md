@@ -32,6 +32,7 @@
 # Superpowers 스킬
 - 모든 개발·코딩 작업 시작 전, Read 도구로 `C:\Users\한나\.claude\skills\using-superpowers\SKILL.md`를 읽고 따라라
 - 스킬 목록: `C:\Users\한나\.claude\skills\` 폴더 (brainstorming, test-driven-development, systematic-debugging, writing-plans, executing-plans, subagent-driven-development, verification-before-completion, finishing-a-development-branch 등)
+- "사진 옮겨줘" 또는 `/사진옮겨줘`: `.claude/commands/사진옮겨줘.md` 순서대로 하리가 한 말 앱 사진을 노션으로 옮긴다
 - `/아고산편집`: agosan-edit 스킬 사용. 아고산 유튜브 채널 영상 편집 자동화 (인트로+워터마크+아웃트로, NotebookLM 로고 3초 삭제)
 - `/오늘아고산`: 오늘아고산 스킬 사용. 아고산 유튜브 채널 전체 루틴 (NotebookLM 생성→편집→썸네일→유튜브업로드→블로그 예약)
 - 관련 스킬이 있으면 반드시 해당 SKILL.md를 Read로 읽은 후 작업해라
